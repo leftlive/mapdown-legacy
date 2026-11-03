@@ -6,6 +6,7 @@ import {
   ViewState,
   MarkdownView,
   Notice,
+  addIcon,
   normalizePath
 } from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
@@ -13,7 +14,7 @@ import { around } from 'monkey-around'
 import { MindMapSettings } from './settings';
 import { MindMapSettingsTab } from './settingTab'
 
-import { MindMapView, mindmapIcon, mindmapViewType, plainNoteAsMindMap } from "./MindMapView";
+import { MindMapView, mindmapIcon, mindmapIconSvg, mindmapViewType, plainNoteAsMindMap } from "./MindMapView";
 import { frontMatterKey, mindmapHoverSource } from './constants';
 import { t, tf } from './lang/helpers'
 import { availableNotePath, importXmindFile, pickXmindFile } from './mindmap/import/importFile';
@@ -67,6 +68,7 @@ export default class MindMapPlugin extends Plugin {
     await this.loadSettings();
     await this.migrateRecoveryDrafts();
     await this.ensurePagePreviewEnabled();
+    addIcon(mindmapIcon, mindmapIconSvg);
 
     const createMindmapRibbonIcon = this.addRibbonIcon(
       mindmapIcon,
@@ -1586,28 +1588,32 @@ export default class MindMapPlugin extends Plugin {
     this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
       const view = leaf.view as MarkdownView;
       const file = view.file;
-      const cache = file ? this.app.metadataCache.getFileCache(file) : null;
-      const shouldShow = Boolean(cache?.frontmatter?.[frontMatterKey]);
       let action = this.markdownMindMapActions.get(view);
 
-      if (!shouldShow) {
+      if (!file || file.extension !== 'md') {
         action?.remove();
         this.markdownMindMapActions.delete(view);
         return;
       }
 
       if (!action?.isConnected) {
-        action = view.addAction(mindmapIcon, t("Open as mindmap board"), async () => {
+        // A map note opens directly; a plain note asks how to convert first.
+        action = view.addAction(mindmapIcon, "", async () => {
           if (!view.file) {
             return;
           }
-          this.setFileMode(leaf, view.file.path, mindmapViewType);
-          await this.setMindMapView(leaf);
+          if (this.isMindMapNote(view.file)) {
+            this.setFileMode(leaf, view.file.path, mindmapViewType);
+            await this.setMindMapView(leaf);
+          } else {
+            await this.openNoteAsMindMap(leaf);
+          }
         });
         action.addClass("mapdown-return-action");
-        (view as any).modeButtonEl?.after(action);
+        (view as any).modeButtonEl?.before(action);
         this.markdownMindMapActions.set(view, action);
       }
+      action.setAttribute("aria-label", t(this.isMindMapNote(file) ? "Open as mindmap board" : "Open as a mind map…"));
     });
   }
 
@@ -1668,6 +1674,23 @@ export default class MindMapPlugin extends Plugin {
                    });
                  }).addSeparator();
             }
+        }
+
+        // A plain note: the dialog offers converting in place or a new map.
+        if (file instanceof TFile && file.extension === 'md' && !this.isMindMapNote(file)) {
+          menu.addItem((item) => {
+            item
+              .setTitle(t('Open as a mind map…'))
+              .setIcon(mindmapIcon)
+              .onClick(async () => {
+                let target = leaf;
+                if ((target?.view as any)?.file !== file) {
+                  target = this.app.workspace.getLeaf(false);
+                  await target.openFile(file);
+                }
+                await this.openNoteAsMindMap(target);
+              });
+          });
         }
       })
     );

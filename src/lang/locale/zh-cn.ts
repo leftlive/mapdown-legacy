@@ -143,6 +143,7 @@ export default {
   "Import from XMind…":"从 XMind 导入…",
   "Export to XMind":"导出为 XMind",
   "Open as a mind map?":"以思维导图打开？",
+  "Open as a mind map…":"以思维导图打开…",
   "Convert note explanation":"“{0}”还不是思维导图。转换后，标题、列表、正文段落、表格和嵌入都会变成节点；第一次编辑时笔记会改写为导图格式，原文会另存一份备份。选择“另存为新导图”则不改动这篇笔记。",
   "Cancel":"取消",
   "Save as a new mind map":"另存为新导图",

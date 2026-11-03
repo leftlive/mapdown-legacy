@@ -131,6 +131,7 @@ export default {
     "Import from XMind…":"Import from XMind…",
     "Export to XMind":"Export to XMind",
     "Open as a mind map?":"Open as a mind map?",
+    "Open as a mind map…":"Open as a mind map…",
     "Convert note explanation":"\"{0}\" is not a mind map yet. Converting it turns headings, lists, paragraphs, tables and embeds into nodes, and the note is rewritten in mind map format on the first edit (a backup of the original is kept). Saving as a new mind map leaves this note unchanged.",
     "Cancel":"Cancel",
     "Save as a new mind map":"Save as a new mind map",

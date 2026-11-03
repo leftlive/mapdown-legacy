@@ -22,3 +22,9 @@ _resources/*
 # 代码索引（本机生成）
 .codegraph/
 .gitnexus/
+
+# Video project renders and studio history
+video/out/
+video/zh/out/
+video/.om/
+video/zh/.om/

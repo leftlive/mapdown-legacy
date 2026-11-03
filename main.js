@@ -238,6 +238,7 @@ var en = {
     "Import from XMind…": "Import from XMind…",
     "Export to XMind": "Export to XMind",
     "Open as a mind map?": "Open as a mind map?",
+    "Open as a mind map…": "Open as a mind map…",
     "Convert note explanation": "\"{0}\" is not a mind map yet. Converting it turns headings, lists, paragraphs, tables and embeds into nodes, and the note is rewritten in mind map format on the first edit (a backup of the original is kept). Saving as a new mind map leaves this note unchanged.",
     "Cancel": "Cancel",
     "Save as a new mind map": "Save as a new mind map",
@@ -527,6 +528,7 @@ var zhCN = {
     "Import from XMind…": "从 XMind 导入…",
     "Export to XMind": "导出为 XMind",
     "Open as a mind map?": "以思维导图打开？",
+    "Open as a mind map…": "以思维导图打开…",
     "Convert note explanation": "“{0}”还不是思维导图。转换后，标题、列表、正文段落、表格和嵌入都会变成节点；第一次编辑时笔记会改写为导图格式，原文会另存一份备份。选择“另存为新导图”则不改动这篇笔记。",
     "Cancel": "取消",
     "Save as a new mind map": "另存为新导图",
@@ -40542,7 +40544,18 @@ class DiskConflictError extends Error {
     }
 }
 const mindmapViewType = "mindmapViewUpgraded";
-const mindmapIcon = "blocks";
+const mindmapIcon = "mapdown";
+// brand/mapdown-glyph.svg (24×24) scaled to Obsidian's 100×100 icon box.
+const mindmapIconSvg = `<g transform="scale(4.1667)" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<path d="M4.5 7.5H6M2 12H6M3 16.5H6"/>
+<rect x="8.5" y="9.5" width="6" height="5" rx="1.5"/>
+<path d="M14.5 12C17.5 12 16.5 7 19.5 7"/>
+<path d="M14.5 12H19.5"/>
+<path d="M14.5 12C17.5 12 16.5 17 19.5 17"/>
+<circle cx="21" cy="7" r="1" fill="currentColor"/>
+<circle cx="21" cy="12" r="1" fill="currentColor"/>
+<circle cx="21" cy="17" r="1" fill="currentColor"/>
+</g>`;
 class MindMapView extends obsidian.TextFileView {
     getViewType() {
         return mindmapViewType;
@@ -42920,6 +42933,7 @@ class MindMapPlugin extends obsidian.Plugin {
             yield this.loadSettings();
             yield this.migrateRecoveryDrafts();
             yield this.ensurePagePreviewEnabled();
+            obsidian.addIcon(mindmapIcon, mindmapIconSvg);
             const createMindmapRibbonIcon = this.addRibbonIcon(mindmapIcon, t('Create new mindmap'), () => this.newMindMap());
             createMindmapRibbonIcon.addClass('mapdown-ribbon-create');
             this.addCommand({
@@ -44314,29 +44328,34 @@ class MindMapPlugin extends obsidian.Plugin {
     }
     updateMarkdownMindMapActions() {
         this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
-            var _a, _b;
+            var _a;
             const view = leaf.view;
             const file = view.file;
-            const cache = file ? this.app.metadataCache.getFileCache(file) : null;
-            const shouldShow = Boolean((_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a[frontMatterKey]);
             let action = this.markdownMindMapActions.get(view);
-            if (!shouldShow) {
+            if (!file || file.extension !== 'md') {
                 action === null || action === void 0 ? void 0 : action.remove();
                 this.markdownMindMapActions.delete(view);
                 return;
             }
             if (!(action === null || action === void 0 ? void 0 : action.isConnected)) {
-                action = view.addAction(mindmapIcon, t("Open as mindmap board"), () => __awaiter(this, void 0, void 0, function* () {
+                // A map note opens directly; a plain note asks how to convert first.
+                action = view.addAction(mindmapIcon, "", () => __awaiter(this, void 0, void 0, function* () {
                     if (!view.file) {
                         return;
                     }
-                    this.setFileMode(leaf, view.file.path, mindmapViewType);
-                    yield this.setMindMapView(leaf);
+                    if (this.isMindMapNote(view.file)) {
+                        this.setFileMode(leaf, view.file.path, mindmapViewType);
+                        yield this.setMindMapView(leaf);
+                    }
+                    else {
+                        yield this.openNoteAsMindMap(leaf);
+                    }
                 }));
                 action.addClass("mapdown-return-action");
-                (_b = view.modeButtonEl) === null || _b === void 0 ? void 0 : _b.after(action);
+                (_a = view.modeButtonEl) === null || _a === void 0 ? void 0 : _a.before(action);
                 this.markdownMindMapActions.set(view, action);
             }
+            action.setAttribute("aria-label", t(this.isMindMapNote(file) ? "Open as mindmap board" : "Open as a mind map…"));
         });
     }
     registerEvents() {
@@ -44384,6 +44403,23 @@ class MindMapPlugin extends obsidian.Plugin {
                         });
                     }).addSeparator();
                 }
+            }
+            // A plain note: the dialog offers converting in place or a new map.
+            if (file instanceof obsidian.TFile && file.extension === 'md' && !this.isMindMapNote(file)) {
+                menu.addItem((item) => {
+                    item
+                        .setTitle(t('Open as a mind map…'))
+                        .setIcon(mindmapIcon)
+                        .onClick(() => __awaiter(this, void 0, void 0, function* () {
+                        var _a;
+                        let target = leaf;
+                        if (((_a = target === null || target === void 0 ? void 0 : target.view) === null || _a === void 0 ? void 0 : _a.file) !== file) {
+                            target = this.app.workspace.getLeaf(false);
+                            yield target.openFile(file);
+                        }
+                        yield this.openNoteAsMindMap(target);
+                    }));
+                });
             }
         }));
         this.registerEvent(this.app.metadataCache.on("changed", (file) => {

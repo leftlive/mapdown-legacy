@@ -6,6 +6,10 @@
 
 Mapdown（中文名“文图”）是一个 Obsidian 插件，把 Markdown 笔记作为可编辑的思维导图打开。它没有私有文件格式：标题和列表就是导图的结构，在导图里做的每一次修改都保存回同一个 `.md` 文件。
 
+![Mapdown 宣传片：Markdown 变成导图、专注模式、节点细节和功能一览](docs/screenshots/mapdown-launch.gif)
+
+<!-- 带声音的宣传片：把 mapdown-launch-720p.mp4 上传后 GitHub 给的 user-attachments 链接单独一行放在这里。 -->
+
 ![Mapdown 概览](docs/screenshots/mapdown-overview.png)
 
 ## 为什么用 Mapdown
@@ -139,11 +143,11 @@ Mapdown 上架 Obsidian 社区插件市场后：
 2. 放到知识库的 `.obsidian/plugins/mapdown` 目录里。
 3. 重新加载 Obsidian，在 **第三方插件** 中启用 Mapdown。
 
-## 来源与致谢
+## 来源
 
-Mapdown 源自 markmindckm 的 [Enhancing Mindmap](https://github.com/markmindckm/obsidian-enhancing-mindmap)，S-e-b-G 等贡献者也为它出过力。Mapdown 的导图引擎、节点模型和许多编辑命令都来自这个项目，感谢所有参与者。
+Mapdown 基于 [Enhancing Mindmap](https://github.com/markmindckm/obsidian-enhancing-mindmap)（MIT 许可）修改而来，导图引擎、节点模型和许多编辑命令都来自这个项目，原版权声明保留在 [LICENSE.md](LICENSE.md) 中。
 
-Mapdown 让它适配了新版 Obsidian，并新增了文本与导图联动、多选、XMind 导入导出、搜索、更安全的保存，以及重做的视图和工具栏。
+Mapdown 在此基础上适配了新版 Obsidian，并新增了文本与导图联动、多选、XMind 导入导出、搜索、更安全的保存，以及重做的视图和工具栏。
 
 Enhancing Mindmap 保存的导图可以直接在 Mapdown 中打开，两者都使用 `mindmap-plugin: basic` 这个 frontmatter。
 

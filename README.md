@@ -6,6 +6,10 @@
 
 Mapdown is an Obsidian plugin that opens your Markdown notes as editable mind maps. There is no separate file format: headings and lists are the map, and every edit in the map is saved back to the same `.md` file.
 
+![Mapdown launch film: Markdown turns into a mind map, Focus Mode, node details and the feature tour](docs/screenshots/mapdown-launch.gif)
+
+<!-- Launch film with sound: put the user-attachments link GitHub gives for mapdown-launch-720p.mp4 on its own line here. -->
+
 ![Mapdown overview](docs/screenshots/mapdown-overview.png)
 
 ## Why Mapdown
@@ -139,9 +143,9 @@ Once Mapdown is listed in the Obsidian community plugin directory:
 2. Put them in `.obsidian/plugins/mapdown` inside your vault.
 3. Reload Obsidian and enable Mapdown under **Community plugins**.
 
-## Credits
+## Origin
 
-Mapdown started as a fork of [Enhancing Mindmap](https://github.com/markmindckm/obsidian-enhancing-mindmap) by markmindckm, with contributions from S-e-b-G and others. Its mind map engine, node model and many editing commands come from that project. Thank you to everyone who built it.
+Mapdown is a modified version of [Enhancing Mindmap](https://github.com/markmindckm/obsidian-enhancing-mindmap) (MIT License). Its mind map engine, node model and many editing commands come from that project; the original copyright notice is kept in [LICENSE.md](LICENSE.md).
 
 Mapdown updates it for current versions of Obsidian and adds text–map sync, multiple selection, XMind import and export, search, safer saving, and a reworked view and toolbar.
 

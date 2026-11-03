@@ -386,6 +386,66 @@ scenario('focus-delete', async () => {
   expect(r.a, 'undo restores the deleted node', r);
 });
 
+scenario('undo-delete-shortcut', async () => {
+  const p = writeNote('undodel', '# Root\n\n## A\n\n## B\n\n## C\n');
+  await evalJs(`await H.open('${p}');`);
+  const clickAt = async (sel, button = 'left') => {
+    const at = await evalJs(`
+      const el = ${sel};
+      const b = el.getBoundingClientRect();
+      return { x: Math.round(b.left + b.width / 2), y: Math.round(b.top + b.height / 2) };`);
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: at.x, y: at.y });
+    await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: at.x, y: at.y, button, buttons: button === 'left' ? 1 : 2, clickCount: 1 });
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: at.x, y: at.y, button, buttons: 0, clickCount: 1 });
+    await sleep(400);
+  };
+  const STATE = `const m = H.mm(); return { a: !!H.find('A'), b: !!H.find('B'), isFocused: m.isFocused, active: document.activeElement?.className || document.activeElement?.tagName };`;
+
+  await clickAt(`H.find('A').contentEl`);
+  await press('Delete');
+  let r = await evalJs(STATE);
+  expect(!r.a, 'clicking A and pressing Delete removes it', r);
+  await press('KeyZ', META);
+  r = await evalJs(`await H.wait(300); ${STATE}`);
+  expect(r.a, 'Cmd/Ctrl+Z restores a node deleted with the Delete key after a click', r);
+
+  await clickAt(`H.find('B').contentEl`, 'right');
+  await clickAt(`H.mm()._menuDom.querySelector('.mm-icon-delete-node')`);
+  r = await evalJs(STATE);
+  expect(!r.b, 'the node menu delete button removes B', r);
+  await press('KeyZ', META);
+  r = await evalJs(`await H.wait(300); ${STATE}`);
+  expect(r.b, 'Cmd/Ctrl+Z restores a node deleted from the node menu', r);
+
+  // Box-select A and B by dragging on empty canvas, then delete both.
+  const box = await evalJs(`
+    const a = H.find('A').contentEl.getBoundingClientRect(), b = H.find('B').contentEl.getBoundingClientRect();
+    return { x1: Math.round(Math.max(a.right, b.right) + 30), y1: Math.round(a.top - 10), x2: Math.round(Math.min(a.left, b.left) + 5), y2: Math.round(b.bottom - 5) };`);
+  await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x1, y: box.y1 });
+  await cdp('Input.dispatchMouseEvent', { type: 'mousePressed', x: box.x1, y: box.y1, button: 'left', buttons: 1, clickCount: 1 });
+  for (let i = 1; i <= 8; i++) {
+    await cdp('Input.dispatchMouseEvent', { type: 'mouseMoved', x: box.x1 + (box.x2 - box.x1) * i / 8, y: box.y1 + (box.y2 - box.y1) * i / 8, buttons: 1 });
+  }
+  await cdp('Input.dispatchMouseEvent', { type: 'mouseReleased', x: box.x2, y: box.y2, button: 'left', buttons: 0, clickCount: 1 });
+  await sleep(400);
+  r = await evalJs(`${STATE.replace('return {', 'return { sel: [...H.mm().selectedNodes].map((n) => n.data.text).sort().join(),')}`);
+  expect(r.sel === 'A,B', 'dragging on the canvas box-selects A and B', r);
+  await press('Delete');
+  r = await evalJs(STATE);
+  expect(!r.a && !r.b, 'Delete removes the box-selected nodes', r);
+  await press('KeyZ', META);
+  r = await evalJs(`await H.wait(300); ${STATE}`);
+  expect(r.a && r.b, 'Cmd/Ctrl+Z restores box-selected nodes deleted together', r);
+
+  await press('KeyA', META);
+  await press('Delete');
+  r = await evalJs(STATE);
+  expect(!r.a && !r.b, 'Cmd/Ctrl+A then Delete removes the children', r);
+  await press('KeyZ', META);
+  r = await evalJs(`await H.wait(300); ${STATE}`);
+  expect(r.a && r.b, 'Cmd/Ctrl+Z restores nodes deleted after select all', r);
+});
+
 scenario('undo-restores-collapse', async () => {
   const p = writeNote('undocollapse', '# Root\n\n## P ^p1\n\n- P child\n\n## Q\n\n## S\n', '{"version":2,"collapsed":["p1"]}');
   const STATE = `const m = H.mm(); const P = H.find('P'); return { collapsed: !P.isExpand, childShown: H.find('P child').isShow(), children: P.children.length };`;
