@@ -26,6 +26,11 @@ export class FileSuggest {
 
     open(node: Node, rect: DOMRect, query: string) {
         this.node = node;
+        // Show the list in the window that holds the node (popouts included).
+        const nodeDocument = node.contentEl.ownerDocument;
+        if (this.containerEl.ownerDocument !== nodeDocument || !this.containerEl.isConnected) {
+            nodeDocument.body.appendChild(this.containerEl);
+        }
         this.activeQuery = query;
         this.updateSuggestions();
         if (this.files.length === 0) {
@@ -104,6 +109,7 @@ export class FileSuggest {
             return true;
         } else if (e.key === 'Escape') {
             e.preventDefault();
+            e.stopPropagation();
             this.close();
             return true;
         }
@@ -113,7 +119,7 @@ export class FileSuggest {
     selectFile(file: TFile) {
         if (this.node) {
             const contentEl = this.node.contentEl;
-            const selection = window.getSelection();
+            const selection = contentEl.ownerDocument.defaultView.getSelection();
             if (!selection || selection.rangeCount === 0) return;
             
             const range = selection.getRangeAt(0);

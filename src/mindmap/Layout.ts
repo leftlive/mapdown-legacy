@@ -1,4 +1,4 @@
-import Node from './INode'
+import Node, { levelClass } from './INode'
 import MindMap from './mindmap';
 
 export default class Layout {
@@ -80,34 +80,64 @@ export default class Layout {
         }
     }
 
+    countDescendants(n:Node): number {
+        return n.children.reduce((sum, c) => sum + 1 + this.countDescendants(c), 0);
+    }
+
+    // Search can show a collapsed branch without changing its saved state.
+    isExpandedForLayout(n:Node) {
+        return n.isExpand || Boolean(this.mind?.searchTemporarilyExpandedIds?.has(n.getId()));
+    }
+
     _setDirect(n:Node, direct:string) {
         n.stroke='';
         n.direct = direct;
-        var flag = n.containEl.classList.contains('mm-node-second');
-     
-        n.containEl.setAttribute('class','');
-        n.containEl.classList.add('mm-node');
-        n.containEl.classList.add('mm-node-' + direct);
-        
-        if (n.isLeaf() && !n.containEl.classList.contains('mm-node-leaf')) {
-            n.containEl.classList.add('mm-node-leaf');
-        } else {
-            if (n.containEl.classList.contains('mm-node-leaf')) {
-                n.containEl.classList.remove('mm-node-leaf')
+        var isSelected = n.isSelect || n.mindmap?.selectNode === n;
+        var isEditing = Boolean(n.data?.isEdit);
+        var level = n.getLevel();
+        var isSecondLevel = level == 1;
+        // Levels have different font sizes, so a level change needs a remeasure.
+        var wantedLevel = levelClass(level);
+        var levelChanged = wantedLevel !== '' && !n.containEl.classList.contains(wantedLevel);
+
+        // Only touch classes that change: rewriting the class list restyles
+        // every node, which dominates layout time on large maps.
+        const classList = n.containEl.classList;
+        const wanted: Record<string, boolean> = {
+            'mm-node': true,
+            'mm-node-left': direct == 'left',
+            'mm-node-right': direct == 'right',
+            'mm-node-leaf': n.isLeaf(),
+            'mm-node-collapse': !this.isExpandedForLayout(n),
+            'mm-node-second': isSecondLevel,
+            'mm-node-third': level == 2,
+            'mm-node-deep': level >= 3,
+        };
+        if (isSelected) {
+            wanted['mm-node-select'] = true;
+        }
+        if (isEditing) {
+            wanted['mm-edit-node'] = true;
+        }
+        for (const name in wanted) {
+            if (classList.contains(name) !== wanted[name]) {
+                if (wanted[name]) {
+                    classList.add(name);
+                } else {
+                    classList.remove(name);
+                }
             }
         }
-
-        if(n.getLevel()==1){
-            n.containEl.classList.add('mm-node-second');
-            n.refreshBox();
+        // A collapsed node shows how many nodes it hides.
+        const hidden = wanted['mm-node-collapse'] && !n.isLeaf() ? String(this.countDescendants(n)) : '';
+        if (n._barDom && n._barDom.textContent !== hidden) {
+            n._barDom.textContent = hidden;
         }
 
-        if(flag){
+        if (levelChanged) {
             n.refreshBox();
-        }
-
-        if(!n.isExpand){
-            n.containEl.classList.add('mm-node-collapse');
+            n.clearCacheData();
+            this.mind?.scheduleNodeRemeasure(n);
         }
         
         n.children.forEach(c => {
@@ -134,7 +164,6 @@ export default class Layout {
         // balance layout
         this._doRefresh();
 
-        this.createLink();
     }
 
     layoutMindMap(){
@@ -174,7 +203,7 @@ export default class Layout {
        });
 
        rights.forEach((item) => {
-           if(item.isExpand){
+           if(this.isExpandedForLayout(item)){
                this.layoutRight(item.children,item);
            }
        });
@@ -212,7 +241,7 @@ export default class Layout {
         });
 
         lefts.forEach((item) => {
-            if(item.isExpand){
+            if(this.isExpandedForLayout(item)){
               this.layoutLeft(item.children,item)
             }
         });
@@ -332,7 +361,7 @@ export default class Layout {
         mind.traverseDF((n:Node) => {
             if (n == me.root) return;
 
-            if (!n.isExpand) {
+            if (!me.isExpandedForLayout(n)) {
                 return
             }
            
@@ -412,7 +441,7 @@ export default class Layout {
         var activePaths = new Set<string>();
 
 		function createLine(node:Node) {
-			if (!node.isExpand) {
+			if (!me.isExpandedForLayout(node)) {
 				return;
 			}
 			var children = node.getChildren();
@@ -516,9 +545,18 @@ export default class Layout {
                         }).fill('none');
                     }
                     me.pathMap[pathId] = line1;
-                } else {
+                    line1._mmStroke = _stroke;
+                } else if (line1._mmStroke !== _stroke) {
                     line1.stroke({ color: _stroke });
+                    line1._mmStroke = _stroke;
                 }
+                // Rewriting an unchanged path still costs a repaint.
+                const plot = (d: string) => {
+                    if (line1._mmPath !== d) {
+                        line1.plot(d);
+                        line1._mmPath = d;
+                    }
+                };
 
 				if (lineWidth % 2 == 1) {
 					var x11 = parseInt(childPos.x+'') - 0.5;
@@ -549,7 +587,7 @@ export default class Layout {
 					}
 
 					var pathStr = `M${x1} ${y1}  C ${cpx11.x} ${cpx11.y}, ${cpx12.x} ${cpx12.y}, ${x2} ${y2}`;
-					line1.plot(pathStr);
+					plot(pathStr);
 
 				} else {
 
@@ -581,7 +619,7 @@ export default class Layout {
 					cpx12.y = parseInt(cpx12.y+'');
 
 					var path = `M${x1} ${y1}  C ${cpx11.x} ${cpx11.y}, ${cpx12.x} ${cpx12.y}, ${x2} ${y2}`;
-					line1.plot(path);
+					plot(path);
 
 				}
 

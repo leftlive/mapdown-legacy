@@ -4,21 +4,60 @@ import {
   TFile,
   TFolder,
   ViewState,
-  MarkdownView
+  MarkdownView,
+  Notice,
+  normalizePath
 } from 'obsidian';
 // import DEFAULT_SETTINGS from './setting'
 import { around } from 'monkey-around'
 import { MindMapSettings } from './settings';
 import { MindMapSettingsTab } from './settingTab'
 
-import { MindMapView, mindmapIcon, mindmapViewType } from "./MindMapView";
-import { frontMatterKey, basicFrontmatter, mindmapHoverSource } from './constants';
-import { t } from './lang/helpers'
+import { MindMapView, mindmapIcon, mindmapViewType, plainNoteAsMindMap } from "./MindMapView";
+import { frontMatterKey, mindmapHoverSource } from './constants';
+import { t, tf } from './lang/helpers'
+import { availableNotePath, importXmindFile, pickXmindFile } from './mindmap/import/importFile';
+import { askConvertMode } from './convertModal';
+import { createCursorListener, editorSyncExtension } from './editorSync';
+import type { EditorView } from '@codemirror/view';
 
 
 export default class MindMapPlugin extends Plugin {
   settings: MindMapSettings;
-  mindmapFileModes: { [file: string]: string } = {};
+  // View mode per file within a leaf, so a Markdown choice does not leak to other files.
+  mindmapFileModes: { [leafAndFile: string]: string } = {};
+
+  private getFileModeKey(leaf: WorkspaceLeaf | null | undefined, path: string | null | undefined) {
+    return `${(leaf as any)?.id || ''}::${path || ''}`;
+  }
+
+  getFileMode(leaf: WorkspaceLeaf | null | undefined, path: string | null | undefined) {
+    return this.mindmapFileModes[this.getFileModeKey(leaf, path)];
+  }
+
+  setFileMode(leaf: WorkspaceLeaf | null | undefined, path: string | null | undefined, mode: string) {
+    this.mindmapFileModes[this.getFileModeKey(leaf, path)] = mode;
+  }
+
+  private moveFileModes(oldPath: string, newPath: string) {
+    const suffix = `::${oldPath}`;
+    for (const key of Object.keys(this.mindmapFileModes)) {
+      if (key.endsWith(suffix)) {
+        const leafPart = key.slice(0, key.length - suffix.length);
+        this.mindmapFileModes[`${leafPart}::${newPath}`] = this.mindmapFileModes[key];
+        delete this.mindmapFileModes[key];
+      }
+    }
+  }
+
+  clearLeafFileModes(leaf: WorkspaceLeaf) {
+    const prefix = `${(leaf as any)?.id || ''}::`;
+    for (const key of Object.keys(this.mindmapFileModes)) {
+      if (key.startsWith(prefix)) {
+        delete this.mindmapFileModes[key];
+      }
+    }
+  }
   _loaded: boolean = false;
   timeOut: any = null;
   markdownMindMapActions = new WeakMap<MarkdownView, HTMLElement>();
@@ -26,6 +65,7 @@ export default class MindMapPlugin extends Plugin {
   async onload() {
 
     await this.loadSettings();
+    await this.migrateRecoveryDrafts();
     await this.ensurePagePreviewEnabled();
 
     const createMindmapRibbonIcon = this.addRibbonIcon(
@@ -33,7 +73,7 @@ export default class MindMapPlugin extends Plugin {
       t('Create new mindmap'),
       () => this.newMindMap()
     );
-    createMindmapRibbonIcon.addClass('mindmark-ribbon-create');
+    createMindmapRibbonIcon.addClass('mapdown-ribbon-create');
 
     this.addCommand({
       id: 'Create New MindMap',
@@ -56,10 +96,16 @@ export default class MindMapPlugin extends Plugin {
     });
 
     this.addCommand({
+      id: 'import-xmind',
+      name: t('Import from XMind…'),
+      callback: () => pickXmindFile(this, this.getNewFileFolder()),
+    });
+
+    this.addCommand({
       id: 'Toggle to markdown or mindmap',
       name: `${t('Toggle markdown/mindmap')}`,
       mobileOnly: false,
-      callback: () => {
+      callback: async () => {
         const leaf = this.app.workspace.activeLeaf;
         const viewType = leaf?.view?.getViewType?.();
         if (!leaf || !viewType) {
@@ -67,28 +113,63 @@ export default class MindMapPlugin extends Plugin {
         }
 
         if (viewType === mindmapViewType) {
-          const file = this.app.workspace.getActiveFile();
-          this.mindmapFileModes[(leaf as any).id || file?.path] = 'markdown';
-          this.setMarkdownView(leaf);
+          await this.setMarkdownView(leaf);
         } else if (viewType === 'markdown') {
-          const file = this.app.workspace.getActiveFile();
-          this.mindmapFileModes[(leaf as any).id || file?.path] = mindmapViewType;
-          this.setMindMapView(leaf);
+          await this.openNoteAsMindMap(leaf);
         }
       }
     });
 
-     this.addCommand({
+    this.addCommand({
+      id: 'toggle-selection-sync',
+      name: t('Toggle selection sync with Markdown'),
+      callback: async () => {
+        this.settings.syncSelection = !this.settings.syncSelection;
+        await this.saveSettings();
+        new Notice(t(this.settings.syncSelection ? 'Selection sync turned on' : 'Selection sync turned off'));
+      }
+    });
+
+    this.addCommand({
       id: 'Set to mindmap view',
       name: `${t('Set to mindmap mode')}`,
       mobileOnly: false,
-      callback: () => {
+      callback: async () => {
         const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
         if(markdownView!=null)
         {
-          this.mindmapFileModes[(markdownView.leaf as any).id || markdownView.file.path] = mindmapViewType;
-          this.setMindMapView(markdownView.leaf);
+          await this.openNoteAsMindMap(markdownView.leaf);
         }
+      }
+    });
+
+    this.addCommand({
+      id: 'convert-to-new-mindmap',
+      name: t('Save as a new mind map'),
+      checkCallback: (checking: boolean) => {
+        const file = this.app.workspace.getActiveViewOfType(MarkdownView)?.file;
+        if (!file || this.isMindMapNote(file)) {
+          return false;
+        }
+        if (!checking) {
+          this.convertToNewMindMap(file);
+        }
+        return true;
+      }
+    });
+
+    this.addCommand({
+      id: 'Search mindmap nodes',
+      name: `${t('Search nodes')}`,
+      checkCallback: (checking: boolean) => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if (!mindmapView?.mindmap) {
+          return false;
+        }
+        if (!checking) {
+          mindmapView.mindmap.openSearch();
+        }
+        return true;
       }
     });
 
@@ -96,11 +177,10 @@ export default class MindMapPlugin extends Plugin {
       id: 'Set to markdown view',
       name: `${t('Set to markdown mode')}`,
       mobileOnly: false,
-      callback: () => {
+      callback: async () => {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView!=null){
-          this.mindmapFileModes[(mindmapView.leaf as any).id || mindmapView.file.path] = 'markdown';
-          this.setMarkdownView(mindmapView.leaf);
+          await this.setMarkdownView(mindmapView.leaf);
         }
       }
     });
@@ -116,8 +196,11 @@ export default class MindMapPlugin extends Plugin {
           var node = mindmap.selectNode;
           if (node && !node.data.isEdit) {
             if (!checking) {
-              var text = mindmap.copyNode(node);
-              navigator.clipboard.writeText(text);
+              var text = mindmap.copyNode(mindmap.clipboardNodes());
+              navigator.clipboard.writeText(text).catch((err) => {
+                console.error('Failed to copy mindmap node:', err);
+                new Notice(t('Copy node') + ': failed');
+              });
             }
             return true;
           }
@@ -137,13 +220,16 @@ export default class MindMapPlugin extends Plugin {
           var node = mindmap.selectNode;
           if (node && !node.data.isEdit) {
             if (!checking) {
-              navigator.clipboard.writeText('');
-              var text = mindmap.copyNode(node);
-              navigator.clipboard.writeText(text);
-              if (!node.data.isRoot) {
-                node.mindmap.execute("deleteNodeAndChild", { node });
-                mindmap._menuDom.style.display = 'none';
-              }
+              var nodes = mindmap.clipboardNodes();
+              var text = mindmap.copyNode(nodes);
+              navigator.clipboard.writeText(text).then(() => {
+                if (mindmapView.mindmap === mindmap && mindmap.deleteNodes(nodes)) {
+                  mindmap._menuDom.style.display = 'none';
+                }
+              }).catch((err) => {
+                console.error('Failed to cut mindmap node:', err);
+                new Notice(t('Cut node') + ': failed');
+              });
             }
             return true;
           }
@@ -161,9 +247,15 @@ export default class MindMapPlugin extends Plugin {
         if(mindmapView){
           var mindmap = mindmapView.mindmap;
           navigator.clipboard.readText().then(text=>{
-              mindmap.pasteNode(text);
+              if (mindmapView.mindmap === mindmap && mindmap.selectNode) {
+                mindmap.collapseSelectionTo(mindmap.selectNode);
+                mindmap.pasteNode(text);
+              }
               // Copy once more so that the node can be copied once more
-              navigator.clipboard.writeText(text);
+              return navigator.clipboard.writeText(text);
+          }).catch((err) => {
+              console.error('Failed to paste mindmap node:', err);
+              new Notice(t('Paste node') + ': failed');
           });
         }
       }
@@ -209,9 +301,18 @@ export default class MindMapPlugin extends Plugin {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
           if(node) {
-              // var text = (node.data.oldText as string);
-              var text = (node.data.oldText);
-              node.setText(text);
+              if (node.data.isEdit) {
+                  node.cancelEdit();
+                  return;
+              }
+              // _oldText holds the text from before the last edit session.
+              var text = node._oldText;
+              if (typeof text !== 'string' || text === node.data.text) return;
+              mindmap.execute('changeNodeText', {
+                  node,
+                  text,
+                  oldText: node.data.text
+              });
           }
   }
       }
@@ -324,9 +425,9 @@ export default class MindMapPlugin extends Plugin {
         if (mindmapView) {
           var mindmap = mindmapView.mindmap;
           var node = mindmap.selectNode;
-          if (node && !node.data.isRoot && !node.data.isEdit) {
+          if (node && !node.data.isEdit && mindmap.actionNodes(true).some((n) => !n.data.isRoot)) {
             if (!checking) {
-              node.mindmap.execute("deleteNodeAndChild", { node });
+              mindmap.deleteSelection();
               mindmap._menuDom.style.display='none';
             }
             return true;
@@ -382,7 +483,7 @@ export default class MindMapPlugin extends Plugin {
 
             else
             {// Set in bold the whole node
-              mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+              mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
             }
 
             mindmap.refresh();
@@ -417,6 +518,7 @@ export default class MindMapPlugin extends Plugin {
 
             else
             {// Set in italics the whole node
+              mindmap.formatSelection((node) => {
               var text = node.data.text;
               if( (   ( (text.substring(0,1)=="*")  ||
                         (text.substring(0,1)=="_")  )   &&
@@ -451,6 +553,7 @@ export default class MindMapPlugin extends Plugin {
                   node:node,
                   text:text,
                   oldText:node.data.text
+              });
               });
               // node.data.oldText = node.data.text;
               // node.setText(text);
@@ -493,7 +596,7 @@ export default class MindMapPlugin extends Plugin {
 
             else
             {// Set in bold the whole node
-              mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+              mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
             }
           }
         }
@@ -523,7 +626,7 @@ export default class MindMapPlugin extends Plugin {
 
             else
             {// Set in bold the whole node
-              mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+              mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
             }
         }
         //else: no node selected: nothing to do
@@ -621,7 +724,6 @@ export default class MindMapPlugin extends Plugin {
             node.select();
             node.mindmap.editNode = null;
             node.cancelEdit();
-            mindmap.undo();
             //this.selectNode.unSelect();
           }
         }
@@ -741,9 +843,8 @@ export default class MindMapPlugin extends Plugin {
         const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
         if(mindmapView){
           var mindmap = mindmapView.mindmap;
-          var node = mindmap.selectNode;
-          if(node)
-          { mindmap._toggleExpandNode(node); }
+          if(mindmap.selectNode)
+          { mindmap.toggleExpandSelection(); }
         }
       }
     });
@@ -1107,6 +1208,18 @@ export default class MindMapPlugin extends Plugin {
 
 
     this.addCommand({
+      id: 'export-xmind',
+      name: t('Export to XMind'),
+      checkCallback: (checking) => {
+        const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+        if (!checking && mindmapView) {
+          mindmapView.exportToXmind();
+        }
+        return !!mindmapView;
+      }
+    });
+
+    this.addCommand({
       id: 'Export to JPEG (LQ)',
       name: `${t('Export to JPEG (LQ)')}`,
       callback: () => {
@@ -1176,6 +1289,10 @@ export default class MindMapPlugin extends Plugin {
 
 
     this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
+    this.registerEditorExtension([
+      editorSyncExtension,
+      createCursorListener((cm) => this.onEditorCursor(cm)),
+    ]);
     this.registerEvents();
     this.registerMonkeyAround();
     this.app.workspace.onLayoutReady(() => {
@@ -1202,6 +1319,10 @@ export default class MindMapPlugin extends Plugin {
   }
 
   onunload() {
+    if (this.cursorSyncTimer !== null) {
+      window.clearTimeout(this.cursorSyncTimer);
+      this.cursorSyncTimer = null;
+    }
 
     this.app.workspace.detachLeavesOfType(mindmapViewType);
     (this.app.workspace as any).unregisterHoverLinkSource?.(mindmapHoverSource);
@@ -1226,16 +1347,129 @@ export default class MindMapPlugin extends Plugin {
         `${t('Untitled mindmap')}`
       );
 
-      await this.app.vault.modify(mindmap, basicFrontmatter);
-       setTimeout(async ()=>{
-          await this.app.workspace.getLeaf().setViewState({
-            type: mindmapViewType,
-            state: { file: mindmap.path },
-          });
-       },100);
+      await this.app.fileManager.processFrontMatter(mindmap, (frontmatter) => {
+        frontmatter[frontMatterKey] = 'basic';
+      });
+      await this.openMindMapFile(mindmap);
     } catch (e) {
       console.error("Error creating mindmap board:", e);
     }
+  }
+
+  // Opens a mind map note in a new tab, in map mode.
+  async openMindMapFile(file: TFile) {
+    await this.waitForMindmapMetadata(file);
+    const leaf = this.app.workspace.getLeaf(true);
+    this.setFileMode(leaf, file.path, mindmapViewType);
+    await leaf.setViewState(
+      {
+        type: mindmapViewType,
+        state: { file: file.path },
+        popstate: true,
+      } as ViewState,
+      { focus: true }
+    );
+  }
+
+  isMindMapNote(file: TFile) {
+    return Boolean(this.app.metadataCache.getFileCache(file)?.frontmatter?.[frontMatterKey]);
+  }
+
+  // A plain note asks first: converting in place rewrites it on the first
+  // edit (with a backup), a copy leaves it as it is.
+  async openNoteAsMindMap(leaf: WorkspaceLeaf) {
+    const file = (leaf.view as any).file as TFile | null;
+    if (file && !this.isMindMapNote(file)) {
+      const choice = await askConvertMode(this.app, file.basename);
+      if (choice === 'copy') {
+        await this.convertToNewMindMap(file);
+      }
+      if (choice !== 'in-place') {
+        return;
+      }
+    }
+    this.setFileMode(leaf, file?.path, mindmapViewType);
+    await this.setMindMapView(leaf);
+  }
+
+  async convertToNewMindMap(file: TFile) {
+    try {
+      const content = plainNoteAsMindMap(await this.app.vault.read(file), file.basename, this.settings.headLevel);
+      const name = tf('{0} (mind map)', file.basename);
+      const base = file.parent && !file.parent.isRoot() ? `${file.parent.path}/${name}` : name;
+      const created = await this.app.vault.create(await availableNotePath(this, normalizePath(base)), content);
+      await this.openMindMapFile(created);
+      return created;
+    } catch (err) {
+      console.error('Failed to convert the note to a mind map:', err);
+      new Notice(t('Import failed: unable to create the note'));
+      return null;
+    }
+  }
+
+  importXmind(data: ArrayBuffer, name: string, folder?: TFolder) {
+    return importXmindFile(this, data, name, folder || this.getNewFileFolder());
+  }
+
+  private getNewFileFolder() {
+    return this.app.fileManager.getNewFileParent(this.app.workspace.getActiveFile()?.path || "");
+  }
+
+  private async waitForMindmapMetadata(file: TFile) {
+    for (let i = 0; i < 20; i++) {
+      const cache = this.app.metadataCache.getFileCache(file);
+      if (cache?.frontmatter?.[frontMatterKey]) {
+        return;
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+
+  // Text -> map sync: after the cursor settles in a Markdown editor, select the
+  // node on that line in every mind map view of the same file.
+  private pendingCursorEditor: EditorView | null = null;
+  private cursorSyncTimer: number | null = null;
+
+  private onEditorCursor(cm: EditorView) {
+    if (!this.settings.syncSelection) {
+      return;
+    }
+    this.pendingCursorEditor = cm;
+    const ownerWindow = cm.dom.ownerDocument.defaultView || window;
+    if (this.cursorSyncTimer !== null) {
+      ownerWindow.clearTimeout(this.cursorSyncTimer);
+    }
+    this.cursorSyncTimer = ownerWindow.setTimeout(() => {
+      this.cursorSyncTimer = null;
+      const editor = this.pendingCursorEditor;
+      this.pendingCursorEditor = null;
+      if (editor) {
+        this.syncEditorCursorToMaps(editor);
+      }
+    }, 80);
+  }
+
+  private syncEditorCursorToMaps(cm: EditorView) {
+    let markdownView: MarkdownView | null = null;
+    this.app.workspace.iterateAllLeaves((leaf) => {
+      if (leaf.view instanceof MarkdownView && (leaf.view.editor as any)?.cm === cm) {
+        markdownView = leaf.view;
+      }
+    });
+    const file = (markdownView as MarkdownView | null)?.file;
+    if (!file) {
+      return;
+    }
+    const state = cm.state;
+    const line = state.doc.lineAt(state.selection.main.head).number - 1;
+    const text = state.doc.toString();
+    this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
+      const view = leaf.view as MindMapView;
+      if (view.file === file) {
+        view.selectNodeFromEditor(line, text);
+      }
+    });
   }
 
   async loadSettings() {
@@ -1246,20 +1480,87 @@ export default class MindMapPlugin extends Plugin {
       background: 'transparent',
       layout: 'mindmap',
       layoutDirect: 'mindmap',
+      focusOnMove: false,
       focusOverlayOpacity: 0.4,
+      focusGlowSize: 150,
+      nodeGlowSize: 10,
+      nodeMaxWidth: 800,
       enableLinkPreview: true,
-      linkOpenMode: 'window'
-    }, await this.loadData());
+      linkOpenMode: 'window',
+      syncSelection: true,
+    }, await this.loadData() || await this.loadLegacySettings());
+  }
+
+  // The plugin was called MindMark (id `mindmark`) before 0.3.0.
+  private legacyPluginDir() {
+    return `${this.app.vault.configDir}/plugins/mindmark`;
+  }
+
+  // A first start under the new id takes over the old plugin's settings.
+  private async loadLegacySettings() {
+    const path = `${this.legacyPluginDir()}/data.json`;
+    try {
+      if (!(await this.app.vault.adapter.exists(path))) {
+        return null;
+      }
+      const data = JSON.parse(await this.app.vault.adapter.read(path));
+      await this.saveData(data);
+      new Notice(t('Settings migrated from MindMark'));
+      return data;
+    } catch (err) {
+      console.error('Mapdown could not migrate the MindMark settings:', err);
+      return null;
+    }
+  }
+
+  getRecoveryDraftDirectory() {
+    return normalizePath(`${this.manifest.dir || `${this.app.vault.configDir}/plugins/${this.manifest.id}`}/recovery`);
+  }
+
+  // Unsaved drafts left by MindMark move to this plugin's folder; the old
+  // plugin folder itself is left for the user to remove.
+  private async migrateRecoveryDrafts() {
+    const adapter = this.app.vault.adapter;
+    const legacy = `${this.legacyPluginDir()}/recovery`;
+    const target = this.getRecoveryDraftDirectory();
+    try {
+      if (legacy === target || !(await adapter.exists(legacy))) {
+        return;
+      }
+      const { files } = await adapter.list(legacy);
+      if (!files.length) {
+        return;
+      }
+      if (!(await adapter.exists(target))) {
+        await adapter.mkdir(target);
+      }
+      for (const file of files) {
+        const destination = `${target}/${file.split('/').pop()}`;
+        if (!(await adapter.exists(destination))) {
+          await adapter.rename(file, destination);
+        }
+      }
+    } catch (err) {
+      console.error('Mapdown could not move the MindMark recovery drafts:', err);
+    }
   }
 
   async saveSettings() {
     await this.saveData(this.settings);
   }
 
-  async setMarkdownView(leaf: WorkspaceLeaf) {
+  async setMarkdownView(leaf: WorkspaceLeaf): Promise<boolean> {
     if (leaf.view instanceof MindMapView) {
-      await leaf.view.formatAndSaveMarkdown();
+      try {
+        await leaf.view.formatAndSaveMarkdown();
+      } catch (err) {
+        console.error('Mapdown kept the mindmap view open because saving failed:', err);
+        return false;
+      }
     }
+
+    const file = (leaf.view as any).file as TFile | null;
+    this.setFileMode(leaf, file?.path, 'markdown');
 
     await leaf.setViewState(
       {
@@ -1270,6 +1571,7 @@ export default class MindMapPlugin extends Plugin {
       { focus: true }
     );
     this.updateMarkdownMindMapActions();
+    return true;
   }
 
   async setMindMapView(leaf: WorkspaceLeaf) {
@@ -1299,10 +1601,10 @@ export default class MindMapPlugin extends Plugin {
           if (!view.file) {
             return;
           }
-          this.mindmapFileModes[(leaf as any).id || view.file.path] = mindmapViewType;
+          this.setFileMode(leaf, view.file.path, mindmapViewType);
           await this.setMindMapView(leaf);
         });
-        action.addClass("mindmark-return-action");
+        action.addClass("mapdown-return-action");
         (view as any).modeButtonEl?.after(action);
         this.markdownMindMapActions.set(view, action);
       }
@@ -1310,6 +1612,12 @@ export default class MindMapPlugin extends Plugin {
   }
 
   registerEvents() {
+    this.registerEvent(
+      this.app.vault.on("rename", (file, oldPath) => {
+        this.moveFileModes(oldPath, file.path);
+      })
+    );
+
     this.registerEvent(
       this.app.workspace.on("layout-change", () => {
         this.updateMarkdownMindMapActions();
@@ -1334,10 +1642,20 @@ export default class MindMapPlugin extends Plugin {
           });
         }
 
+        if (file instanceof TFile && file.extension.toLowerCase() === 'xmind') {
+          menu.addItem((item) => {
+            item
+              .setTitle(t('Import as mindmap'))
+              .setIcon('download')
+              .onClick(async () => {
+                this.importXmind(await this.app.vault.readBinary(file), file.basename, file.parent || this.app.vault.getRoot());
+              });
+          });
+        }
+
         //add markdown view menu  open as mind map view
 
-        const leafId = (leaf as any)?.id || file.path;
-        if(leaf&&this.mindmapFileModes[leafId] == 'markdown'){
+        if(leaf&&this.getFileMode(leaf, file.path) == 'markdown'){
              const cache = this.app.metadataCache.getFileCache(file);
              if(cache?.frontmatter && cache.frontmatter[frontMatterKey]){
                   menu.addItem((item) => {
@@ -1345,7 +1663,7 @@ export default class MindMapPlugin extends Plugin {
                    .setTitle(`${t('Open as mindmap board')}`)
                    .setIcon("document")
                    .onClick(() => {
-                     this.mindmapFileModes[leafId] = mindmapViewType;
+                     this.setFileMode(leaf, file.path, mindmapViewType);
                      this.setMindMapView(leaf);
                    });
                  }).addSeparator();
@@ -1359,7 +1677,7 @@ export default class MindMapPlugin extends Plugin {
         this.updateMarkdownMindMapActions();
         this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
           const view = leaf.view as MindMapView;
-          if (view && typeof view.onFileMetadataChange === 'function') {
+          if (view?.file === file && typeof view.onFileMetadataChange === 'function') {
               view.onFileMetadataChange(file);
           }
         });
@@ -1367,8 +1685,17 @@ export default class MindMapPlugin extends Plugin {
     );
 
     (this.app.workspace as any).registerHoverLinkSource?.(mindmapHoverSource, {
-      display: 'MindMark',
+      display: 'Mapdown',
       defaultMod: false,
+    });
+  }
+
+  private afterViewStateSettled(leaf: WorkspaceLeaf, result: any) {
+    return Promise.resolve(result).then((value) => {
+      if (leaf.view instanceof MindMapView && leaf.view.hasUnwritableState) {
+        leaf.view.returnUnwritableStateToMarkdown();
+      }
+      return value;
     });
   }
 
@@ -1381,11 +1708,7 @@ export default class MindMapPlugin extends Plugin {
         // while the file is open. When the file closes, we no longer need to keep track of it.
         detach(next) {
           return function () {
-            const state = this.view?.getState();
-
-            if (state?.file && self.mindmapFileModes[this.id || state.file]) {
-              delete self.mindmapFileModes[this.id || state.file];
-            }
+            self.clearLeafFileModes(this);
 
             return next.apply(this);
           };
@@ -1404,7 +1727,7 @@ export default class MindMapPlugin extends Plugin {
               state.type === "markdown" &&
               filePath &&
               // And the current mode of the file is not set to markdown
-              self.mindmapFileModes[this.id || filePath] !== "markdown"
+              self.getFileMode(this, filePath) !== "markdown"
             ) {
               // Then check for the kanban frontMatterKey
               const cache = self.app.metadataCache.getCache(filePath);
@@ -1418,13 +1741,13 @@ export default class MindMapPlugin extends Plugin {
                   type: mindmapViewType,
                 };
 
-                self.mindmapFileModes[filePath] = mindmapViewType;
+                self.setFileMode(this, filePath, mindmapViewType);
 
-                return next.apply(this, [newState, ...rest]);
+                return self.afterViewStateSettled(this, next.apply(this, [newState, ...rest]));
               }
             }
 
-            return next.apply(this, [state, ...rest]);
+            return self.afterViewStateSettled(this, next.apply(this, [state, ...rest]));
           };
         },
       })

@@ -1,12 +1,21 @@
 import MindMap from './mindmap'
-import {MarkdownRenderer,normalizePath,TFile,parseLinktext,resolveSubpath} from 'obsidian'
+import {Component,MarkdownRenderer,normalizePath,TFile,parseLinktext,resolveSubpath} from 'obsidian'
 import {t} from '../lang/helpers'
+
+export function isPlainNodeText(text: string): boolean {
+    return Boolean(text) &&
+        !/[\r\n`*_~=\[\]<>#!|$\\&]/.test(text) &&
+        !/:\/\//.test(text) &&
+        !/(^|\s)(?:[-+]|\d+\.)\s/.test(text);
+}
 
 
 export function keepLastIndex(dom:HTMLElement) {
-    if ( window.getSelection ) { //ie11 10 9 ff safari
-        dom.focus();  //ff
-        var range = window.getSelection();
+    // The node may live in a popout window; use that window's selection.
+    const ownerWindow = dom.ownerDocument.defaultView || window;
+    if ( ownerWindow.getSelection ) { //ie11 10 9 ff safari
+        dom.focus({ preventScroll: true });  //ff
+        var range = ownerWindow.getSelection();
         range.selectAllChildren(dom);
         range.collapseToEnd();
     }
@@ -46,7 +55,15 @@ export class INodeData implements INode{
     isRoot?:Boolean;
     children?:INodeData[]
     expanded?:boolean;
+    blockId?:string;
     isEdit?:boolean;
+    // Lines [start, end) relative to the trimmed Markdown body; see getNodeAtBodyLine.
+    sourceRange?:{ start:number; end:number };
+}
+
+// Class carrying a node's level styles (root styles come from mm-root).
+export function levelClass(level: number) {
+    return level == 0 ? '' : level == 1 ? 'mm-node-second' : level == 2 ? 'mm-node-third' : 'mm-node-deep';
 }
 
 export default class Node {
@@ -62,6 +79,7 @@ export default class Node {
     isExpand:boolean=true;
     isSelect:boolean = false;
     _oldText?:string;
+    private renderComponent: Component | null = null;
     parent?:Node;
     //isRoot?:boolean;
     children:Node[]=[];
@@ -116,16 +134,56 @@ export default class Node {
         this.containEl.appendChild(this._barDom);
     }
 
+    // Each render gets a fresh child Component of the view so embeds and
+    // post-processors are released on re-render and when the view closes.
+    private resetRenderComponent(): Component {
+        this.releaseRenderComponent();
+        const owner = this.mindmap?.view as Component | undefined;
+        const component = new Component();
+        if (owner) {
+            owner.addChild(component);
+        } else {
+            component.load();
+        }
+        this.renderComponent = component;
+        return component;
+    }
+
+    releaseRenderComponent() {
+        if (!this.renderComponent) {
+            return;
+        }
+        const owner = this.mindmap?.view as Component | undefined;
+        if (owner) {
+            owner.removeChild(this.renderComponent);
+        } else {
+            this.renderComponent.unload();
+        }
+        this.renderComponent = null;
+    }
+
     parseText(){
+        const component = this.resetRenderComponent();
         if (this.data.text.length === 0){
             this.data.text = t("Sub title");
         }
-        MarkdownRenderer.renderMarkdown( this.data.text ,this.contentEl,this.mindmap.path||"",null).then(()=>{
+        if (isPlainNodeText(this.data.text)) {
+            this.contentEl.textContent = this.data.text;
+            this.data.mdText = this.contentEl.innerHTML;
+            Promise.resolve().then(() => {
+                if (!this.mindmap?.isInitializingNodes) {
+                    this.refreshBox();
+                }
+                this.mindmap?.emit('initNode', { node: this });
+            });
+            return;
+        }
+        MarkdownRenderer.renderMarkdown( this.data.text ,this.contentEl,this.mindmap.path||"",component).then(()=>{
             this.data.mdText = this.contentEl.innerHTML;
             if (!this.mindmap?.isInitializingNodes) {
                 this.refreshBox();
             }
-            this.mindmap&&this.mindmap.emit('initNode',{});
+            this.mindmap&&this.mindmap.emit('initNode',{node:this});
             this._delay();
         });
 
@@ -180,7 +238,7 @@ export default class Node {
                         }
 
                         if(md){
-                            MarkdownRenderer.renderMarkdown(md,markdownPreview,this.mindmap.path||"",null).then(()=>{
+                            MarkdownRenderer.renderMarkdown(md,markdownPreview,this.mindmap.path||"",this.renderComponent || this.resetRenderComponent()).then(()=>{
                                // this.data.mdText = this.editDom.innerHTML;
                                 this.refreshBox();
                                 //this._delay();
@@ -215,26 +273,19 @@ export default class Node {
                 }
               });
 
-            //Possible causes of delay,code mathjax
+            // Code, math and images can change size after rendering. Remeasure
+            // in one batch per map rather than relayout once per node.
             var dom =this.contentEl.querySelector('code')|| this.contentEl.querySelector('.MathJax');
             if(dom){
-                setTimeout(()=>{
-                    this.clearCacheData();
-                    this.refreshBox();
-                    this.mindmap&&this.mindmap.emit('renderEditNode',{});
-                },100);
+                this.mindmap?.scheduleNodeRemeasure(this);
             }
             //image
             this.contentEl.querySelectorAll('img').forEach(element => {
                 element.onload = () => {
-                        this.clearCacheData();
-                        this.refreshBox();
-                        this.mindmap&&this.mindmap.emit('renderEditNode',{});
+                        this.mindmap?.scheduleNodeRemeasure(this);
                 }
                 element.onerror = () => {
-                        this.clearCacheData();
-                        this.refreshBox();
-                        this.mindmap&&this.mindmap.emit('renderEditNode',{});
+                        this.mindmap?.scheduleNodeRemeasure(this);
                 }
 
                 element.setAttribute('draggble','false');
@@ -243,26 +294,60 @@ export default class Node {
          },100)
     }
 
+    // Makes this node the only selected node.
     select(){
+        this.mindmap.collapseSelectionTo(this);
+        this.addToSelection(true);
+    }
+
+    // Adds the node to the selection; the primary node is the one editing,
+    // keyboard navigation and Markdown sync act on.
+    addToSelection(primary: boolean){
+        const mindmap = this.mindmap;
+        const previous = mindmap.selectNode;
+        if (!primary && previous && previous !== this && previous.isSelect) {
+            this.isSelect = true;
+            mindmap.selectedNodes.add(this);
+            this.containEl.setAttribute('draggable','true');
+            this.containEl.classList.add('mm-node-select', 'mm-node-select-secondary');
+            return;
+        }
         this.isSelect = true;
+        mindmap.selectedNodes.add(this);
         this.containEl.setAttribute('draggable','true');
         //if(this.mindmap.view.plugin.settings.focusOnMove) {
-            this.containEl.focus(); // set the dom to be focused
+            // Selection should not make the scroll container follow the node.
+            // Editing explicitly focuses the content element below.
+            if (!mindmap.suppressFocus) {
+                this.containEl.focus({ preventScroll: true });
+            }
         //}
-        Object.assign(window,{
-            myNode:this
-        });
+        if (previous && previous !== this && previous.isSelect) {
+            previous.containEl.classList.add('mm-node-select-secondary');
+        }
+        this.containEl.classList.remove('mm-node-select-secondary');
         if(!this.containEl.classList.contains('mm-node-select')){
             this.containEl.classList.add('mm-node-select')
         }
-        this.mindmap.selectNode=this;
+        // Compared with the node last reported, not `selectNode`: callers
+        // sometimes assign `selectNode` before calling select().
+        const changed = mindmap.reportedSelectNode !== this;
+        mindmap.selectNode=this;
+        if (changed) {
+            mindmap.reportedSelectNode = this;
+            mindmap.view?.onMapSelectionChanged();
+        }
     }
 
     unSelect(){
         this.isSelect = false;
+        this.mindmap?.selectedNodes.delete(this);
         this.containEl.setAttribute('draggable','false');
         if(this.containEl.classList.contains('mm-node-select')){
             this.containEl.classList.remove('mm-node-select')
+        }
+        if(this.containEl.classList.contains('mm-node-select-secondary')){
+            this.containEl.classList.remove('mm-node-select-secondary')
         }
     }
 
@@ -274,7 +359,7 @@ export default class Node {
       //  console.log(_t);
         this.contentEl.innerText = this.data.text;
         this.contentEl.setAttribute('contentEditable','true');
-        this.contentEl.focus();
+        this.contentEl.focus({ preventScroll: true });
         this.mindmap.editNode = this;
         this.data.isEdit = true;
         keepLastIndex(this.contentEl);
@@ -291,7 +376,7 @@ export default class Node {
             this._inputHandler = (e: Event) => {
                 if (!this.mindmap.fileSuggest) return;
                 const text = this.contentEl.innerText;
-                const selection = window.getSelection();
+                const selection = this.contentEl.ownerDocument.defaultView.getSelection();
                 if (selection && selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
                     const preCursorRange = range.cloneRange();
@@ -335,8 +420,8 @@ export default class Node {
         //     range.moveToElementText(text);
         //     range.select();
         // }
-        if (window.getSelection) {
-            var selection = window.getSelection();
+        if (this.contentEl.ownerDocument.defaultView.getSelection) {
+            var selection = this.contentEl.ownerDocument.defaultView.getSelection();
             var range = document.createRange();
             range.selectNodeContents(text);
             selection.removeAllRanges();
@@ -350,7 +435,7 @@ export default class Node {
         const formattedText = i_str_1.replace(/ /g, '\u00A0');
 
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
 
         l_selectedText = formattedText+l_selectedText;
@@ -377,7 +462,7 @@ export default class Node {
         let l_str_len = i_str_1.length
 
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
 
         // Remove leading space(s)
@@ -477,7 +562,7 @@ export default class Node {
 
     setSelectedText_italic() {
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
 
         // Remove leading space(s)
@@ -543,40 +628,48 @@ export default class Node {
     }
 
 
-    cancelEdit(){
-        if(!this.data.isEdit) return;
+    commitEdit(): boolean {
+        return this.finishEdit(true);
+    }
+
+    cancelEdit(): boolean {
+        return this.finishEdit(false);
+    }
+
+    private finishEdit(commit: boolean): boolean {
+        if(!this.data.isEdit) return false;
         this.mindmap.fileSuggest?.close();
         this.contentEl.removeEventListener('input', this._inputHandler);
-       this.contentEl.removeEventListener('keydown', this._keydownHandler);
+        this.contentEl.removeEventListener('keydown', this._keydownHandler);
         this.contentEl.removeAttribute('contentEditable');
 
-        var text = this.contentEl.innerText.trim()||'';
-        if(text.length == 0){
-            text = this._oldText
+        var text = commit ? (this.contentEl.innerText.trim() || '') : this._oldText;
+        if(commit && text.length == 0){
+            text = this._oldText;
         }
-        this.data.text = text;
+        const changed = commit && text !== this._oldText;
         this.contentEl.innerText = '';
 
-        MarkdownRenderer.renderMarkdown(text,this.contentEl,this.mindmap.path||"",null).then(()=>{
-            this.data.mdText = this.contentEl.innerHTML;
-            this.refreshBox();
-            this._delay();
-        });
-
-        if(text != this._oldText){
+        this.data.isEdit = false;
+        if(changed){
             this.mindmap.execute('changeNodeText',{
                 node:this,
                 text,
                 oldText:this._oldText
             });
-         }
-
-        this.contentEl.removeAttribute('contentEditable');
-        this.data.isEdit = false;
+        } else {
+            this.setText(text);
+            this.clearCacheData();
+            this.mindmap.requestRenderRefresh();
+        }
 
         if(this.containEl.classList.contains('mm-edit-node')){
             this.containEl.classList.remove('mm-edit-node')
         }
+        if (!commit) {
+            this.mindmap.view?.applyPendingExternalChange();
+        }
+        return changed;
     }
 
     getLevel() {
@@ -860,6 +953,7 @@ export default class Node {
         if(this.containEl.classList.contains('mm-node-collapse')){
             this.containEl.classList.remove('mm-node-collapse')
         }
+        this.mindmap.onNodeExpansionChanged(this);
     }
 
     collapse(){
@@ -881,6 +975,7 @@ export default class Node {
         if(!this.containEl.classList.contains('mm-node-collapse')){
             this.containEl.classList.add('mm-node-collapse')
         }
+        this.mindmap.onNodeExpansionChanged(this);
     }
 
 }

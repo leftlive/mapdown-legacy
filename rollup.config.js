@@ -22,7 +22,8 @@ export default {
     banner,
   },
 
-  external: ['obsidian'],
+  // CodeMirror is provided by Obsidian at runtime and must not be bundled.
+  external: ['obsidian', '@codemirror/state', '@codemirror/view'],
   plugins: [
     typescript(),
     nodeResolve({browser: true}),

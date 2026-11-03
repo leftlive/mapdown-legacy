@@ -1,5 +1,6 @@
 import INode from './INode'
 import MindMap  from './mindmap';
+import type { SelectionSnapshot } from './selection';
 
 export abstract class Command {
     name:string;
@@ -12,12 +13,87 @@ export abstract class Command {
     redo() {
         this.execute();
     }
+    // A collapsed node the command has to open (e.g. the parent of a new
+    // child); the expansion is undone together with the command.
+    expandTarget?:INode;
+    expandedTarget = false;
+    expandTargetIfCollapsed() {
+        this.expandedTarget = false;
+        const node = this.expandTarget;
+        if (node && !node.isExpand) {
+            node.expand();
+            node.clearCacheData();
+            this.expandedTarget = true;
+        }
+    }
+    restoreTargetCollapse() {
+        if (this.expandedTarget && this.expandTarget) {
+            this.expandTarget.collapse();
+            this.expandTarget.clearCacheData();
+            this.expandedTarget = false;
+        }
+    }
     refresh(mind?:any){
             var m = mind||this.mind;
             if(m){
+                // Inside a batch, layout and saving run once at the end.
+                if (m.refreshSuspended) {
+                    m.refreshPending = true;
+                    return;
+                }
                 m.emit('renderEditNode',{});
                 m.emit('mindMapChange',{});
             }
+    }
+}
+
+// Runs `run` with layout and saving deferred to a single pass at the end.
+export function suspendRefresh(mind:any, run:() => void) {
+    mind.refreshSuspended++;
+    try {
+        run();
+    } finally {
+        mind.refreshSuspended--;
+        if (!mind.refreshSuspended && mind.refreshPending) {
+            mind.refreshPending = false;
+            mind.emit('renderEditNode', {});
+            mind.emit('mindMapChange', {});
+        }
+    }
+}
+
+// Commands run by Exec.batch(), undone and redone as one step.
+export class BatchCommand extends Command {
+    commands:Command[] = [];
+    mind:MindMap;
+    before:SelectionSnapshot;
+    after:SelectionSnapshot;
+    constructor(mind:MindMap) {
+        super('batch');
+        this.mind = mind;
+    }
+    execute():boolean {
+        return this.commands.length > 0;
+    }
+    undo() {
+        suspendRefresh(this.mind, () => {
+            for (let i = this.commands.length - 1; i >= 0; i--) {
+                this.commands[i].undo();
+            }
+        });
+        this.restoreSelectionLater(this.before);
+    }
+    redo() {
+        suspendRefresh(this.mind, () => this.commands.forEach((c) => c.redo()));
+        this.restoreSelectionLater(this.after);
+    }
+    // Child commands reselect nodes in timeouts; run after them.
+    restoreSelectionLater(snapshot:SelectionSnapshot) {
+        setTimeout(() => {
+            if (snapshot) {
+                this.mind.restoreSelection(snapshot);
+            }
+        }, 0);
     }
 }
 
@@ -31,8 +107,16 @@ export class AddNode extends Command {
         this.node = node;
         this.parent = parent;
         this.mind = mind||this.node.mindmap;
+        this.expandTarget = parent;
     }
     execute():boolean {
+        // Adding a node changes the layout of its whole sibling group. Keep the
+        // viewport stable while the initial layout and edit state are applied.
+        const appEl = this.mind.appEl;
+        const ownerWindow = appEl.ownerDocument.defaultView;
+        appEl.classList.add('mm-no-transition');
+        this.mind.clearSelectNode();
+        this.expandTargetIfCollapsed();
         if (this.index > -1) {
             this.mind.addNode(this.node, this.parent, this.index);   //add node to position of parent children
         } else {
@@ -40,10 +124,16 @@ export class AddNode extends Command {
         }
         this.node.refreshBox();
         this.refresh();
-        this.mind.clearSelectNode();
         setTimeout(()=>{
             this.node.select();
             this.node.edit();
+            this.mind.revealNode(this.node);
+            const release = () => appEl.classList.remove('mm-no-transition');
+            if (ownerWindow) {
+                ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(release));
+            } else {
+                release();
+            }
         },0);
         return true; //exit with no error
     }
@@ -52,6 +142,7 @@ export class AddNode extends Command {
         var p = this.node.parent;
         this.index = this.mind.removeNode(this.node);
         this.mind.clearSelectNode();
+        this.restoreTargetCollapse();
         setTimeout(()=>{
             this.refresh();
             p&&p.select();
@@ -114,6 +205,9 @@ export class ChangeNodeText extends Command {
         //}
         this.node.refreshBox();
         this.node.clearCacheData();
+        if (this.node.data.isRoot) {
+            this.node.mindmap.view?.markRootTitleChange(this.text);
+        }
         this.refresh(this.node.mindmap);
         return true; //exit with no error
     }
@@ -121,6 +215,9 @@ export class ChangeNodeText extends Command {
         this.node.setText(this.oldText);
         this.node.clearCacheData();
         this.node.refreshBox();
+        if (this.node.data.isRoot) {
+            this.node.mindmap.view?.markRootTitleChange(this.oldText);
+        }
         this.refresh(this.node.mindmap);
         this.isFirst =false;
     }
@@ -149,11 +246,16 @@ export class MoveNode extends Command {
             this.newParent = this.dropNode.parent;
             this.type = this.data.direct;
         }
+        this.expandTarget = this.data.expandTarget;
     }
 
     execute():boolean {
         this.node.mindmap.clearSelectNode();
+        this.expandTargetIfCollapsed();
         if (this.data.type.indexOf('child') > -1) {
+            if (!this.parent || !this.oldParent || this.parent === this.node) {
+                return false;
+            }
             if (this.oldParent) {
                 this.index = this.oldParent.removeChild(this.node)
             }
@@ -168,6 +270,10 @@ export class MoveNode extends Command {
             this.refresh(this.node.mindmap);
             this.node.select();
         } else {
+
+            if (!this.oldParent || !this.newParent || !this.dropNode) {
+                return false;
+            }
 
             if (this.oldParent) {
                 this.index = this.oldParent.removeChild(this.node);
@@ -209,6 +315,7 @@ export class MoveNode extends Command {
 
             this.parent.clearCacheData();
             this.node.clearCacheData();
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
             this.node.select();
         }
@@ -217,6 +324,7 @@ export class MoveNode extends Command {
             this.dropNode.clearCacheData();
             this.oldParent.addChild(this.node, this.index);
             this.node.clearCacheData();
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
             this.node.select();
         }
@@ -299,60 +407,88 @@ export class ExpandNode extends Command{
     node:INode
     data:any
     waitCollapse:any[]=[]
-    firstNode:INode
+    // Top-level pasted nodes (several when several subtrees were copied).
+    firstNodes:INode[] = []
+    indexes:number[] = []
     constructor(node:any, data:any) {
         super('copyNode');
         this.node = node;
         this.data = data;
         this.mind= this.node.mindmap;
         this.waitCollapse = [];
+        this.expandTarget = node;
     }
 
     execute():boolean {
+        this.firstNodes = [];
+        this.waitCollapse = [];
+        this.expandTargetIfCollapsed();
         this.paste();
-        return true; //exit with no error
+        if (!this.firstNodes.length) {
+            this.restoreTargetCollapse();
+        }
+        return this.firstNodes.length > 0;
     }
 
     undo() {
-        if (this.firstNode) {
-            this.mind.removeNode(this.firstNode);
+        if (this.firstNodes.length) {
+            this.indexes = [];
+            for (let i = this.firstNodes.length - 1; i >= 0; i--) {
+                this.indexes[i] = this.mind.removeNode(this.firstNodes[i]);
+            }
             this.node.clearCacheData();
-           // this.updateItems(this.node);
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
         }
     }
 
+    // Re-attach the pasted subtrees so later redo commands still reference them.
+    redo() {
+        if (!this.firstNodes.length) {
+            this.execute();
+            return;
+        }
+        this.expandTargetIfCollapsed();
+        this.firstNodes.forEach((n, i) => {
+            this.mind.addNode(n, this.node, this.indexes[i]);
+            n.clearCacheData();
+            n.refreshBox();
+        });
+        this.node.clearCacheData();
+        this.refresh(this.mind);
+    }
+
     paste() {
+        const created = new Map<string, INode>();
         this.data.forEach((d:any, i:number) => {
 
+            var parent = d.pid ? created.get(d.pid) : null;
+            // Entries without a parent in the data are the copied subtrees' roots.
+            if (!parent && i > 0 && d.pid) {
+                return;
+            }
             var n = new INode(d, this.mind);
 
             n.mindmap = this.mind;
-            if (!d.isExpand) {
+            if (d.expanded === false) {
                 this.waitCollapse.push(n);
             }
-            if (i == 0) {
+            if (!parent) {
                 n.data.pid = this.node.getId();
                 this.mind.addNode(n, this.node);
-                this.firstNode = n;
-                n.setPosition(0,0);
-                n.refreshBox();
-
+                this.firstNodes.push(n);
+            } else {
+                this.mind.addNode(n, parent);
             }
-            else {
-                var parent = this.mind.getNodeById(d.pid);
-                if (parent) {
-                   this.mind.addNode(n, parent);
-                   n.setPosition(0,0);
-                   n.refreshBox();
+            n.setPosition(0,0);
+            n.refreshBox();
 
-                }
-            }
-
-            if (i == this.data.length - 1) {
-                n.clearCacheData();
-                this.refresh(this.mind);
-            }
+            created.set(d.id, n);
         });
+        if (this.firstNodes.length) {
+            this.firstNodes[this.firstNodes.length - 1].clearCacheData();
+            this.refresh(this.mind);
+        }
+        this.waitCollapse.forEach((node) => node.collapse());
     }
 }

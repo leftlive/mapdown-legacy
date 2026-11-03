@@ -10,8 +10,12 @@ export class MindMapSettings {
     exportMdModel?:string;
     //strokeArray?:string=''
     strokeArray?:any[];
-    focusOnMove:boolean;
+    focusOnMove:boolean = false;
     focusOverlayOpacity:number = 0.4;
+    focusGlowSize:number = 150;
+    nodeGlowSize:number = 10;
+    nodeMaxWidth:number = 800;
     enableLinkPreview:boolean = true;
     linkOpenMode:'current' | 'tab' | 'window' = 'window';
+    syncSelection:boolean = true;
 }

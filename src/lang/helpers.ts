@@ -58,3 +58,11 @@ export function t(str: keyof typeof en): string {
 
   return (locale && locale[str]) || en[str];
 }
+
+// t() with positional placeholders: tf('Saved to {0}', path).
+export function tf(str: keyof typeof en, ...args: Array<string | number>): string {
+  return t(str).replace(/\{(\d+)\}/g, (match, index) => {
+    const value = args[Number(index)];
+    return value === undefined ? match : String(value);
+  });
+}

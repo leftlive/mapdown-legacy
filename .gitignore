@@ -14,3 +14,11 @@ main.js
 # obsidian
 data.json
 *.bak
+
+# Local project resources (not tracked; only the manifest is)
+_resources/*
+!_resources/README.md
+
+# 代码索引（本机生成）
+.codegraph/
+.gitnexus/

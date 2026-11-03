@@ -1,9 +1,9 @@
 {
-	"id": "mindmark",
-	"name": "MindMark",
-	"version": "0.2.6",
+	"id": "mapdown",
+	"name": "Mapdown",
+	"version": "0.3.0",
 	"minAppVersion": "1.5.0",
-	"description": "Edit Markdown files as visual mind maps in Obsidian.",
+	"description": "Edit any Markdown note as a mind map, with the text and the map kept in sync.",
 	"author": "Ian Jin",
 	"authorUrl": "https://github.com/leftlive",
 	"fundingUrl": "",

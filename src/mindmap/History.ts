@@ -11,15 +11,20 @@ class History {
     }
 
     execute(command:Command) {
-        this.clearRedo();
         if (command.execute()){
-            var length = this.undos.length;
-            if (length >= this.limit) {
-                this.undos.shift();
-            }
-            this.undos.push(command);
-            this.change(command)
+            this.record(command);
         }
+    }
+
+    // Adds a command that has already run.
+    record(command:Command) {
+        this.clearRedo();
+        var length = this.undos.length;
+        if (length >= this.limit) {
+            this.undos.shift();
+        }
+        this.undos.push(command);
+        this.change(command)
     }
 
     undo() {

@@ -42,6 +42,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                         mindmapLeaves.forEach((leaf) => {
                             var v = leaf.view as MindMapView;
+                            if (!v.mindmap) {
+                                return;
+                            }
                             v.mindmap.setting.canvasSize = _v;
                             v.mindmap.setAppSetting();
                             var box = v.mindmap.root.getBox();
@@ -64,6 +67,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                         mindmapLeaves.forEach((leaf) => {
                             var v = leaf.view as MindMapView;
+                            if (!v.mindmap) {
+                                return;
+                            }
                             v.mindmap.setting.background = this.plugin.settings.background;
                             v.mindmap.setAppSetting();
                         });
@@ -88,6 +94,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                         mindmapLeaves.forEach((leaf) => {
                             var v = leaf.view as MindMapView;
+                            if (!v.mindmap) {
+                                return;
+                            }
                             v.mindmap.setting.headLevel = this.plugin.settings.headLevel;
                         });
                     }));
@@ -102,11 +111,19 @@ export class MindMapSettingsTab extends PluginSettingTab {
                     .setValue(this.plugin.settings.fontSize?.toString() || '16')
                     .setPlaceholder(t('Font size placeholder'))
                     .onChange((value: string) => {
-                        this.plugin.settings.fontSize = Number.parseInt(value);
+                        const fontSize = Number.parseInt(value);
+                        // Ignore partial or invalid input instead of saving NaN.
+                        if (!Number.isFinite(fontSize) || fontSize < 8 || fontSize > 72) {
+                            return;
+                        }
+                        this.plugin.settings.fontSize = fontSize;
                         this.plugin.saveData(this.plugin.settings);
                         const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                         mindmapLeaves.forEach((leaf) => {
                             var v = leaf.view as MindMapView;
+                            if (!v.mindmap) {
+                                return;
+                            }
                             v.mindmap.setting.fontSize = this.plugin.settings.fontSize;
                             v.mindmap.setAppSetting();
                             v.mindmap.traverseBF((n: MyNode) => {
@@ -118,21 +135,77 @@ export class MindMapSettingsTab extends PluginSettingTab {
                     }));
 
         new Setting(containerEl)
+            .setName(t('Node glow size'))
+            .setDesc(t('Node glow size desc'))
+            .addSlider((slider) =>
+                slider
+                    .setLimits(0, 24, 1)
+                    .setValue(this.plugin.settings.nodeGlowSize ?? 10)
+                    .setDynamicTooltip()
+                    .onChange(async (value) => {
+                        this.plugin.settings.nodeGlowSize = value;
+                        await this.plugin.saveSettings();
+                        const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+                        mindmapLeaves.forEach((leaf) => {
+                            const view = leaf.view as MindMapView;
+                            if (!view.mindmap) {
+                                return;
+                            }
+                            view.mindmap.setting.nodeGlowSize = value;
+                            view.mindmap.setAppSetting();
+                        });
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t('Node max width'))
+            .setDesc(t('Node max width desc'))
+            .addSlider((slider) =>
+                slider
+                    .setLimits(240, 1200, 20)
+                    .setValue(this.plugin.settings.nodeMaxWidth || 800)
+                    .setDynamicTooltip()
+                    .onChange(async (value) => {
+                        this.plugin.settings.nodeMaxWidth = value;
+                        await this.plugin.saveSettings();
+                        const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+                        mindmapLeaves.forEach((leaf) => {
+                            const view = leaf.view as MindMapView;
+                            if (!view.mindmap) {
+                                return;
+                            }
+                            view.mindmap.setting.nodeMaxWidth = value;
+                            view.mindmap.setAppSetting();
+                            view.mindmap.traverseBF((n: MyNode) => {
+                                n.boundingRect = null;
+                                n.refreshBox();
+                            });
+                            view.mindmap.refresh();
+                        });
+                    }),
+            );
+
+        new Setting(containerEl)
             .setName(t('Mind map layout direct'))
             .setDesc(t('Mind map layout direct desc'))
             .addDropdown(dropDown =>
                 dropDown
-                    .addOption('mind map', t('Centered'))
+                    .addOption('mindmap', t('Centered'))
                     .addOption('right', t('Right'))
                     .addOption('left', t('Left'))
                     .addOption('clockwise', t('Clockwise'))
-                    .setValue(this.plugin.settings.layoutDirect.toString() || 'mind map')
+                    .setValue(this.plugin.settings.layoutDirect && this.plugin.settings.layoutDirect !== 'mind map'
+                        ? this.plugin.settings.layoutDirect
+                        : 'mindmap')
                     .onChange((value: string) => {
                         this.plugin.settings.layoutDirect = value;
                         this.plugin.saveData(this.plugin.settings);
                         const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                         mindmapLeaves.forEach((leaf) => {
                             var v = leaf.view as MindMapView;
+                            if (!v.mindmap) {
+                                return;
+                            }
                             v.mindmap.setting.layoutDirect = this.plugin.settings.layoutDirect;
                             v.mindmap.refresh();
                         });
@@ -183,6 +256,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
                 const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                 mindmapLeaves.forEach((leaf) => {
                     var v = leaf.view as MindMapView;
+                    if (!v.mindmap) {
+                        return;
+                    }
                     v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray;
                     if( v.mindmap.mmLayout){
                         v.mindmap.mmLayout.colors = v.mindmap.setting.strokeArray;
@@ -209,6 +285,18 @@ export class MindMapSettingsTab extends PluginSettingTab {
             );
 
         new Setting(containerEl)
+            .setName(t('Sync selection with Markdown'))
+            .setDesc(t('Sync selection with Markdown desc'))
+            .addToggle((toggle) =>
+                toggle
+                    .setValue(this.plugin.settings.syncSelection)
+                    .onChange(async (value) => {
+                        this.plugin.settings.syncSelection = value;
+                        await this.plugin.saveSettings();
+                    }),
+            );
+
+        new Setting(containerEl)
             .setName(t('Focus overlay opacity'))
             .setDesc(t('Focus overlay opacity desc'))
             .addSlider((slider) =>
@@ -221,6 +309,9 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         await this.plugin.saveSettings();
                         this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
                             const view = leaf.view as MindMapView;
+                            if (!view.mindmap) {
+                                return;
+                            }
                             view.mindmap.setting.focusOverlayOpacity =
                                 this.plugin.settings.focusOverlayOpacity;
                             if (view.mindmap.focusedNode) {
@@ -242,6 +333,30 @@ export class MindMapSettingsTab extends PluginSettingTab {
                         if (value) {
                             await this.plugin.ensurePagePreviewEnabled();
                         }
+                    }),
+            );
+
+        new Setting(containerEl)
+            .setName(t('Focus glow size'))
+            .setDesc(t('Focus glow size desc'))
+            .addSlider((slider) =>
+                slider
+                    .setLimits(0, 400, 10)
+                    .setValue(this.plugin.settings.focusGlowSize ?? 150)
+                    .setDynamicTooltip()
+                    .onChange(async (value) => {
+                        this.plugin.settings.focusGlowSize = value;
+                        await this.plugin.saveSettings();
+                        this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
+                            const view = leaf.view as MindMapView;
+                            if (!view.mindmap) {
+                                return;
+                            }
+                            view.mindmap.setting.focusGlowSize = value;
+                            if (view.mindmap.focusedNode) {
+                                view.mindmap.refresh();
+                            }
+                        });
                     }),
             );
 

@@ -6,6 +6,8 @@ if you want to view the source visit the plugins github repository
 'use strict';
 
 var obsidian = require('obsidian');
+var state = require('@codemirror/state');
+var view = require('@codemirror/view');
 
 /******************************************************************************
 Copyright (c) Microsoft Corporation.
@@ -119,6 +121,13 @@ var en = {
     "New mindmap board": "New mindmap board",
     "Untitled mindmap": "Untitled mindmap",
     "Open as markdown": "Open as markdown",
+    "Search nodes": "Search nodes",
+    "Search nodes placeholder": "Search nodes...",
+    "Previous match": "Previous match",
+    "Next match": "Next match",
+    "Close search": "Close search",
+    "No matches": "No matches",
+    "Press Enter to locate": "Press Enter to locate",
     //Execute.ts
     "Sub title": "Sub title",
     "Export to opml": "Export to opml",
@@ -134,6 +143,10 @@ var en = {
     "Font size": "Node font size",
     "Font size desc": "Set the default node text size in pixels",
     "Font size placeholder": "For example: 16",
+    "Node glow size": "Node glow size",
+    "Node glow size desc": "Adjust the strength of the outer glow around normal nodes",
+    "Node max width": "Node max width",
+    "Node max width desc": "Limit the maximum width of node content and wrap long text automatically",
     "Mind map layout direct": "Mind map layout",
     "Mind map layout direct desc": "Choose whether branches extend on both sides, one side, or clockwise",
     "Right": "Right",
@@ -153,6 +166,8 @@ var en = {
     "Center view after moving node desc": "Center the mind map on the moved node after a move operation",
     "Focus overlay opacity": "Focus mode overlay opacity",
     "Focus overlay opacity desc": "Set the darkness of the black background overlay in focus mode",
+    "Focus glow size": "Focus mode glow size",
+    "Focus glow size desc": "Adjust the glow strength around the focused area",
     "Enable internal link preview": "Preview internal links on hover",
     "Enable internal link preview desc": "Show the target note preview when hovering over an internal link in a node",
     "Internal link open mode": "Internal link click behavior",
@@ -209,6 +224,44 @@ var en = {
     "Export to JPEG (HQ)": "Export to JPEG (HQ)",
     "Export to PNG (LQ)": "Export to PNG (LQ)",
     "Export to JPEG (LQ)": "Export to JPEG (LQ)",
+    "Unsupported mindmark-state metadata, opened as Markdown": "Unsupported mindmark-state metadata, opened as Markdown",
+    "Toggle split right (Markdown)": "Toggle split right (Markdown)",
+    "Mindmap exported as {0}: {1}": "Mindmap exported as {0}: {1}",
+    "Failed to export mindmap as {0}: {1}": "Failed to export mindmap as {0}: {1}",
+    "Save fail: unsupported mindmark-state metadata": "Save fail: unsupported mindmark-state metadata",
+    "Save fail: unable to rename the file": "Save fail: unable to rename the file",
+    "Mapdown preserved the pre-migration note in {0}": "Mapdown preserved the pre-migration note in {0}",
+    "Mapdown detected an external edit. Local changes were preserved in {0}": "Mapdown detected an external edit. Local changes were preserved in {0}",
+    "Mapdown restored unsaved changes to {0}": "Mapdown restored unsaved changes to {0}",
+    "Mapdown found an unsaved recovery draft but could not restore it": "Mapdown found an unsaved recovery draft but could not restore it",
+    "Parse xmind error": "Parse xmind error",
+    "Import from XMind…": "Import from XMind…",
+    "Export to XMind": "Export to XMind",
+    "Open as a mind map?": "Open as a mind map?",
+    "Convert note explanation": "\"{0}\" is not a mind map yet. Converting it turns headings, lists, paragraphs, tables and embeds into nodes, and the note is rewritten in mind map format on the first edit (a backup of the original is kept). Saving as a new mind map leaves this note unchanged.",
+    "Cancel": "Cancel",
+    "Save as a new mind map": "Save as a new mind map",
+    "Convert this note": "Convert this note",
+    "{0} (mind map)": "{0} (mind map)",
+    "Settings migrated from MindMark": "Mapdown imported your MindMark settings",
+    "Import as mindmap": "Import as mindmap",
+    "Unrecognized XMind file": "Unrecognized XMind file",
+    "Import failed: unable to create the note": "Import failed: unable to create the note",
+    "Imported {0} topics": "Imported {0} topics",
+    "XMind not imported: {0}": "; not imported: {0}",
+    "List separator": ", ",
+    "XMind summaries": "summaries",
+    "XMind boundaries": "boundaries",
+    "XMind relationships": "relationships",
+    "XMind callouts": "callouts",
+    "XMind images": "images",
+    "Export": "Export",
+    "Fit to view": "Fit to view",
+    "Sync selection with Markdown": "Sync selection with Markdown",
+    "Sync selection with Markdown desc": "Selecting a node moves the cursor in the same note's Markdown view, and moving the cursor there selects the matching node",
+    "Toggle selection sync with Markdown": "Toggle selection sync with Markdown",
+    "Selection sync turned on": "Selection sync with Markdown turned on",
+    "Selection sync turned off": "Selection sync with Markdown turned off",
 };
 
 // British English
@@ -343,6 +396,13 @@ var zhCN = {
     "New mindmap board": "新建思维导图",
     "Untitled mindmap": "未命名思维导图",
     "Open as markdown": "打开为 Markdown 文件",
+    "Search nodes": "搜索节点",
+    "Search nodes placeholder": "搜索节点...",
+    "Previous match": "上一个匹配项",
+    "Next match": "下一个匹配项",
+    "Close search": "关闭搜索",
+    "No matches": "无匹配项",
+    "Press Enter to locate": "按 Enter 定位",
     //Execute.ts
     "Sub title": "新节点",
     "Export to opml": "导出至OPML",
@@ -358,6 +418,10 @@ var zhCN = {
     "Font size": "节点文字大小",
     "Font size desc": "设置节点文字的默认大小，单位为像素",
     "Font size placeholder": "例如：16",
+    "Node glow size": "节点光晕大小",
+    "Node glow size desc": "调整普通节点外发光的显示强度",
+    "Node max width": "节点最大宽度",
+    "Node max width desc": "限制节点内容区域的最大宽度，超出后自动换行",
     "Mind map layout direct": "思维导图布局方向",
     "Mind map layout direct desc": "选择分支向两侧、单侧或顺时针方向排列",
     "Right": "仅右侧",
@@ -391,6 +455,8 @@ var zhCN = {
     "Center view after moving node desc": "移动节点后，将思维导图视图居中到该节点",
     "Focus overlay opacity": "专注模式遮罩不透明度",
     "Focus overlay opacity desc": "设置专注模式下黑色背景遮罩的深浅",
+    "Focus glow size": "专注模式光晕大小",
+    "Focus glow size desc": "调整专注模式下节点区域周围的光晕强度",
     "Enable internal link preview": "悬停时预览双链",
     "Enable internal link preview desc": "鼠标悬停在节点中的双链上时显示目标笔记预览",
     "Internal link open mode": "双链点击行为",
@@ -403,7 +469,88 @@ var zhCN = {
     "Toggle markdown/mindmap": "切换为 markdown 或 mindmap 模式",
     "Copy node": "复制",
     "Paste node": "粘贴",
-    "Export to html": "导出为 html"
+    "Export to html": "导出为 html",
+    "Unsupported mindmark-state metadata, opened as Markdown": "mindmark-state 元数据不受支持，已以 Markdown 打开",
+    "Add line break (<br>)": "插入换行（<br>）",
+    "Add sibling/end editing": "添加同级节点 / 结束编辑",
+    "Add tabulation": "插入制表符",
+    "Bold the node's text": "节点文字加粗",
+    "Cancel edit": "取消编辑",
+    "Center mindmap view": "居中显示导图",
+    "Center mindmap view on the current node": "以当前节点为中心显示导图",
+    "Collapse one level": "折叠一级",
+    "Collapse one level from the max. displayed level": "从当前最深显示层级折叠一级",
+    "Cut node": "剪切节点",
+    "Delete node & child": "删除节点及子节点",
+    "Display the node's info in console": "在控制台输出节点信息",
+    "Edit node": "编辑节点",
+    "Expand one level": "展开一级",
+    "Expand one level from the max. displayed level": "从当前最深显示层级展开一级",
+    "Export to JPEG": "导出为 JPEG",
+    "Export to JPEG (HQ)": "导出为 JPEG（高清）",
+    "Export to JPEG (LQ)": "导出为 JPEG（标清）",
+    "Export to PNG": "导出为 PNG",
+    "Export to PNG (HQ)": "导出为 PNG（高清）",
+    "Export to PNG (LQ)": "导出为 PNG（标清）",
+    "Highlight the node's text": "节点文字高亮",
+    "Insert child": "插入子节点",
+    "Italicize the node's text": "节点文字斜体",
+    "Join as citation with the node below": "与下方节点合并为引用",
+    "Join with the node below": "与下方节点合并",
+    "Move all siblings as children": "将所有同级节点移为子节点",
+    "Move next siblings as children": "将后续同级节点移为子节点",
+    "Move the current node above": "当前节点上移",
+    "Move the current node below": "当前节点下移",
+    "Move the current node left": "当前节点左移",
+    "Move the current node right": "当前节点右移",
+    "Redo": "重做",
+    "Remove line breaks (<br>)": "移除换行（<br>）",
+    "Replace by the previous text": "恢复为上一次的文字",
+    "Select the node's text": "选中节点文字",
+    "Set to markdown mode": "切换为 Markdown 模式",
+    "Set to mindmap mode": "切换为导图模式",
+    "Strike through the node's text": "节点文字删除线",
+    "Toggle expand/collapse node": "展开 / 折叠节点",
+    "Undo": "撤销",
+    "Zoom in": "放大",
+    "Zoom out": "缩小",
+    "Toggle split right (Markdown)": "向右分屏显示 Markdown（切换）",
+    "Mindmap exported as {0}: {1}": "导图已导出为 {0}：{1}",
+    "Failed to export mindmap as {0}: {1}": "导图导出为 {0} 失败：{1}",
+    "Save fail: unsupported mindmark-state metadata": "保存失败：mindmark-state 元数据不受支持",
+    "Save fail: unable to rename the file": "保存失败：无法重命名文件",
+    "Mapdown preserved the pre-migration note in {0}": "Mapdown 已将迁移前的笔记保存到 {0}",
+    "Mapdown detected an external edit. Local changes were preserved in {0}": "Mapdown 检测到外部修改，本地改动已保存到 {0}",
+    "Mapdown restored unsaved changes to {0}": "Mapdown 已将未保存的改动恢复到 {0}",
+    "Mapdown found an unsaved recovery draft but could not restore it": "Mapdown 发现未保存的恢复草稿，但无法恢复",
+    "Parse xmind error": "解析 XMind 文件失败",
+    "Import from XMind…": "从 XMind 导入…",
+    "Export to XMind": "导出为 XMind",
+    "Open as a mind map?": "以思维导图打开？",
+    "Convert note explanation": "“{0}”还不是思维导图。转换后，标题、列表、正文段落、表格和嵌入都会变成节点；第一次编辑时笔记会改写为导图格式，原文会另存一份备份。选择“另存为新导图”则不改动这篇笔记。",
+    "Cancel": "取消",
+    "Save as a new mind map": "另存为新导图",
+    "Convert this note": "转换这篇笔记",
+    "{0} (mind map)": "{0}（导图）",
+    "Settings migrated from MindMark": "已从 MindMark 迁移设置",
+    "Import as mindmap": "导入为思维导图",
+    "Unrecognized XMind file": "无法识别的 XMind 文件",
+    "Import failed: unable to create the note": "导入失败：无法创建笔记",
+    "Imported {0} topics": "已导入 {0} 个主题",
+    "XMind not imported: {0}": "，未导入：{0}",
+    "List separator": "、",
+    "XMind summaries": "概要",
+    "XMind boundaries": "外框",
+    "XMind relationships": "关联线",
+    "XMind callouts": "标注",
+    "XMind images": "图片",
+    "Export": "导出",
+    "Fit to view": "适配窗口",
+    "Sync selection with Markdown": "Markdown 与导图联动选中",
+    "Sync selection with Markdown desc": "在导图中选中节点时，同一笔记的 Markdown 视图移动到对应行；在 Markdown 中移动光标时，导图选中对应节点",
+    "Toggle selection sync with Markdown": "切换 Markdown 与导图联动选中",
+    "Selection sync turned on": "已开启 Markdown 与导图联动选中",
+    "Selection sync turned off": "已关闭 Markdown 与导图联动选中",
 };
 
 // 繁體中文
@@ -441,10 +588,17 @@ function t(str) {
     }
     return (locale && locale[str]) || en[str];
 }
+// t() with positional placeholders: tf('Saved to {0}', path).
+function tf(str, ...args) {
+    return t(str).replace(/\{(\d+)\}/g, (match, index) => {
+        const value = args[Number(index)];
+        return value === undefined ? match : String(value);
+    });
+}
 
-const FRONT_MATTER_REGEX = /^---\s*\n[\s\S]*?\n---\s*\n?/;
+const FRONT_MATTER_REGEX = /^\uFEFF?---[ \t]*\r?\n[\s\S]*?\r?\n---[ \t]*(?:\r?\n|$)/;
 const frontMatterKey = 'mindmap-plugin';
-const mindmapHoverSource = 'mindmark';
+const mindmapHoverSource = 'mapdown';
 const basicFrontmatter = [
     "---",
     "",
@@ -455,10 +609,18 @@ const basicFrontmatter = [
     "",
 ].join("\n");
 
+function isPlainNodeText(text) {
+    return Boolean(text) &&
+        !/[\r\n`*_~=\[\]<>#!|$\\&]/.test(text) &&
+        !/:\/\//.test(text) &&
+        !/(^|\s)(?:[-+]|\d+\.)\s/.test(text);
+}
 function keepLastIndex(dom) {
-    if (window.getSelection) { //ie11 10 9 ff safari
-        dom.focus(); //ff
-        var range = window.getSelection();
+    // The node may live in a popout window; use that window's selection.
+    const ownerWindow = dom.ownerDocument.defaultView || window;
+    if (ownerWindow.getSelection) { //ie11 10 9 ff safari
+        dom.focus({ preventScroll: true }); //ff
+        var range = ownerWindow.getSelection();
         range.selectAllChildren(dom);
         range.collapseToEnd();
     }
@@ -468,6 +630,10 @@ function keepLastIndex(dom) {
     //     range.collapse(false);
     //     range.select();
     // }
+}
+// Class carrying a node's level styles (root styles come from mm-root).
+function levelClass(level) {
+    return level == 0 ? '' : level == 1 ? 'mm-node-second' : level == 2 ? 'mm-node-third' : 'mm-node-deep';
 }
 class Node$1 {
     constructor(data, mindMap) {
@@ -479,6 +645,7 @@ class Node$1 {
         };
         this.isExpand = true;
         this.isSelect = false;
+        this.renderComponent = null;
         //isRoot?:boolean;
         this.children = [];
         this.isHide = false;
@@ -517,17 +684,60 @@ class Node$1 {
         this._barDom.classList.add('mm-node-bar');
         this.containEl.appendChild(this._barDom);
     }
+    // Each render gets a fresh child Component of the view so embeds and
+    // post-processors are released on re-render and when the view closes.
+    resetRenderComponent() {
+        var _a;
+        this.releaseRenderComponent();
+        const owner = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.view;
+        const component = new obsidian.Component();
+        if (owner) {
+            owner.addChild(component);
+        }
+        else {
+            component.load();
+        }
+        this.renderComponent = component;
+        return component;
+    }
+    releaseRenderComponent() {
+        var _a;
+        if (!this.renderComponent) {
+            return;
+        }
+        const owner = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.view;
+        if (owner) {
+            owner.removeChild(this.renderComponent);
+        }
+        else {
+            this.renderComponent.unload();
+        }
+        this.renderComponent = null;
+    }
     parseText() {
+        const component = this.resetRenderComponent();
         if (this.data.text.length === 0) {
             this.data.text = t("Sub title");
         }
-        obsidian.MarkdownRenderer.renderMarkdown(this.data.text, this.contentEl, this.mindmap.path || "", null).then(() => {
+        if (isPlainNodeText(this.data.text)) {
+            this.contentEl.textContent = this.data.text;
+            this.data.mdText = this.contentEl.innerHTML;
+            Promise.resolve().then(() => {
+                var _a, _b;
+                if (!((_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.isInitializingNodes)) {
+                    this.refreshBox();
+                }
+                (_b = this.mindmap) === null || _b === void 0 ? void 0 : _b.emit('initNode', { node: this });
+            });
+            return;
+        }
+        obsidian.MarkdownRenderer.renderMarkdown(this.data.text, this.contentEl, this.mindmap.path || "", component).then(() => {
             var _a;
             this.data.mdText = this.contentEl.innerHTML;
             if (!((_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.isInitializingNodes)) {
                 this.refreshBox();
             }
-            this.mindmap && this.mindmap.emit('initNode', {});
+            this.mindmap && this.mindmap.emit('initNode', { node: this });
             this._delay();
         });
     }
@@ -580,7 +790,7 @@ class Node$1 {
                             var md = fileData || '';
                         }
                         if (md) {
-                            obsidian.MarkdownRenderer.renderMarkdown(md, markdownPreview, this.mindmap.path || "", null).then(() => {
+                            obsidian.MarkdownRenderer.renderMarkdown(md, markdownPreview, this.mindmap.path || "", this.renderComponent || this.resetRenderComponent()).then(() => {
                                 // this.data.mdText = this.editDom.innerHTML;
                                 this.refreshBox();
                                 //this._delay();
@@ -593,6 +803,7 @@ class Node$1 {
         }));
         //parse image
         setTimeout(() => {
+            var _a;
             this.contentEl.findAll(".internal-embed").forEach((el) => {
                 var _a;
                 const src = el.getAttribute("src");
@@ -609,50 +820,80 @@ class Node$1 {
                     el.addClasses(["image-embed", "is-loaded"]);
                 }
             });
-            //Possible causes of delay,code mathjax
+            // Code, math and images can change size after rendering. Remeasure
+            // in one batch per map rather than relayout once per node.
             var dom = this.contentEl.querySelector('code') || this.contentEl.querySelector('.MathJax');
             if (dom) {
-                setTimeout(() => {
-                    this.clearCacheData();
-                    this.refreshBox();
-                    this.mindmap && this.mindmap.emit('renderEditNode', {});
-                }, 100);
+                (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.scheduleNodeRemeasure(this);
             }
             //image
             this.contentEl.querySelectorAll('img').forEach(element => {
                 element.onload = () => {
-                    this.clearCacheData();
-                    this.refreshBox();
-                    this.mindmap && this.mindmap.emit('renderEditNode', {});
+                    var _a;
+                    (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.scheduleNodeRemeasure(this);
                 };
                 element.onerror = () => {
-                    this.clearCacheData();
-                    this.refreshBox();
-                    this.mindmap && this.mindmap.emit('renderEditNode', {});
+                    var _a;
+                    (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.scheduleNodeRemeasure(this);
                 };
                 element.setAttribute('draggble', 'false');
             });
         }, 100);
     }
+    // Makes this node the only selected node.
     select() {
+        this.mindmap.collapseSelectionTo(this);
+        this.addToSelection(true);
+    }
+    // Adds the node to the selection; the primary node is the one editing,
+    // keyboard navigation and Markdown sync act on.
+    addToSelection(primary) {
+        var _a;
+        const mindmap = this.mindmap;
+        const previous = mindmap.selectNode;
+        if (!primary && previous && previous !== this && previous.isSelect) {
+            this.isSelect = true;
+            mindmap.selectedNodes.add(this);
+            this.containEl.setAttribute('draggable', 'true');
+            this.containEl.classList.add('mm-node-select', 'mm-node-select-secondary');
+            return;
+        }
         this.isSelect = true;
+        mindmap.selectedNodes.add(this);
         this.containEl.setAttribute('draggable', 'true');
         //if(this.mindmap.view.plugin.settings.focusOnMove) {
-        this.containEl.focus(); // set the dom to be focused
+        // Selection should not make the scroll container follow the node.
+        // Editing explicitly focuses the content element below.
+        if (!mindmap.suppressFocus) {
+            this.containEl.focus({ preventScroll: true });
+        }
         //}
-        Object.assign(window, {
-            myNode: this
-        });
+        if (previous && previous !== this && previous.isSelect) {
+            previous.containEl.classList.add('mm-node-select-secondary');
+        }
+        this.containEl.classList.remove('mm-node-select-secondary');
         if (!this.containEl.classList.contains('mm-node-select')) {
             this.containEl.classList.add('mm-node-select');
         }
-        this.mindmap.selectNode = this;
+        // Compared with the node last reported, not `selectNode`: callers
+        // sometimes assign `selectNode` before calling select().
+        const changed = mindmap.reportedSelectNode !== this;
+        mindmap.selectNode = this;
+        if (changed) {
+            mindmap.reportedSelectNode = this;
+            (_a = mindmap.view) === null || _a === void 0 ? void 0 : _a.onMapSelectionChanged();
+        }
     }
     unSelect() {
+        var _a;
         this.isSelect = false;
+        (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.selectedNodes.delete(this);
         this.containEl.setAttribute('draggable', 'false');
         if (this.containEl.classList.contains('mm-node-select')) {
             this.containEl.classList.remove('mm-node-select');
+        }
+        if (this.containEl.classList.contains('mm-node-select-secondary')) {
+            this.containEl.classList.remove('mm-node-select-secondary');
         }
     }
     edit() {
@@ -663,7 +904,7 @@ class Node$1 {
         //  console.log(_t);
         this.contentEl.innerText = this.data.text;
         this.contentEl.setAttribute('contentEditable', 'true');
-        this.contentEl.focus();
+        this.contentEl.focus({ preventScroll: true });
         this.mindmap.editNode = this;
         this.data.isEdit = true;
         keepLastIndex(this.contentEl);
@@ -678,7 +919,7 @@ class Node$1 {
                 if (!this.mindmap.fileSuggest)
                     return;
                 this.contentEl.innerText;
-                const selection = window.getSelection();
+                const selection = this.contentEl.ownerDocument.defaultView.getSelection();
                 if (selection && selection.rangeCount > 0) {
                     const range = selection.getRangeAt(0);
                     const preCursorRange = range.cloneRange();
@@ -719,8 +960,8 @@ class Node$1 {
         //     range.moveToElementText(text);
         //     range.select();
         // }
-        if (window.getSelection) {
-            var selection = window.getSelection();
+        if (this.contentEl.ownerDocument.defaultView.getSelection) {
+            var selection = this.contentEl.ownerDocument.defaultView.getSelection();
             var range = document.createRange();
             range.selectNodeContents(text);
             selection.removeAllRanges();
@@ -731,7 +972,7 @@ class Node$1 {
         // Replace regular spaces with non-breaking spaces
         const formattedText = i_str_1.replace(/ /g, '\u00A0');
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
         l_selectedText = formattedText + l_selectedText;
         // Create a new selection range
@@ -751,7 +992,7 @@ class Node$1 {
     setSelectedText(i_str_1, i_str_2, i_check, i_set_as_suffix, i_select_str) {
         let l_str_len = i_str_1.length;
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
         // Remove leading space(s)
         let l_leadingSpace = false;
@@ -833,7 +1074,7 @@ class Node$1 {
     }
     setSelectedText_italic() {
         // Get selection and Create new text
-        let l_selection = window.getSelection();
+        let l_selection = this.contentEl.ownerDocument.defaultView.getSelection();
         let l_selectedText = l_selection.toString();
         // Remove leading space(s)
         let l_leadingSpace = false;
@@ -890,37 +1131,46 @@ class Node$1 {
         // Unselect modified text
         //selection.removeAllRanges();
     }
+    commitEdit() {
+        return this.finishEdit(true);
+    }
     cancelEdit() {
-        var _a;
+        return this.finishEdit(false);
+    }
+    finishEdit(commit) {
+        var _a, _b;
         if (!this.data.isEdit)
-            return;
+            return false;
         (_a = this.mindmap.fileSuggest) === null || _a === void 0 ? void 0 : _a.close();
         this.contentEl.removeEventListener('input', this._inputHandler);
         this.contentEl.removeEventListener('keydown', this._keydownHandler);
         this.contentEl.removeAttribute('contentEditable');
-        var text = this.contentEl.innerText.trim() || '';
-        if (text.length == 0) {
+        var text = commit ? (this.contentEl.innerText.trim() || '') : this._oldText;
+        if (commit && text.length == 0) {
             text = this._oldText;
         }
-        this.data.text = text;
+        const changed = commit && text !== this._oldText;
         this.contentEl.innerText = '';
-        obsidian.MarkdownRenderer.renderMarkdown(text, this.contentEl, this.mindmap.path || "", null).then(() => {
-            this.data.mdText = this.contentEl.innerHTML;
-            this.refreshBox();
-            this._delay();
-        });
-        if (text != this._oldText) {
+        this.data.isEdit = false;
+        if (changed) {
             this.mindmap.execute('changeNodeText', {
                 node: this,
                 text,
                 oldText: this._oldText
             });
         }
-        this.contentEl.removeAttribute('contentEditable');
-        this.data.isEdit = false;
+        else {
+            this.setText(text);
+            this.clearCacheData();
+            this.mindmap.requestRenderRefresh();
+        }
         if (this.containEl.classList.contains('mm-edit-node')) {
             this.containEl.classList.remove('mm-edit-node');
         }
+        if (!commit) {
+            (_b = this.mindmap.view) === null || _b === void 0 ? void 0 : _b.applyPendingExternalChange();
+        }
+        return changed;
     }
     getLevel() {
         var level = 0, parent = this.parent;
@@ -1158,6 +1408,7 @@ class Node$1 {
         if (this.containEl.classList.contains('mm-node-collapse')) {
             this.containEl.classList.remove('mm-node-collapse');
         }
+        this.mindmap.onNodeExpansionChanged(this);
     }
     collapse() {
         this.mindmap.appEl.classList.add('mm-no-transition');
@@ -1177,6 +1428,7 @@ class Node$1 {
         if (!this.containEl.classList.contains('mm-node-collapse')) {
             this.containEl.classList.add('mm-node-collapse');
         }
+        this.mindmap.onNodeExpansionChanged(this);
     }
 }
 
@@ -1250,30 +1502,63 @@ class Layout {
             });
         }
     }
+    countDescendants(n) {
+        return n.children.reduce((sum, c) => sum + 1 + this.countDescendants(c), 0);
+    }
+    // Search can show a collapsed branch without changing its saved state.
+    isExpandedForLayout(n) {
+        var _a, _b;
+        return n.isExpand || Boolean((_b = (_a = this.mind) === null || _a === void 0 ? void 0 : _a.searchTemporarilyExpandedIds) === null || _b === void 0 ? void 0 : _b.has(n.getId()));
+    }
     _setDirect(n, direct) {
+        var _a, _b, _c;
         n.stroke = '';
         n.direct = direct;
-        var flag = n.containEl.classList.contains('mm-node-second');
-        n.containEl.setAttribute('class', '');
-        n.containEl.classList.add('mm-node');
-        n.containEl.classList.add('mm-node-' + direct);
-        if (n.isLeaf() && !n.containEl.classList.contains('mm-node-leaf')) {
-            n.containEl.classList.add('mm-node-leaf');
+        var isSelected = n.isSelect || ((_a = n.mindmap) === null || _a === void 0 ? void 0 : _a.selectNode) === n;
+        var isEditing = Boolean((_b = n.data) === null || _b === void 0 ? void 0 : _b.isEdit);
+        var level = n.getLevel();
+        var isSecondLevel = level == 1;
+        // Levels have different font sizes, so a level change needs a remeasure.
+        var wantedLevel = levelClass(level);
+        var levelChanged = wantedLevel !== '' && !n.containEl.classList.contains(wantedLevel);
+        // Only touch classes that change: rewriting the class list restyles
+        // every node, which dominates layout time on large maps.
+        const classList = n.containEl.classList;
+        const wanted = {
+            'mm-node': true,
+            'mm-node-left': direct == 'left',
+            'mm-node-right': direct == 'right',
+            'mm-node-leaf': n.isLeaf(),
+            'mm-node-collapse': !this.isExpandedForLayout(n),
+            'mm-node-second': isSecondLevel,
+            'mm-node-third': level == 2,
+            'mm-node-deep': level >= 3,
+        };
+        if (isSelected) {
+            wanted['mm-node-select'] = true;
         }
-        else {
-            if (n.containEl.classList.contains('mm-node-leaf')) {
-                n.containEl.classList.remove('mm-node-leaf');
+        if (isEditing) {
+            wanted['mm-edit-node'] = true;
+        }
+        for (const name in wanted) {
+            if (classList.contains(name) !== wanted[name]) {
+                if (wanted[name]) {
+                    classList.add(name);
+                }
+                else {
+                    classList.remove(name);
+                }
             }
         }
-        if (n.getLevel() == 1) {
-            n.containEl.classList.add('mm-node-second');
-            n.refreshBox();
+        // A collapsed node shows how many nodes it hides.
+        const hidden = wanted['mm-node-collapse'] && !n.isLeaf() ? String(this.countDescendants(n)) : '';
+        if (n._barDom && n._barDom.textContent !== hidden) {
+            n._barDom.textContent = hidden;
         }
-        if (flag) {
+        if (levelChanged) {
             n.refreshBox();
-        }
-        if (!n.isExpand) {
-            n.containEl.classList.add('mm-node-collapse');
+            n.clearCacheData();
+            (_c = this.mind) === null || _c === void 0 ? void 0 : _c.scheduleNodeRemeasure(n);
         }
         n.children.forEach(c => {
             this._setDirect(c, direct);
@@ -1297,7 +1582,6 @@ class Layout {
         this._dolayout();
         // balance layout
         this._doRefresh();
-        this.createLink();
     }
     layoutMindMap() {
         this.layoutRight();
@@ -1334,7 +1618,7 @@ class Layout {
             next[1] += parseInt(childBox.height + nodeDis + '');
         });
         rights.forEach((item) => {
-            if (item.isExpand) {
+            if (this.isExpandedForLayout(item)) {
                 this.layoutRight(item.children, item);
             }
         });
@@ -1371,7 +1655,7 @@ class Layout {
             next[1] += childBox.height + nodeDis;
         });
         lefts.forEach((item) => {
-            if (item.isExpand) {
+            if (this.isExpandedForLayout(item)) {
                 this.layoutLeft(item.children, item);
             }
         });
@@ -1485,7 +1769,7 @@ class Layout {
         mind.traverseDF((n) => {
             if (n == me.root)
                 return;
-            if (!n.isExpand) {
+            if (!me.isExpandedForLayout(n)) {
                 return;
             }
             var box = n.getCBox();
@@ -1553,7 +1837,7 @@ class Layout {
         var rootLevel = this.root.getLevel();
         var activePaths = new Set();
         function createLine(node) {
-            if (!node.isExpand) {
+            if (!me.isExpandedForLayout(node)) {
                 return;
             }
             var children = node.getChildren();
@@ -1644,10 +1928,19 @@ class Layout {
                         }).fill('none');
                     }
                     me.pathMap[pathId] = line1;
+                    line1._mmStroke = _stroke;
                 }
-                else {
+                else if (line1._mmStroke !== _stroke) {
                     line1.stroke({ color: _stroke });
+                    line1._mmStroke = _stroke;
                 }
+                // Rewriting an unchanged path still costs a repaint.
+                const plot = (d) => {
+                    if (line1._mmPath !== d) {
+                        line1.plot(d);
+                        line1._mmPath = d;
+                    }
+                };
                 if (lineWidth % 2 == 1) {
                     parseInt(childPos.x + '') - 0.5;
                     parseInt(childPos.x + childBox.width + '') - 0.5;
@@ -1672,7 +1965,7 @@ class Layout {
                         cpx12.x = from.x - dis / 2;
                     }
                     var pathStr = `M${x1} ${y1}  C ${cpx11.x} ${cpx11.y}, ${cpx12.x} ${cpx12.y}, ${x2} ${y2}`;
-                    line1.plot(pathStr);
+                    plot(pathStr);
                 }
                 else {
                     // Underline removed for card-style layout
@@ -1700,7 +1993,7 @@ class Layout {
                     cpx12.x = parseInt(cpx12.x + '');
                     cpx12.y = parseInt(cpx12.y + '');
                     var path = `M${x1} ${y1}  C ${cpx11.x} ${cpx11.y}, ${cpx12.x} ${cpx12.y}, ${x2} ${y2}`;
-                    line1.plot(path);
+                    plot(path);
                 }
                 createLine(child);
             });
@@ -7347,15 +7640,19 @@ class History {
         this.limit = limit || 50;
     }
     execute(command) {
-        this.clearRedo();
         if (command.execute()) {
-            var length = this.undos.length;
-            if (length >= this.limit) {
-                this.undos.shift();
-            }
-            this.undos.push(command);
-            this.change(command);
+            this.record(command);
         }
+    }
+    // Adds a command that has already run.
+    record(command) {
+        this.clearRedo();
+        var length = this.undos.length;
+        if (length >= this.limit) {
+            this.undos.shift();
+        }
+        this.undos.push(command);
+        this.change(command);
     }
     undo() {
         if (this.canUndo()) {
@@ -7400,6 +7697,7 @@ class History {
 
 class Command {
     constructor(name) {
+        this.expandedTarget = false;
         this.name = name;
     }
     execute() { return false; }
@@ -7407,12 +7705,79 @@ class Command {
     redo() {
         this.execute();
     }
+    expandTargetIfCollapsed() {
+        this.expandedTarget = false;
+        const node = this.expandTarget;
+        if (node && !node.isExpand) {
+            node.expand();
+            node.clearCacheData();
+            this.expandedTarget = true;
+        }
+    }
+    restoreTargetCollapse() {
+        if (this.expandedTarget && this.expandTarget) {
+            this.expandTarget.collapse();
+            this.expandTarget.clearCacheData();
+            this.expandedTarget = false;
+        }
+    }
     refresh(mind) {
         var m = mind || this.mind;
         if (m) {
+            // Inside a batch, layout and saving run once at the end.
+            if (m.refreshSuspended) {
+                m.refreshPending = true;
+                return;
+            }
             m.emit('renderEditNode', {});
             m.emit('mindMapChange', {});
         }
+    }
+}
+// Runs `run` with layout and saving deferred to a single pass at the end.
+function suspendRefresh(mind, run) {
+    mind.refreshSuspended++;
+    try {
+        run();
+    }
+    finally {
+        mind.refreshSuspended--;
+        if (!mind.refreshSuspended && mind.refreshPending) {
+            mind.refreshPending = false;
+            mind.emit('renderEditNode', {});
+            mind.emit('mindMapChange', {});
+        }
+    }
+}
+// Commands run by Exec.batch(), undone and redone as one step.
+class BatchCommand extends Command {
+    constructor(mind) {
+        super('batch');
+        this.commands = [];
+        this.mind = mind;
+    }
+    execute() {
+        return this.commands.length > 0;
+    }
+    undo() {
+        suspendRefresh(this.mind, () => {
+            for (let i = this.commands.length - 1; i >= 0; i--) {
+                this.commands[i].undo();
+            }
+        });
+        this.restoreSelectionLater(this.before);
+    }
+    redo() {
+        suspendRefresh(this.mind, () => this.commands.forEach((c) => c.redo()));
+        this.restoreSelectionLater(this.after);
+    }
+    // Child commands reselect nodes in timeouts; run after them.
+    restoreSelectionLater(snapshot) {
+        setTimeout(() => {
+            if (snapshot) {
+                this.mind.restoreSelection(snapshot);
+            }
+        }, 0);
     }
 }
 class AddNode extends Command {
@@ -7424,8 +7789,16 @@ class AddNode extends Command {
         this.node = node;
         this.parent = parent;
         this.mind = mind || this.node.mindmap;
+        this.expandTarget = parent;
     }
     execute() {
+        // Adding a node changes the layout of its whole sibling group. Keep the
+        // viewport stable while the initial layout and edit state are applied.
+        const appEl = this.mind.appEl;
+        const ownerWindow = appEl.ownerDocument.defaultView;
+        appEl.classList.add('mm-no-transition');
+        this.mind.clearSelectNode();
+        this.expandTargetIfCollapsed();
         if (this.index > -1) {
             this.mind.addNode(this.node, this.parent, this.index); //add node to position of parent children
         }
@@ -7434,10 +7807,17 @@ class AddNode extends Command {
         }
         this.node.refreshBox();
         this.refresh();
-        this.mind.clearSelectNode();
         setTimeout(() => {
             this.node.select();
             this.node.edit();
+            this.mind.revealNode(this.node);
+            const release = () => appEl.classList.remove('mm-no-transition');
+            if (ownerWindow) {
+                ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(release));
+            }
+            else {
+                release();
+            }
         }, 0);
         return true; //exit with no error
     }
@@ -7445,6 +7825,7 @@ class AddNode extends Command {
         var p = this.node.parent;
         this.index = this.mind.removeNode(this.node);
         this.mind.clearSelectNode();
+        this.restoreTargetCollapse();
         setTimeout(() => {
             this.refresh();
             p && p.select();
@@ -7492,18 +7873,26 @@ class ChangeNodeText extends Command {
         this.isFirst = true;
     }
     execute() {
+        var _a;
         //if(!this.isFirst){
         this.node.setText(this.text);
         //}
         this.node.refreshBox();
         this.node.clearCacheData();
+        if (this.node.data.isRoot) {
+            (_a = this.node.mindmap.view) === null || _a === void 0 ? void 0 : _a.markRootTitleChange(this.text);
+        }
         this.refresh(this.node.mindmap);
         return true; //exit with no error
     }
     undo() {
+        var _a;
         this.node.setText(this.oldText);
         this.node.clearCacheData();
         this.node.refreshBox();
+        if (this.node.data.isRoot) {
+            (_a = this.node.mindmap.view) === null || _a === void 0 ? void 0 : _a.markRootTitleChange(this.oldText);
+        }
         this.refresh(this.node.mindmap);
         this.isFirst = false;
     }
@@ -7526,10 +7915,15 @@ class MoveNode extends Command {
             this.newParent = this.dropNode.parent;
             this.type = this.data.direct;
         }
+        this.expandTarget = this.data.expandTarget;
     }
     execute() {
         this.node.mindmap.clearSelectNode();
+        this.expandTargetIfCollapsed();
         if (this.data.type.indexOf('child') > -1) {
+            if (!this.parent || !this.oldParent || this.parent === this.node) {
+                return false;
+            }
             if (this.oldParent) {
                 this.index = this.oldParent.removeChild(this.node);
             }
@@ -7544,6 +7938,9 @@ class MoveNode extends Command {
             this.node.select();
         }
         else {
+            if (!this.oldParent || !this.newParent || !this.dropNode) {
+                return false;
+            }
             if (this.oldParent) {
                 this.index = this.oldParent.removeChild(this.node);
             }
@@ -7578,6 +7975,7 @@ class MoveNode extends Command {
             }, this.node);
             this.parent.clearCacheData();
             this.node.clearCacheData();
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
             this.node.select();
         }
@@ -7586,6 +7984,7 @@ class MoveNode extends Command {
             this.dropNode.clearCacheData();
             this.oldParent.addChild(this.node, this.index);
             this.node.clearCacheData();
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
             this.node.select();
         }
@@ -7654,50 +8053,81 @@ class PasteNode extends Command {
     constructor(node, data) {
         super('copyNode');
         this.waitCollapse = [];
+        // Top-level pasted nodes (several when several subtrees were copied).
+        this.firstNodes = [];
+        this.indexes = [];
         this.node = node;
         this.data = data;
         this.mind = this.node.mindmap;
         this.waitCollapse = [];
+        this.expandTarget = node;
     }
     execute() {
+        this.firstNodes = [];
+        this.waitCollapse = [];
+        this.expandTargetIfCollapsed();
         this.paste();
-        return true; //exit with no error
+        if (!this.firstNodes.length) {
+            this.restoreTargetCollapse();
+        }
+        return this.firstNodes.length > 0;
     }
     undo() {
-        if (this.firstNode) {
-            this.mind.removeNode(this.firstNode);
+        if (this.firstNodes.length) {
+            this.indexes = [];
+            for (let i = this.firstNodes.length - 1; i >= 0; i--) {
+                this.indexes[i] = this.mind.removeNode(this.firstNodes[i]);
+            }
             this.node.clearCacheData();
-            // this.updateItems(this.node);
+            this.restoreTargetCollapse();
             this.refresh(this.node.mindmap);
         }
     }
+    // Re-attach the pasted subtrees so later redo commands still reference them.
+    redo() {
+        if (!this.firstNodes.length) {
+            this.execute();
+            return;
+        }
+        this.expandTargetIfCollapsed();
+        this.firstNodes.forEach((n, i) => {
+            this.mind.addNode(n, this.node, this.indexes[i]);
+            n.clearCacheData();
+            n.refreshBox();
+        });
+        this.node.clearCacheData();
+        this.refresh(this.mind);
+    }
     paste() {
+        const created = new Map();
         this.data.forEach((d, i) => {
+            var parent = d.pid ? created.get(d.pid) : null;
+            // Entries without a parent in the data are the copied subtrees' roots.
+            if (!parent && i > 0 && d.pid) {
+                return;
+            }
             var n = new Node$1(d, this.mind);
             n.mindmap = this.mind;
-            if (!d.isExpand) {
+            if (d.expanded === false) {
                 this.waitCollapse.push(n);
             }
-            if (i == 0) {
+            if (!parent) {
                 n.data.pid = this.node.getId();
                 this.mind.addNode(n, this.node);
-                this.firstNode = n;
-                n.setPosition(0, 0);
-                n.refreshBox();
+                this.firstNodes.push(n);
             }
             else {
-                var parent = this.mind.getNodeById(d.pid);
-                if (parent) {
-                    this.mind.addNode(n, parent);
-                    n.setPosition(0, 0);
-                    n.refreshBox();
-                }
+                this.mind.addNode(n, parent);
             }
-            if (i == this.data.length - 1) {
-                n.clearCacheData();
-                this.refresh(this.mind);
-            }
+            n.setPosition(0, 0);
+            n.refreshBox();
+            created.set(d.id, n);
         });
+        if (this.firstNodes.length) {
+            this.firstNodes[this.firstNodes.length - 1].clearCacheData();
+            this.refresh(this.mind);
+        }
+        this.waitCollapse.forEach((node) => node.collapse());
     }
 }
 
@@ -7707,10 +8137,47 @@ function uuid() {
     }
     return (S4() + S4() + '-' + S4() + '-' + S4());
 }
+function remapNodeIds(items) {
+    const idMap = {};
+    items.forEach((item) => {
+        idMap[item.id] = uuid();
+    });
+    return items.map((item) => (Object.assign(Object.assign({}, item), { id: idMap[item.id], pid: item.pid ? idMap[item.pid] : null })));
+}
+function normalizeSearchText(text) {
+    return text
+        .replace(/^\s*(?:`{3,}|~{3,})[^\n]*$/gm, '')
+        .replace(/!\[([^\]]*)\]\([^)]*\)/g, '$1')
+        .replace(/\[([^\]]+)\]\([^)]*\)/g, '$1')
+        .replace(/\[\[([^\]|]+)\|([^\]]+)\]\]/g, '$2')
+        .replace(/\[\[([^\]]+)\]\]/g, '$1')
+        .replace(/<\/?[A-Za-z][^>]*>/g, ' ')
+        .replace(/`([^`]+)`/g, '$1')
+        .replace(/\*\*([^*]+)\*\*/g, '$1')
+        .replace(/__([^_]+)__/g, '$1')
+        .replace(/~~([^~]+)~~/g, '$1')
+        .replace(/==([^=]+)==/g, '$1')
+        .replace(/^\s{0,3}#{1,6}\s+/gm, '')
+        .replace(/^\s*>\s?/gm, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+}
 
 class Exec {
     constructor() {
         this.history = new History(50);
+        // Batch collecting the commands run inside MindMap.batch().
+        this.recording = null;
+    }
+    run(command) {
+        if (this.recording) {
+            if (command.execute()) {
+                this.recording.commands.push(command);
+            }
+        }
+        else {
+            this.history.execute(command);
+        }
     }
     execute(name, data) {
         var l_return = null;
@@ -7724,25 +8191,25 @@ class Exec {
                     };
                     var parent = data.parent;
                     var node = new Node$1(d, parent.mindmap);
-                    this.history.execute(new AddNode(node, data.parent, parent.mindmap));
+                    this.run(new AddNode(node, data.parent, parent.mindmap));
                     l_return = node;
                 }
                 break;
             case 'deleteNodeAndChild':
                 if (data) {
                     var node = data.node;
-                    this.history.execute(new RemoveNode(node, node.mindmap));
+                    this.run(new RemoveNode(node, node.mindmap));
                 }
                 break;
             case 'changeNodeText':
                 if (data) {
-                    this.history.execute(new ChangeNodeText(data.node, data.oldText, data.text));
+                    this.run(new ChangeNodeText(data.node, data.oldText, data.text));
                 }
                 break;
             case 'moveNode':
                 if (data.inHistory === undefined || data.inHistory == true) {
                     if (data) {
-                        this.history.execute(new MoveNode(data));
+                        this.run(new MoveNode(data));
                     }
                 }
                 else { // inHistory == false
@@ -7753,24 +8220,48 @@ class Exec {
                 break;
             case 'movePosition':
                 if (data) {
-                    this.history.execute(new MovePos(data.node, data.oldPos, data.newPos));
+                    this.run(new MovePos(data.node, data.oldPos, data.newPos));
                 }
                 break;
             case 'expandNode':
                 if (data) {
-                    this.history.execute(new ExpandNode(data.node));
+                    this.run(new ExpandNode(data.node));
                 }
                 break;
             case 'collapseNode':
                 if (data) {
-                    this.history.execute(new CollapseNode(data.node));
+                    this.run(new CollapseNode(data.node));
                 }
                 break;
             case 'pasteNode':
-                this.history.execute(new PasteNode(data.node, data.data));
+                this.run(new PasteNode(data.node, data.data));
                 break;
         }
         return l_return;
+    }
+    // Runs the commands `run` executes as one undo step with one layout and
+    // one save; `select` then sets the selection kept for redo.
+    batch(mind, run, select) {
+        if (this.recording) {
+            run();
+            return true;
+        }
+        const batch = new BatchCommand(mind);
+        batch.before = mind.captureSelection();
+        this.recording = batch;
+        try {
+            suspendRefresh(mind, run);
+        }
+        finally {
+            this.recording = null;
+        }
+        if (!batch.commands.length) {
+            return false;
+        }
+        select === null || select === void 0 ? void 0 : select();
+        batch.after = mind.captureSelection();
+        this.history.record(batch);
+        return true;
     }
     undo() {
         this.history.undo();
@@ -7800,6 +8291,11 @@ class FileSuggest {
     }
     open(node, rect, query) {
         this.node = node;
+        // Show the list in the window that holds the node (popouts included).
+        const nodeDocument = node.contentEl.ownerDocument;
+        if (this.containerEl.ownerDocument !== nodeDocument || !this.containerEl.isConnected) {
+            nodeDocument.body.appendChild(this.containerEl);
+        }
         this.activeQuery = query;
         this.updateSuggestions();
         if (this.files.length === 0) {
@@ -7877,6 +8373,7 @@ class FileSuggest {
         }
         else if (e.key === 'Escape') {
             e.preventDefault();
+            e.stopPropagation();
             this.close();
             return true;
         }
@@ -7885,7 +8382,7 @@ class FileSuggest {
     selectFile(file) {
         if (this.node) {
             const contentEl = this.node.contentEl;
-            const selection = window.getSelection();
+            const selection = contentEl.ownerDocument.defaultView.getSelection();
             if (!selection || selection.rangeCount === 0)
                 return;
             const range = selection.getRangeAt(0);
@@ -7924,246 +8421,2208 @@ class FileSuggest {
     }
 }
 
-var mind = {};
-var color = ['#fda16c', '#74bdf7', '#71FF5E', 'orange', '#D4D4AA', 'yellow'];
-var canvasWidth = 8000;
-var canvasHeight = 8000;
-const importXmind = function (data) {
-    mind = {
-        "theme": 'blue',
-        "mindData": [],
-        "induceData": [],
-        "wireFrameData": [],
-        "relateLink": [],
-        "background": '',
-        "relateLinkData": [],
-        "calloutData": [],
-        'marks': [],
-    };
-    var mainlist = [];
-    transferData(data.rootTopic, null, mainlist, true);
-    var root = mainlist[0];
-    data.rootTopic.children && data.rootTopic.children.detached && data.rootTopic.children.detached.forEach((d) => {
-        var list = [];
-        transferData(d, root.id, list);
-        mainlist = mainlist.concat(list);
-    });
-    mind.mindData.push(mainlist);
-    mind.basicData = transferListToData(mainlist);
-    data.relationships && data.relationships.forEach((rl) => {
-        var obj = {
-            startNodeId: rl.end1Id,
-            endNodeId: rl.end2Id,
-            nodeData: {
-                'text': '',
-                'nodeType': 'relateLink',
-                'backgroundColor': '#f06'
-            }
-        };
-        if (rl.title) {
-            obj.nodeData.text = rl.title;
-        }
-        mind.relateLinkData.push(obj);
-    });
-    return mind;
-};
-var task = {
-    'task-start': '0',
-    'task-oct': '10',
-    'task-3oct': '30',
-    'task-5oct': '50',
-    'task-7oct': '70',
-    'task-9oct': '90',
-    'task-done': '100',
-};
-function transferListToData(list) {
-    var obj = {};
-    var root = null;
-    function transfer(data, i) {
-        var nodeData = {
-            id: data.id,
-            text: data.text,
-            children: [],
-            expanded: true
-        };
-        if (i == 0) {
-            nodeData.main = true;
-            nodeData.isRoot = true;
-            root = nodeData;
-        }
-        return nodeData;
+function openSearch() {
+    var _a, _b, _c;
+    if (this.searchPanel) {
+        (_a = this.searchInput) === null || _a === void 0 ? void 0 : _a.focus();
+        (_b = this.searchInput) === null || _b === void 0 ? void 0 : _b.select();
+        return;
     }
-    list.forEach((n, i) => {
-        var data = transfer(n, i);
-        if (!obj[n.id]) {
-            obj[n.id] = data;
-        }
-        if (obj[n.pid]) {
-            obj[n.pid].children.push(data);
+    if ((_c = this.editNode) === null || _c === void 0 ? void 0 : _c.data.isEdit) {
+        this.editNode.commitEdit();
+        this.editNode = null;
+    }
+    const ownerDocument = this.containerEL.ownerDocument;
+    const panel = ownerDocument.createElement('div');
+    panel.className = 'mapdown-search-panel';
+    panel.setAttribute('role', 'search');
+    const input = ownerDocument.createElement('input');
+    input.className = 'mapdown-search-input';
+    input.type = 'search';
+    input.placeholder = t('Search nodes placeholder');
+    input.setAttribute('aria-label', t('Search nodes'));
+    const count = ownerDocument.createElement('span');
+    count.className = 'mapdown-search-count';
+    count.setAttribute('aria-live', 'polite');
+    count.textContent = '0 / 0';
+    const previous = this.createSearchButton(ownerDocument, 'chevron-up', t('Previous match'));
+    const next = this.createSearchButton(ownerDocument, 'chevron-down', t('Next match'));
+    const close = this.createSearchButton(ownerDocument, 'x', t('Close search'));
+    previous.disabled = true;
+    next.disabled = true;
+    panel.append(input, count, previous, next, close);
+    this.containerEL.appendChild(panel);
+    this.searchPanel = panel;
+    this.searchInput = input;
+    this.searchCount = count;
+    this.searchPreviousButton = previous;
+    this.searchNextButton = next;
+    panel.addEventListener('mousedown', (event) => event.stopPropagation());
+    input.addEventListener('input', () => {
+        if (!this.searchComposing) {
+            this.scheduleSearchRefresh();
         }
     });
-    return root;
+    input.addEventListener('compositionstart', () => {
+        this.searchComposing = true;
+    });
+    input.addEventListener('compositionend', () => {
+        this.searchComposing = false;
+        this.scheduleSearchRefresh();
+    });
+    input.addEventListener('keydown', (event) => {
+        event.stopPropagation();
+        if (event.isComposing || this.searchComposing || event.keyCode === 229) {
+            return;
+        }
+        if (event.key === 'Enter') {
+            event.preventDefault();
+            this.navigateSearch(event.shiftKey ? -1 : 1);
+        }
+        else if (event.key === 'Escape') {
+            event.preventDefault();
+            this.closeSearch();
+        }
+    });
+    input.addEventListener('keyup', (event) => event.stopPropagation());
+    previous.addEventListener('click', () => this.navigateSearch(-1));
+    next.addEventListener('click', () => this.navigateSearch(1));
+    close.addEventListener('click', () => this.closeSearch());
+    input.focus();
 }
-function transferData(data, parentId, list, mainFlag) {
-    var text = '';
-    if (data.title) {
-        text = data.title;
+function createSearchButton(ownerDocument, icon, label) {
+    const button = ownerDocument.createElement('button');
+    button.type = 'button';
+    button.className = 'mapdown-search-button';
+    button.title = label;
+    button.setAttribute('aria-label', label);
+    obsidian.setIcon(button, icon);
+    return button;
+}
+function scheduleSearchRefresh() {
+    if (!this.searchPanel) {
+        return;
     }
-    var node = {
-        id: data.id,
-        pid: parentId,
-        text: text,
-        //  percent:data.data.progress<=8?data.data.progress*10:'',
-        // priority:data.data.priority,
-        //link:data.href,
-        note: '',
-        //tag:data.data.resource
-        marks: [],
-        // resource:data.data.resource,
-        expanded: true,
-        image: '',
-        imageName: '',
-        x: 0,
-        y: 0
-    };
-    if (!parentId) {
-        node.layout = {};
-        node.layout.layoutName = "mindmap";
-        node.layout.direct = "right";
-        if (mainFlag) {
-            node.isRoot = true;
-            node.main = true;
-            node.x = canvasWidth / 2;
-            node.y = canvasHeight / 2;
+    const ownerWindow = this.containerEL.ownerDocument.defaultView;
+    if (!ownerWindow) {
+        this.updateSearchResults(++this.searchGeneration);
+        return;
+    }
+    if (this.searchTimer !== null) {
+        ownerWindow.clearTimeout(this.searchTimer);
+    }
+    const generation = ++this.searchGeneration;
+    this.searchTimer = ownerWindow.setTimeout(() => {
+        this.searchTimer = null;
+        this.updateSearchResults(generation);
+    }, 120);
+}
+function updateSearchResults(generation) {
+    var _a;
+    if (!this.searchPanel || generation !== this.searchGeneration) {
+        return;
+    }
+    const query = (((_a = this.searchInput) === null || _a === void 0 ? void 0 : _a.value) || '').trim().toLocaleLowerCase();
+    const queryChanged = query !== this.searchQuery;
+    const previousMatchId = this.currentSearchMatchId;
+    let visibilityChanged = false;
+    if (queryChanged && this.searchTemporarilyExpandedIds.size > 0) {
+        this.searchTemporarilyExpandedIds.clear();
+        this.updateEffectiveNodeVisibility();
+        visibilityChanged = true;
+    }
+    this.searchQuery = query;
+    this.searchMatchIds = [];
+    this.traverseDF((node) => {
+        node.containEl.classList.remove('mm-node-search-match', 'mm-node-search-current');
+        if (query && normalizeSearchText(node.data.text || '').toLocaleLowerCase().includes(query)) {
+            this.searchMatchIds.push(node.getId());
         }
+    }, this.root, true);
+    this.currentSearchMatchId = !queryChanged && previousMatchId && this.searchMatchIds.includes(previousMatchId)
+        ? previousMatchId
+        : undefined;
+    this.refreshSearchHighlights();
+    if (visibilityChanged) {
+        this.refresh();
     }
-    if (data.href) {
-        node.link = data.href;
+}
+function flushSearchRefresh() {
+    if (!this.searchPanel) {
+        return;
     }
-    if (data.notes) {
-        node.note = data.notes.plain.content.trim();
+    const ownerWindow = this.containerEL.ownerDocument.defaultView;
+    if (this.searchTimer !== null && ownerWindow) {
+        ownerWindow.clearTimeout(this.searchTimer);
     }
-    // if(data.image){
-    //     node.isImageNode=true;
-    //     node.image='';
-    //     node.imageName=data.image.src.replace('xap:resources/','');
+    this.searchTimer = null;
+    this.updateSearchResults(++this.searchGeneration);
+}
+function refreshSearchHighlights() {
+    const matches = new Set(this.searchMatchIds);
+    this.traverseDF((node) => {
+        const id = node.getId();
+        node.containEl.classList.toggle('mm-node-search-match', matches.has(id));
+        node.containEl.classList.toggle('mm-node-search-current', id === this.currentSearchMatchId);
+    }, this.root, true);
+    const total = this.searchMatchIds.length;
+    const currentIndex = this.currentSearchMatchId
+        ? this.searchMatchIds.indexOf(this.currentSearchMatchId) + 1
+        : 0;
+    if (this.searchCount) {
+        this.searchCount.textContent = this.searchQuery && total === 0
+            ? t('No matches')
+            : `${currentIndex} / ${total}`;
+        this.searchCount.title = total > 0 && currentIndex === 0 ? t('Press Enter to locate') : '';
+    }
+    if (this.searchPreviousButton)
+        this.searchPreviousButton.disabled = total === 0;
+    if (this.searchNextButton)
+        this.searchNextButton.disabled = total === 0;
+}
+function navigateSearch(direction) {
+    this.flushSearchRefresh();
+    if (this.searchMatchIds.length === 0) {
+        return;
+    }
+    const currentIndex = this.currentSearchMatchId
+        ? this.searchMatchIds.indexOf(this.currentSearchMatchId)
+        : -1;
+    const nextIndex = currentIndex < 0
+        ? (direction > 0 ? 0 : this.searchMatchIds.length - 1)
+        : (currentIndex + direction + this.searchMatchIds.length) % this.searchMatchIds.length;
+    const targetId = this.searchMatchIds[nextIndex];
+    const target = this.getNodeById(targetId);
+    if (!target) {
+        this.scheduleSearchRefresh();
+        return;
+    }
+    let ancestor = target.parent;
+    while (ancestor) {
+        if (!ancestor.isExpand) {
+            this.searchTemporarilyExpandedIds.add(ancestor.getId());
+        }
+        ancestor = ancestor.parent;
+    }
+    this.updateEffectiveNodeVisibility();
+    if (this.focusedNode && !this.isNodeWithin(target, this.focusedNode)) {
+        this.focusedNode = undefined;
+    }
+    this.currentSearchMatchId = targetId;
+    this.refresh();
+    this.refreshSearchHighlights();
+    this.scrollNodeIntoView(target);
+}
+function isNodeWithin(node, ancestor) {
+    let current = node;
+    while (current) {
+        if (current === ancestor)
+            return true;
+        current = current.parent;
+    }
+    return false;
+}
+function scrollNodeIntoView(node) {
+    const ownerWindow = this.containerEL.ownerDocument.defaultView;
+    const generation = ++this.searchScrollGeneration;
+    const scroll = () => {
+        var _a;
+        if (generation !== this.searchScrollGeneration ||
+            !this.searchPanel ||
+            this.currentSearchMatchId !== node.getId()) {
+            return;
+        }
+        const nodeRect = node.containEl.getBoundingClientRect();
+        const containerRect = this.containerEL.getBoundingClientRect();
+        this.containerEL.scrollTo({
+            left: this.containerEL.scrollLeft + nodeRect.left + nodeRect.width / 2 -
+                (containerRect.left + this.containerEL.clientWidth / 2),
+            top: this.containerEL.scrollTop + nodeRect.top + nodeRect.height / 2 -
+                (containerRect.top + this.containerEL.clientHeight / 2),
+            behavior: 'smooth',
+        });
+        (_a = this.searchInput) === null || _a === void 0 ? void 0 : _a.focus();
+    };
+    ownerWindow ? ownerWindow.requestAnimationFrame(scroll) : scroll();
+}
+function closeSearch(restoreTemporaryExpansion = true) {
+    var _a;
+    const ownerWindow = this.containerEL.ownerDocument.defaultView;
+    if (this.searchTimer !== null && ownerWindow) {
+        ownerWindow.clearTimeout(this.searchTimer);
+    }
+    this.searchTimer = null;
+    this.searchGeneration++;
+    this.searchScrollGeneration++;
+    this.traverseDF((node) => {
+        node.containEl.classList.remove('mm-node-search-match', 'mm-node-search-current');
+    }, this.root, true);
+    if (restoreTemporaryExpansion) {
+        this.searchTemporarilyExpandedIds.clear();
+        this.updateEffectiveNodeVisibility();
+    }
+    this.searchTemporarilyExpandedIds.clear();
+    (_a = this.searchPanel) === null || _a === void 0 ? void 0 : _a.remove();
+    this.searchPanel = undefined;
+    this.searchInput = undefined;
+    this.searchCount = undefined;
+    this.searchPreviousButton = undefined;
+    this.searchNextButton = undefined;
+    this.searchQuery = '';
+    this.searchMatchIds = [];
+    this.currentSearchMatchId = undefined;
+    if (restoreTemporaryExpansion) {
+        this.refresh();
+    }
+}
+
+function handleAppKeydown(e, keyCode) {
+    var _a, _b;
+    var ctrlKey = e.ctrlKey || e.metaKey;
+    var shiftKey = e.shiftKey;
+    var altKey = e.altKey;
+    // if (ctrlKey) {                         // Shift -> Selecting
+    //     // ctrl -> selecting
+    //     this.selectingNodes = true;
+    // } else {
+    //     this.selectingNodes = false;
     // }
-    if (data.labels) {
-        node.marks = [];
-        data.labels.forEach((lab) => {
-            node.marks.push({
-                id: uuid(),
-                text: lab,
-                fill: color[parseInt(Math.random() * color.length + '')]
-            });
-        });
-    }
-    if (data.markers) {
-        data.markers.forEach((item) => {
-            if (item.markerId.indexOf('priority') > -1) {
-                node.priority = item.markerId.split('-')[1];
-            }
-            if (item.markerId.indexOf('task') > -1) {
-                node.percent = task[item.markerId];
-            }
-        });
-    }
-    list.push(node);
-    data.children && data.children.attached && data.children.attached.forEach((c) => {
-        transferData(c, data.id, list);
-    });
-    //induce
-    data.summaries && data.summaries.forEach((sum) => {
-        var r = sum.range.substring(1, sum.range.length - 1);
-        // console.log(r,'induce');
-        var s = r.split(',')[0];
-        var e = r.split(',')[1];
-        var induceData = {
-            induceData: {
-                nodeId: sum.topicId,
-                range: r,
-                id: sum.id,
-            }
-        };
-        data.children.attached.forEach((c, i) => {
-            if (i == s) {
-                induceData.induceData.nodeId = c.id;
-            }
-            if (i == e) {
-                induceData.induceData.endNodeId = c.id;
-            }
-        });
-        var mData = [];
-        var summary = data.children.summary;
-        var sumData = summary.filter((item) => {
-            return item.id == sum.topicId;
-        })[0];
-        transferData(sumData, null, mData);
-        mData[0].nodeType = 'induce';
-        induceData.mindData = mData;
-        mind.induceData.push(induceData);
-    });
-    //wireframe
-    data.boundaries && data.boundaries.forEach((bum) => {
-        var r = bum.range.substring(1, bum.range.length - 1);
-        var s = r.split(',')[0];
-        var e = r.split(',')[1];
-        var wf = {
-            stroke: "rgb(206, 214, 218)",
-            fill: "transparent",
-            lineDash: [6, 2],
-            radius: 10,
-            data: {
-                text: '',
-                nodeType: 'wireFrame'
-            }
-        };
-        if (bum.title) {
-            wf.data = {
-                text: bum.title,
-                nodeType: 'wireFrame'
-            };
+    if (!ctrlKey && !shiftKey && !altKey) { // No special key
+        // Editing, adding nodes and focus mode act on the primary node alone.
+        const primaryOnly = keyCode == 70 || keyCode == 32 || keyCode == 13 || keyCode == 9 ||
+            keyCode == 45 || e.key == 'Enter' || e.key == 'Tab';
+        if (primaryOnly && this.selectNode && !this.selectNode.data.isEdit) {
+            this.collapseSelectionTo(this.selectNode);
         }
-        data.children.attached.forEach((c, i) => {
-            if (i == s) {
-                wf.nodeId = c.id;
+        let exitedFocus = false;
+        // Focus Mode: F key (70)
+        if (keyCode == 70) {
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                e.preventDefault();
+                e.stopPropagation();
+                if (this.focusedNode === node) {
+                    this.exitFocusMode();
+                }
+                else {
+                    this.focusedNode = node;
+                    this.refresh();
+                    this.centerOnNode(node);
+                }
             }
-            if (i == e) {
-                wf.endNodeId = c.id;
+        }
+        // Esc key (27) to exit Focus Mode
+        if (keyCode == 27) {
+            if (this.focusedNode) {
+                e.preventDefault();
+                e.stopPropagation();
+                this.exitFocusMode();
+                exitedFocus = true;
             }
-        });
-        wf.range = r;
-        mind.wireFrameData.push(wf);
-    });
-    //collout
-    data.children && data.children.callout && data.children.callout.forEach((c) => {
-        var callout = {
-            nodeId: data.id,
-            color: '#f06',
-            rootData: {
-                text: c.title,
-                id: c.id
+        }
+        // Space
+        if (keyCode == 32) {
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                e.preventDefault();
+                e.stopPropagation();
+                node.edit();
+                this._menuDom.style.display = 'none';
             }
-        };
-        mind.calloutData.push(callout);
-    });
+        }
+        // Enter
+        if (keyCode == 13 || e.key == 'Enter') {
+            var node = this.selectNode;
+            if (node) {
+                if (!node.data.isEdit) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!node.parent)
+                        return;
+                    var newNode = node.mindmap.execute('addSiblingNode', {
+                        parent: node.parent
+                    });
+                    this._menuDom.style.display = 'none';
+                    this.moveNode(newNode, node, 'down', false);
+                }
+                else {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.clearSelectNode();
+                    node.select();
+                    node.mindmap.editNode = null;
+                }
+            }
+        }
+        // Delete / Backspace
+        if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
+            var node = this.selectNode;
+            if (node && !node.data.isEdit && this.deleteSelection()) {
+                e.preventDefault();
+                e.stopPropagation();
+                this._menuDom.style.display = 'none';
+            }
+        }
+        // Tab / Insert
+        if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
+            var node = this.selectNode;
+            if (node) {
+                if (!node.data.isEdit) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    node.mindmap.execute("addChildNode", { parent: node });
+                    this._menuDom.style.display = 'none';
+                }
+                else {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    this.clearSelectNode();
+                    node.select();
+                    node.mindmap.editNode = null;
+                }
+            }
+        }
+        // Escape
+        if (keyCode == 27) {
+            e.preventDefault();
+            e.stopPropagation();
+            var node = this.selectNode;
+            if (node && node.data.isEdit) {
+                node.select();
+                node.mindmap.editNode = null;
+                node.cancelEdit();
+            }
+            else if (!exitedFocus && this.selectedNodes.size) {
+                this.clearSelectNode();
+            }
+        }
+    }
+    // While editing, Ctrl+Z/Y belong to the text field's native undo.
+    if (ctrlKey && !shiftKey && !altKey && !((_a = this.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit) && !((_b = this.selectNode) === null || _b === void 0 ? void 0 : _b.data.isEdit)) { // CTRL key
+        //ctrl + y
+        if (keyCode == 89) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.redo();
+        }
+        //ctrl + z
+        if (keyCode == 90) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.undo();
+        }
+        //ctrl + a
+        if (keyCode == 65) {
+            e.preventDefault();
+            e.stopPropagation();
+            this.selectAllVisible();
+        }
+    }
+    // Shift + F2 : Edit as space does
+    // if (!ctrlKey && shiftKey && !altKey) {  // SHIFT key
+    //     if (keyCode == 113) {
+    //     // if (keyCode == 45) {
+    //         var node = this.selectNode;
+    //         if (node && !node.data.isEdit) {
+    //             e.preventDefault();
+    //             e.stopPropagation();
+    //             if (!node.isExpand) {
+    //                 node.expand();
+    //             }
+    //             if (!node.parent) return;
+    //             node.mindmap.execute('addSiblingNode', {
+    //                 parent: node.parent
+    //             });
+    //             this._menuDom.style.display='none';
+    //         }
+    //     }
+    // }
+}
+function handleAppKeyup(e) {
+    var keyCode = e.keyCode || e.which || e.charCode;
+    var ctrlKey = e.ctrlKey || e.metaKey;
+    var shiftKey = e.shiftKey;
+    var altKey = e.altKey;
+    // if (ctrlKey) {                         // Shift -> Selecting
+    //     // Ctrl -> selecting
+    //     this.selectingNodes = true;
+    // } else {
+    //     this.selectingNodes = false;
+    // }
+    if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
+        // Arrow keys and Home move a single selection.
+        const isNavigation = (keyCode >= 37 && keyCode <= 40) || keyCode == 36;
+        if (isNavigation && this.selectNode && !this.selectNode.data.isEdit) {
+            this.collapseSelectionTo(this.selectNode);
+        }
+        // up
+        if (keyCode == 38 || e.key == 'ArrowUp') {
+            e.preventDefault();
+            e.stopPropagation();
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                if (node === this.root) {
+                    this._selectNode(node, "up");
+                    return;
+                }
+                var l_selectedNode = node;
+                while ((this.selectNode == node) &&
+                    (l_selectedNode != this.root)) {
+                    this._selectNode(l_selectedNode, "up");
+                    l_selectedNode = l_selectedNode.parent;
+                }
+            }
+        }
+        if (keyCode == 40 || e.key == 'ArrowDown') {
+            e.preventDefault();
+            e.stopPropagation();
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                if (node === this.root) {
+                    this._selectNode(node, "down");
+                    return;
+                }
+                var l_selectedNode = node;
+                while ((this.selectNode == node) &&
+                    (l_selectedNode != this.root)) {
+                    this._selectNode(l_selectedNode, "down");
+                    l_selectedNode = l_selectedNode.parent;
+                }
+            }
+        }
+        if (keyCode == 39 || e.key == 'ArrowRight') {
+            e.preventDefault();
+            e.stopPropagation();
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                if (node === this.root) {
+                    this._selectNode(node, "right");
+                    return;
+                }
+                var rootPos = this.root.getPosition();
+                var nodePos = node.getPosition();
+                if (rootPos.x > nodePos.x) { // Node on left side of the mindmap
+                    node.unSelect();
+                    node.parent.select();
+                }
+                else {
+                    var node = this.selectNode;
+                    if (!node.isExpand && node.children.length) {
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                    }
+                    this._selectNode(node, "right");
+                }
+            }
+        }
+        if (keyCode == 37 || e.key == 'ArrowLeft') {
+            e.preventDefault();
+            e.stopPropagation();
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                if (node === this.root) {
+                    this._selectNode(node, "left");
+                    return;
+                }
+                var rootPos = this.root.getPosition();
+                var nodePos = node.getPosition();
+                if (rootPos.x < nodePos.x) { // Node on right side of the mindmap
+                    node.unSelect();
+                    node.parent.select();
+                }
+                else {
+                    var node = this.selectNode;
+                    if (!node.isExpand && node.children.length) {
+                        node.mindmap.execute('expandNode', {
+                            node
+                        });
+                    }
+                    this._selectNode(node, "left");
+                }
+            }
+        }
+        // Home : Select root node
+        if (keyCode == 36) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ((!this.selectNode) ||
+                (!this.selectNode.data.isEdit)) { // No edition: select root node
+                if (this.selectNode) {
+                    this.selectNode.unSelect();
+                }
+                this.root.select();
+                this.center();
+            }
+        }
+    }
+    if (ctrlKey && !shiftKey && !altKey) { // CTRL KEY
+        /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
+        // if ((keyCode == 191) || (keyCode == 111)) {
+        //     var node = this.selectNode;
+        //     this._toggleExpandNode(node);
+        // }
+        if ((keyCode == 191) || (keyCode == 111)) {
+            var node = this.selectNode;
+            if (node && !node.data.isEdit) {
+                if (node.isExpand) {
+                    node.mindmap.execute('collapseNode', {
+                        node
+                    })
+                } else {
+                    node.mindmap.execute('expandNode', {
+                        node
+                    })
+                }
+            }
+        }*/
+        // Ctrl + B => Bold
+        // if (keyCode == 66) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     if(this.selectNode) {
+        //         var l_prefix_1 = "**";
+        //         var l_prefix_2 = "__";
+        //         var node = this.selectNode;
+        //         if(node.data.isEdit)
+        //         {// A node is edited: set in bold only the selected part
+        //             var l_check_prefix = true;
+        //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
+        //         }
+        //         else
+        //         {// Set in bold the whole node
+        //             this._formatNode(node, l_prefix_1, l_prefix_2);
+        //             e.preventDefault();
+        //             e.stopPropagation();
+        //         }
+        //         this.refresh();
+        //         this.scale(this.mindScale);
+        //     }
+        //     //else: no node selected: nothing to do
+        // }
+        // Ctrl + I => Italic
+        // if (keyCode == 73) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     if(this.selectNode) {
+        //         var node = this.selectNode;
+        //         if(node.data.isEdit)
+        //         {// A node is edited: set in italics only the selected part
+        //             node.setSelectedText_italic();
+        //         }
+        //         else
+        //         {// Set in italics the whole node
+        //             var text = node.data.text;
+        //             if( (  ((text.substring(0,1)=="*") ||
+        //                     (text.substring(0,1)=="_") )        &&
+        //                 (text.substring(0,2)!="**")             &&
+        //                 (text.substring(0,2)!="__")             )   ||
+        //                 (text.substring(0,3)=="***")                ||
+        //                 (text.substring(0,3)=="___")                )
+        //             {// Already italic
+        //                 text = text.substring(1); // Remove leading * / _
+        //                 if( (text.substring(text.length-1)=="*") ||
+        //                     (text.substring(text.length-1)=="_") )   {
+        //                     // Remove trailing * / _
+        //                     text = text.substring(0,text.length-1);
+        //                 }
+        //                 // else: no trailing *
+        //             }
+        //             else {// Not in italic
+        //                 text = "*"+text+"*"; // Use "*" to allow bold/italic change in whatever order
+        //             }
+        //             // Set in node text
+        //             node.data.oldText = node.data.text;
+        //             node.setText(text);
+        //             e.preventDefault();
+        //             e.stopPropagation();
+        //         }
+        //         this.refresh();
+        //         this.scale(this.mindScale);
+        //     }
+        //     //else: no node selected: nothing to do
+        // }
+        // ctrl + E  center mindmap view
+        // if (keyCode == 69) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     //this.center();
+        //     this.centerOnNode(this.selectNode);
+        // }
+        // ctrl + Up: Move one node above
+        // if (keyCode == 38 || e.key == 'ArrowUp') {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var node = this.selectNode;
+        //     if(!node)
+        //     {// No node selected: select root node
+        //         this.root.select();
+        //         node = this.selectNode;
+        //     }
+        //     else if((!node.data.isEdit)  &&
+        //             (!node.data.isRoot)  )
+        //     {// The node can be moved
+        //         var type='top';
+        //         if(node.getIndex() == 0)
+        //         {// First sibling: move BELOW "previous" (=last) node
+        //             type='down';
+        //         }
+        //         //else: no special treatment
+        //         this.moveNode(node, node.getPreviousSibling(), type);
+        //     }
+        //     this.centerOnNode(this.selectNode);
+        // }
+        // // Ctrl + Down: Move one step below
+        // if (keyCode == 40 || e.key == 'ArrowDown') {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var node = this.selectNode;
+        //     if(!node)
+        //     {// No node selected: select root node
+        //         this.root.select();
+        //         node = this.selectNode;
+        //     }
+        //     else if((!node.data.isEdit)  &&
+        //             (!node.data.isRoot)  )
+        //     {// The node can be moved
+        //         var type='down';
+        //         if(node.getIndex() == node.parent.children.length-1)
+        //         {// Last sibling: move ABOVE "next" (=first) node
+        //             type='top';
+        //         }
+        //         //else: no special treatment
+        //         this.moveNode(node, node.getNextSibling(), type);
+        //     }
+        //     this.centerOnNode(this.selectNode);
+        // }
+        // // Ctrl + Left
+        // if (keyCode == 37 || e.key == 'ArrowLeft') {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var node = this.selectNode;
+        //     if(!node)
+        //     {// No node selected: select root node
+        //         this.root.select();
+        //         node = this.selectNode;
+        //     }
+        //     else {// Move current node as parent/child depending on the position
+        //         var rootPos = this.root.getPosition();
+        //         var nodePos = node.getPosition();
+        //         if(rootPos.x < nodePos.x)
+        //         {
+        //             this._moveAsParent(node);
+        //         }
+        //         else
+        //         {
+        //             this._moveAsChild(node, node.getPreviousSibling());
+        //         }
+        //     }
+        //     this.centerOnNode(this.selectNode);
+        // }
+        // // Ctrl + Right
+        // if (keyCode == 39 || e.key == 'ArrowRight') {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var node = this.selectNode;
+        //     if(!node)
+        //     {// No node selected
+        //         this.root.select();
+        //         node = this.selectNode;
+        //     }
+        //     else {
+        //         var rootPos = this.root.getPosition();
+        //         var nodePos = node.getPosition();
+        //         if(rootPos.x < nodePos.x)
+        //         {
+        //             // this.selectedNodes.forEach((n:INode) => {
+        //             //     this._moveAsChild(n);
+        //             // });
+        //             this._moveAsChild(node, node.getPreviousSibling());
+        //         }
+        //         else
+        //         {
+        //             this._moveAsParent(node);
+        //         }
+        //     }
+        //     this.centerOnNode(this.selectNode);
+        // }
+        // // Ctrl + J: Join with following node
+        // if (keyCode == 74) {
+        //     e.preventDefault();
+        //     e.stopPropagation();
+        //     var node = this.selectNode;
+        //     if(node)
+        //     {  this.joinWithFollowingNode(node); }
+        //     // else: No node selected: nothing to do
+        // }
+        // Ctrl + Home : Select root node
+        if (keyCode == 36) {
+            e.preventDefault();
+            e.stopPropagation();
+            if ((!this.selectNode) ||
+                (!this.selectNode.data.isEdit)) { // No edition: select root node
+                if (this.selectNode && !this.selectNode.data.isRoot) {
+                    this.selectNode.unSelect();
+                    this.root.select();
+                }
+                this.center();
+            }
+        }
+    }
 }
 
-/*!
+// Scroll just enough to show a keyboard-selected or newly added node.
+function revealNode(node) {
+    const ownerWindow = this.containerEL.ownerDocument.defaultView;
+    const generation = ++this.revealGeneration;
+    const reveal = () => {
+        if (generation !== this.revealGeneration || !node.containEl.isConnected || !node.isShow()) {
+            return;
+        }
+        const margin = 40;
+        const nodeRect = node.containEl.getBoundingClientRect();
+        const containerRect = this.containerEL.getBoundingClientRect();
+        let dx = 0;
+        let dy = 0;
+        if (nodeRect.left - margin < containerRect.left) {
+            dx = nodeRect.left - margin - containerRect.left;
+        }
+        else if (nodeRect.right + margin > containerRect.left + this.containerEL.clientWidth) {
+            dx = nodeRect.right + margin - (containerRect.left + this.containerEL.clientWidth);
+        }
+        if (nodeRect.top - margin < containerRect.top) {
+            dy = nodeRect.top - margin - containerRect.top;
+        }
+        else if (nodeRect.bottom + margin > containerRect.top + this.containerEL.clientHeight) {
+            dy = nodeRect.bottom + margin - (containerRect.top + this.containerEL.clientHeight);
+        }
+        if (dx || dy) {
+            this.containerEL.scrollBy({ left: dx, top: dy });
+        }
+    };
+    if (ownerWindow) {
+        ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(reveal));
+    }
+    else {
+        reveal();
+    }
+}
+function _hierarchySelectNode(node, direct) {
+    if (!node) {
+        return;
+    }
+    var viewportWidth = this.containerEL.clientWidth;
+    var viewportHeight = this.containerEL.clientHeight;
+    var diagonalViewport = Math.sqrt(viewportWidth * viewportWidth + viewportHeight * viewportHeight);
+    const MAX_PARENT_DISTANCE = diagonalViewport / 5;
+    var waitNode = null;
+    var nodePos = node.getPosition();
+    // var mind = this;
+    var rootPos = this.root.getPosition();
+    var rootDirect = rootPos.x > nodePos.x ? 'right' : 'left';
+    if (node === this.root) {
+        waitNode = this.__selectChildren(node, direct);
+        if (waitNode) {
+            this.clearSelectNode();
+            waitNode.select();
+            return;
+        }
+    }
+    if (direct === 'up') {
+        if (node.parent) {
+            var indexOfNode = node.parent.children.indexOf(node);
+            if (indexOfNode === 0) {
+                var parentPos = node.parent.getPosition();
+                var dx = Math.abs(parentPos.x - nodePos.x);
+                var dy = Math.abs(parentPos.y - nodePos.y);
+                var dis = Math.sqrt(dx * dx + dy * dy);
+                if (dis > MAX_PARENT_DISTANCE) {
+                    this._selectNode(node, direct);
+                    return;
+                }
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+            else if (indexOfNode > 0) {
+                waitNode = node.parent.children[indexOfNode - 1];
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+        }
+        this._selectNode(node, direct);
+    }
+    else if (direct === 'down') {
+        if (node.parent) {
+            var indexOfNode = node.parent.children.indexOf(node);
+            if (indexOfNode === (node.parent.children.length - 1)) {
+                var parentPos = node.parent.getPosition();
+                var dx = Math.abs(parentPos.x - nodePos.x);
+                var dy = Math.abs(parentPos.y - nodePos.y);
+                var dis = Math.sqrt(dx * dx + dy * dy);
+                if (dis > MAX_PARENT_DISTANCE) {
+                    this._selectNode(node, direct);
+                    return;
+                }
+                waitNode = node.parent;
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+            else if (indexOfNode < (node.parent.children.length - 1)) {
+                waitNode = node.parent.children[indexOfNode + 1];
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+        }
+        this._selectNode(node, direct);
+    }
+    else if (direct === 'right') {
+        if (rootDirect === 'right' && node.parent) {
+            waitNode = node.parent;
+            this.clearSelectNode();
+            waitNode.select();
+            return;
+        }
+        else {
+            waitNode = this.__selectChildren(node, direct);
+            if (waitNode) {
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+        }
+        // this._selectNode(node,direct);
+    }
+    else if (direct === 'left') {
+        if (rootDirect === 'left' && node.parent) {
+            waitNode = node.parent;
+            this.clearSelectNode();
+            waitNode.select();
+            return;
+        }
+        else {
+            waitNode = this.__selectChildren(node, direct);
+            if (waitNode) {
+                this.clearSelectNode();
+                waitNode.select();
+                return;
+            }
+        }
+        // this._selectNode(node,direct);
+    }
+}
+function __selectChildren(node, direct) {
+    if (!node)
+        return;
+    if (!node.isExpand)
+        return;
+    var minDis;
+    var waitNode = null;
+    var pos = node.getPosition();
+    if (node.children) {
+        node.children.forEach(n => {
+            var p = n.getPosition();
+            var dx = Math.abs(p.x - pos.x);
+            var dy = Math.abs(p.y - pos.y);
+            var dis = Math.sqrt(dx * dx + dy * dy);
+            var _helper = () => {
+                if (minDis) {
+                    if (minDis > dis) {
+                        minDis = dis;
+                        waitNode = n;
+                    }
+                }
+                else {
+                    minDis = dis;
+                    waitNode = n;
+                }
+            };
+            switch (direct) {
+                case "right":
+                    if (p.x > pos.x)
+                        _helper();
+                    break;
+                case "left":
+                    if (p.x < pos.x)
+                        _helper();
+                    break;
+                case "up":
+                    if (p.y < pos.y)
+                        _helper();
+                    break;
+                case "down":
+                    if (p.y > pos.y)
+                        _helper();
+                    break;
+            }
+        });
+    }
+    return waitNode;
+}
+function _selectNode(node, direct) {
+    if (!node) {
+        return;
+    }
+    var minDis;
+    var waitNode = null;
+    var pos = node.getPosition();
+    var rootPos = this.root.getPosition();
+    var level = node.getLevel();
+    var mind = this;
+    if (node === this.root && (direct === 'up' || direct === 'down')) {
+        mind.traverseDF((n) => {
+            if (n === node || !n.isShow()) {
+                return;
+            }
+            const p = n.getPosition();
+            const dx = Math.abs(p.x - pos.x);
+            const dy = Math.abs(p.y - pos.y);
+            const dis = Math.sqrt(dx * dx + dy * dy);
+            const isCandidate = direct === 'up' ? p.y < pos.y : p.y > pos.y;
+            if (isCandidate && (!minDis || minDis > dis)) {
+                minDis = dis;
+                waitNode = n;
+            }
+        });
+        if (waitNode) {
+            mind.clearSelectNode();
+            waitNode.select();
+        }
+        return;
+    }
+    if (node === this.root && (direct === 'left' || direct === 'right')) {
+        mind.traverseDF((n) => {
+            if (n === node || !n.isShow()) {
+                return;
+            }
+            const p = n.getPosition();
+            const dx = Math.abs(p.x - pos.x);
+            const dy = Math.abs(p.y - pos.y);
+            const dis = Math.sqrt(dx * dx + dy * dy);
+            const isCandidate = direct === 'left' ? p.x < pos.x : p.x > pos.x;
+            if (isCandidate && (!minDis || minDis > dis)) {
+                minDis = dis;
+                waitNode = n;
+            }
+        });
+        if (waitNode) {
+            mind.clearSelectNode();
+            waitNode.select();
+        }
+        return;
+    }
+    mind.traverseDF((n) => {
+        var p = n.getPosition();
+        var l = n.getLevel();
+        var dx = Math.abs(p.x - pos.x);
+        var dy = Math.abs(p.y - pos.y);
+        var dis = Math.sqrt(dx * dx + dy * dy);
+        switch (direct) {
+            case "right":
+                if (((pos.x > this.root.getPosition().x) &&
+                    (l == level + 1)) ||
+                    ((pos.x < this.root.getPosition().x) &&
+                        (l == level - 1)) ||
+                    ((level == 0) &&
+                        l == 1)) { // The tested node is at the correct level
+                    if ((n == node.parent) || (node == n.parent)) { // Move only within same lineage
+                        if (p.x > pos.x) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            }
+                            else {
+                                minDis = dis;
+                                waitNode = n;
+                            }
+                        }
+                    }
+                }
+                break;
+            case "left":
+                if (((pos.x > this.root.getPosition().x) &&
+                    (l == level - 1)) ||
+                    ((pos.x < this.root.getPosition().x) &&
+                        (l == level + 1)) ||
+                    ((level == 0) &&
+                        l == 1)) { // The tested node is at the correct level
+                    if ((n == node.parent) || (node == n.parent)) { // Move only within same lineage
+                        if (p.x < pos.x) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            }
+                            else {
+                                minDis = dis;
+                                waitNode = n;
+                            }
+                        }
+                    }
+                }
+                break;
+            case "up":
+                if ((n.isShow()) &&
+                    (((pos.x < rootPos.x) &&
+                        (p.x < rootPos.x)) ||
+                        ((pos.x > rootPos.x) &&
+                            (p.x > rootPos.x)))) { // Move only on shown nodes + on the same side of the root
+                    if (p.y < pos.y) {
+                        if (level == l) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            }
+                            else {
+                                minDis = dis;
+                                waitNode = n;
+                            }
+                        }
+                    }
+                }
+                break;
+            case "down":
+                if ((n.isShow()) &&
+                    (((pos.x < rootPos.x) &&
+                        (p.x < rootPos.x)) ||
+                        ((pos.x > rootPos.x) &&
+                            (p.x > rootPos.x)))) { // Move only on shown nodes + on the same side of the root
+                    if (p.y > pos.y) {
+                        if (level == l) {
+                            if (minDis) {
+                                if (minDis > dis) {
+                                    minDis = dis;
+                                    waitNode = n;
+                                }
+                            }
+                            else {
+                                minDis = dis;
+                                waitNode = n;
+                            }
+                        }
+                    }
+                }
+                break;
+        }
+    });
+    if (waitNode) {
+        mind.clearSelectNode();
+        waitNode.select();
+    }
+}
 
-JSZip v3.10.1 - A JavaScript class for generating and reading zip files
-<http://stuartk.com/jszip>
+function appClickFn(evt) {
+    var _a;
+    var targetEl = evt.target;
+    if (targetEl) {
+        var internalLink = targetEl.closest('a.internal-link');
+        if (internalLink) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            var href = internalLink.getAttribute("data-href") || internalLink.getAttribute("href");
+            if (href) {
+                const openMode = this.view.plugin.settings.linkOpenMode;
+                this.view.app.workspace.openLinkText(href, this.view.file.path, openMode === "current" ? false : openMode);
+            }
+            return;
+        }
+        if (targetEl.hasClass('mm-node-bar')) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            var id = targetEl.closest('.mm-node').getAttribute('data-id');
+            var node = this.getNodeById(id);
+            if (node.isExpand) {
+                node.mindmap.execute('collapseNode', {
+                    node
+                });
+            }
+            else {
+                node.mindmap.execute('expandNode', {
+                    node
+                });
+            }
+            return;
+        }
+        if (targetEl.closest('.mm-node-menu')) {
+            if (targetEl.closest('.mm-icon-add-node')) {
+                var selectNode = this.selectNode;
+                if (selectNode) {
+                    this.collapseSelectionTo(selectNode);
+                    selectNode.mindmap.execute("addChildNode", { parent: selectNode });
+                    this._menuDom.style.display = 'none';
+                }
+            }
+            if (targetEl.closest('.mm-icon-delete-node')) {
+                if (this.deleteSelection()) {
+                    this._menuDom.style.display = 'none';
+                }
+            }
+            if (targetEl.closest('.mm-icon-focus-node')) {
+                var selectNode = this.selectNode;
+                if (selectNode && !selectNode.data.isEdit) {
+                    this.collapseSelectionTo(selectNode);
+                    if (this.focusedNode === selectNode) {
+                        this.exitFocusMode();
+                    }
+                    else {
+                        this.focusedNode = selectNode;
+                        this.refresh();
+                        this.centerOnNode(selectNode);
+                    }
+                    this._menuDom.style.display = 'none';
+                }
+            }
+            return;
+        }
+        if (targetEl.closest('.mm-node')) {
+            var id = targetEl.closest('.mm-node').getAttribute('data-id');
+            var node = this.getNodeById(id);
+            // While a node is edited, any click ends the edit like a plain click.
+            var canExtend = node && !node.data.isEdit && !((_a = this.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit);
+            if (canExtend && (evt.metaKey || evt.ctrlKey)) {
+                this.toggleSelection(node);
+            }
+            else if (canExtend && evt.shiftKey) {
+                this.selectRange(node);
+            }
+            else if (node && (!node.isSelect || this.selectedNodes.size > 1)) {
+                this.clearSelectNode();
+                node.select();
+            }
+            this._menuDom.style.display = 'none';
+        }
+        else {
+            // The click that ends a box selection keeps it.
+            if (Date.now() - this.marqueeEndedAt > 300) {
+                this.clearSelectNode();
+            }
+            this._menuDom.style.display = 'none';
+        }
+    }
+}
+// Drag on the canvas: selects the visible nodes inside the box; with
+// Cmd/Ctrl or Shift the box adds to the selection.
+function startMarquee(evt) {
+    const doc = this.containerEL.ownerDocument;
+    const box = doc.createElement('div');
+    box.className = 'mm-marquee';
+    doc.body.appendChild(box);
+    const x0 = evt.clientX, y0 = evt.clientY;
+    const additive = evt.metaKey || evt.ctrlKey || evt.shiftKey;
+    const rect = (e) => ({
+        left: Math.min(x0, e.clientX), top: Math.min(y0, e.clientY),
+        right: Math.max(x0, e.clientX), bottom: Math.max(y0, e.clientY),
+    });
+    const move = (e) => {
+        const r = rect(e);
+        box.style.left = `${r.left}px`;
+        box.style.top = `${r.top}px`;
+        box.style.width = `${r.right - r.left}px`;
+        box.style.height = `${r.bottom - r.top}px`;
+    };
+    const up = (e) => {
+        doc.removeEventListener('mousemove', move, true);
+        doc.removeEventListener('mouseup', up, true);
+        box.remove();
+        const r = rect(e);
+        if (r.right - r.left < 4 && r.bottom - r.top < 4) {
+            return;
+        }
+        this.marqueeEndedAt = Date.now();
+        this.selectInRect(r, additive);
+    };
+    doc.addEventListener('mousemove', move, true);
+    doc.addEventListener('mouseup', up, true);
+    move(evt);
+}
+function appContextMenu(evt) {
+    // Releasing the right button after panning is not a context click.
+    if (this.panMoved) {
+        this.panMoved = false;
+        evt.preventDefault();
+        return;
+    }
+    if (!this.isFocused)
+        return;
+    let targetEl = evt.target;
+    if (targetEl.closest('.mm-node')) {
+        evt.preventDefault();
+        evt.stopPropagation();
+        var id = targetEl.closest('.mm-node').getAttribute('data-id');
+        var node = this.getNodeById(id);
+        // Right-clicking inside a multiple selection keeps it.
+        if (node.isSelect && this.selectedNodes.size > 1) {
+            node.addToSelection(true);
+        }
+        else {
+            this.clearSelectNode();
+            node.select();
+        }
+        this._menuDom.style.display = 'flex';
+        // Calculate position
+        var box = this.selectNode.getBox();
+        var rootPos = this.root.getBox();
+        // If the node is on the left side of the root (or is root), we might position differently
+        // Usually we show it on the outer edge
+        if (box.x < rootPos.x) {
+            // Node is on the left side of root, place menu on the left of the node
+            this._menuDom.style.left = `${box.x - 40}px`;
+        }
+        else {
+            // Node is on the right side of root (or is root), place menu on the right
+            this._menuDom.style.left = `${box.x + box.width + 10}px`;
+        }
+        // Vertically center with the node
+        this._menuDom.style.top = `${box.y + box.height / 2 - 45}px`;
+    }
+}
+function appDragstart(evt) {
+    evt.stopPropagation();
+    this.startX = evt.pageX;
+    this.startY = evt.pageY;
+    if (evt.target instanceof HTMLElement) {
+        if (evt.target.closest('.mm-node')) {
+            var id = evt.target.closest('.mm-node').getAttribute('data-id');
+            this._dragNode = this.getNodeById(id);
+            this.drag = true;
+            // Dragging a node outside a multiple selection drags it alone.
+            if (this._dragNode && this.selectedNodes.size > 1 && !this._dragNode.isSelect) {
+                this._dragNode.select();
+            }
+        }
+    }
+}
+function appDragend(evt) {
+    this.drag = false;
+    this._dragNode = undefined;
+    this._indicateDom.style.display = 'none';
+    this._menuDom.style.display = 'none';
+    this.appEl.querySelectorAll('.mm-drag-over-child').forEach(el => el.classList.remove('mm-drag-over-child'));
+}
+function appDragover(evt) {
+    evt.preventDefault();
+    evt.stopPropagation();
+    var target = evt.target;
+    var x = evt.pageX;
+    var y = evt.pageY;
+    if (this.drag) {
+        this.dx = x - this.startX;
+        this.dx = y - this.startY;
+    }
+    // Clear previous child highlights
+    this.appEl.querySelectorAll('.mm-drag-over-child').forEach(el => el.classList.remove('mm-drag-over-child'));
+    if (target.closest('.mm-node')) {
+        var nodeEl = target.closest('.mm-node');
+        var nodeId = nodeEl.getAttribute('data-id');
+        var node = this.getNodeById(nodeId);
+        var box = node.getBox();
+        this._dragType = this._getDragType(node, x, y);
+        if (this._dragType.startsWith('child-')) {
+            // Dragging as a child: highlight the node itself
+            nodeEl.classList.add('mm-drag-over-child');
+            this._indicateDom.style.display = 'none';
+        }
+        else {
+            // Dragging as a sibling: show indicator line
+            this._indicateDom.style.display = 'block';
+            this._indicateDom.className = 'mm-node-layout-indicate';
+            if (this._dragType === 'top' || this._dragType === 'down') {
+                this._indicateDom.classList.add('mm-indicator-horizontal');
+                this._indicateDom.style.left = box.x + 'px';
+                this._indicateDom.style.top = (this._dragType === 'top' ? box.y - 4 : box.y + box.height + 2) + 'px';
+                this._indicateDom.style.width = box.width + 'px';
+            }
+            else if (this._dragType === 'left' || this._dragType === 'right') {
+                this._indicateDom.classList.add('mm-indicator-vertical');
+                this._indicateDom.style.left = (this._dragType === 'left' ? box.x - 4 : box.x + box.width + 2) + 'px';
+                this._indicateDom.style.top = box.y + 'px';
+                this._indicateDom.style.height = box.height + 'px';
+            }
+        }
+    }
+    else {
+        this._indicateDom.style.display = 'none';
+    }
+}
+function _getDragType(node, x, y) {
+    if (!node)
+        return;
+    var box = node.contentEl.getBoundingClientRect();
+    var direct = node.direct;
+    var topThreshold = box.y + box.height * 0.25;
+    var bottomThreshold = box.y + box.height * 0.75;
+    var leftThreshold = box.x + box.width * 0.25;
+    var rightThreshold = box.x + box.width * 0.75;
+    switch (direct) {
+        case 'right':
+            if (y < topThreshold)
+                return 'top';
+            if (y > bottomThreshold)
+                return 'down';
+            return 'child-right';
+        case 'left':
+            if (y < topThreshold)
+                return 'top';
+            if (y > bottomThreshold)
+                return 'down';
+            return 'child-left';
+        case 'top':
+        case 'up':
+            if (x < leftThreshold)
+                return 'left';
+            if (x > rightThreshold)
+                return 'right';
+            return 'child-top';
+        case 'down':
+        case 'bottom':
+            if (x < leftThreshold)
+                return 'left';
+            if (x > rightThreshold)
+                return 'right';
+            return 'child-down';
+        default:
+            if (y < topThreshold)
+                return 'top';
+            if (y > bottomThreshold)
+                return 'down';
+            return 'child';
+    }
+}
+function appDrop(evt) {
+    var _a, _b, _c, _d;
+    const isInternalNodeDrag = Boolean(this._dragNode && this.drag);
+    if (isInternalNodeDrag && evt.target instanceof HTMLElement) {
+        if (evt.target.closest('.mm-node')) {
+            evt.preventDefault();
+            var dropNodeId = evt.target.closest('.mm-node').getAttribute('data-id');
+            var dropNode = this.getNodeById(dropNodeId);
+            if (this._dragNode.data.isRoot) ;
+            else {
+                // A node of a multiple selection drags the whole selection.
+                var dragged = this._dragNode.isSelect && this.selectedNodes.size > 1
+                    ? this.topmostSelected()
+                    : [this._dragNode];
+                if (evt.ctrlKey) { // Ctrl key pressed: copy the nodes
+                    let copiedNode = this.copyNode(dragged);
+                    dropNode.select();
+                    this.pasteNode(copiedNode);
+                }
+                else { // Move the nodes
+                    this.moveNodes(dragged, dropNode, this._dragType);
+                }
+            }
+        }
+    }
+    // A dropped .xmind file becomes a new note; the open map is left alone.
+    const file = (_b = (_a = evt.dataTransfer) === null || _a === void 0 ? void 0 : _a.files) === null || _b === void 0 ? void 0 : _b[0];
+    const plugin = (_c = this.view) === null || _c === void 0 ? void 0 : _c.plugin;
+    if (file && plugin && file.name.toLowerCase().endsWith('.xmind')) {
+        evt.preventDefault();
+        const folder = plugin.app.fileManager.getNewFileParent(((_d = this.view.file) === null || _d === void 0 ? void 0 : _d.path) || '');
+        file.arrayBuffer()
+            .then((data) => plugin.importXmind(data, file.name, folder))
+            .catch((err) => {
+            console.error('Failed to read the dropped XMind file:', err);
+            new obsidian.Notice(t('Parse xmind error'));
+        });
+    }
+    this._indicateDom.style.display = 'none';
+    this._menuDom.style.display = 'none';
+}
+function appMouseOverFn(evt) {
+    var _a, _b, _c;
+    if (!((_a = this.view) === null || _a === void 0 ? void 0 : _a.plugin.settings.enableLinkPreview)) {
+        return;
+    }
+    const targetEl = evt.target;
+    const linkEl = targetEl.closest("a.internal-link");
+    const sourcePath = (_c = (_b = this.view) === null || _b === void 0 ? void 0 : _b.file) === null || _c === void 0 ? void 0 : _c.path;
+    if (linkEl && sourcePath) {
+        const linktext = linkEl.getAttribute("data-href") || linkEl.getAttribute("href") || linkEl.innerText;
+        if (!linktext) {
+            return;
+        }
+        this.view.app.workspace.trigger("hover-link", {
+            event: evt,
+            source: mindmapHoverSource,
+            hoverParent: this.view,
+            targetEl: linkEl,
+            linktext,
+            sourcePath,
+        });
+    }
+}
+function appMouseMove(evt) {
+    const targetEl = evt.target;
+    // The button was released outside the canvas, so mouseup never reached appEl.
+    if (this.drag && !this._dragNode && evt.buttons === 0) {
+        this.drag = false;
+    }
+    this.scalePointer = [];
+    this.scalePointer.push(evt.offsetX, evt.offsetY);
+    if (targetEl.closest('.mm-node')) {
+        var id = targetEl.closest('.mm-node').getAttribute('data-id');
+        var node = this.getNodeById(id);
+        if (node) {
+            var box = node.getBox();
+            this.scalePointer = [];
+            this.scalePointer.push(box.x + box.width / 2, box.y + box.height / 2);
+        }
+    }
+    if (this.drag && !this._dragNode) {
+        const dx = evt.pageX - this.startX, dy = evt.pageY - this.startY;
+        if (Math.abs(dx) > 3 || Math.abs(dy) > 3) {
+            this.panMoved = true;
+        }
+        this.containerEL.scrollLeft = this._left - dx;
+        this.containerEL.scrollTop = this._top - dy;
+    }
+}
+// Left drag on the canvas box-selects (adding with Cmd/Ctrl or Shift); right
+// drag on the canvas or middle drag anywhere pans.
+function appMouseDown(evt) {
+    const targetEl = evt.target;
+    const nodeEl = targetEl.closest('.mm-node');
+    this.panMoved = false;
+    if (targetEl.closest('.mm-control-panel, .mapdown-search-panel')) {
+        return;
+    }
+    // Shift+click extends the node selection, not the text selection.
+    if (nodeEl && evt.shiftKey && !nodeEl.classList.contains('mm-edit-node')) {
+        evt.preventDefault();
+    }
+    if (!nodeEl && evt.button === 0) {
+        // Keeps text from being selected; focus the map as the click would.
+        evt.preventDefault();
+        this.appEl.focus({ preventScroll: true });
+        startMarquee.call(this, evt);
+        return;
+    }
+    if (evt.button === 1 || (evt.button === 2 && !nodeEl)) {
+        if (evt.button === 1) {
+            evt.preventDefault();
+        }
+        this.drag = true;
+        this.panMoved = false;
+        this.startX = evt.pageX;
+        this.startY = evt.pageY;
+        this._left = this.containerEL.scrollLeft;
+        this._top = this.containerEL.scrollTop;
+    }
+}
+function appMouseUp(evt) {
+    this.drag = false;
+}
+function appDblclickFn(evt) {
+    var _a;
+    if (evt.target instanceof HTMLElement) {
+        if (evt.target.hasClass('mm-node-bar')) {
+            evt.preventDefault();
+            evt.stopPropagation();
+            return;
+        }
+        if (evt.target.closest('.mm-node') instanceof HTMLElement) {
+            var id = evt.target.closest('.mm-node').getAttribute('data-id');
+            const clicked = this.getNodeById(id);
+            this.collapseSelectionTo(clicked);
+            this.selectNode = clicked;
+            if (!this.editNode || (this.editNode && this.editNode != this.selectNode)) {
+                (_a = this.selectNode) === null || _a === void 0 ? void 0 : _a.edit();
+                this.editNode = this.selectNode;
+                this._menuDom.style.display = 'none';
+            }
+        }
+    }
+}
+function appMousewheel(evt) {
+    // The listener is on the body; only zoom the map under the pointer.
+    const target = evt.target;
+    if (!target || !this.containerEL.contains(target)) {
+        return;
+    }
+    // if(!evt) evt = window.event;
+    var ctrlKey = evt.ctrlKey || evt.metaKey;
+    // Listens to the standard wheel event; Electron 43 no longer fires mousewheel.
+    var delta = -evt.deltaY;
+    if (delta) {
+        if (delta < 0) {
+            if (ctrlKey) {
+                this.setScale("down");
+            }
+        }
+        else {
+            if (ctrlKey) {
+                this.setScale("up");
+            }
+        }
+    }
+}
 
-(c) 2009-2016 Stuart Knightley <stuart [at] stuartk.com>
-Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip/main/LICENSE.markdown.
+const CODE_FENCE = /^(`{3,}|~{3,})/;
+function clampHeadLevel(value) {
+    const level = Number(value);
+    return Number.isFinite(level) ? Math.max(0, Math.min(6, Math.trunc(level))) : 1;
+}
+function forEachWithDepth(root, source, visit) {
+    const recurse = (node, depth) => {
+        visit(node, depth);
+        source.children(node).forEach((c) => recurse(c, depth + 1));
+    };
+    recurse(root, 0);
+}
+function writeOutline(root, headLevel, source) {
+    let md = '';
+    let level = clampHeadLevel(headLevel);
+    // A code block can only be written as a list item, so headings stop above it.
+    forEachWithDepth(root, source, (node, depth) => {
+        if (CODE_FENCE.test(source.text(node).trim())) {
+            level = Math.min(level, depth);
+        }
+    });
+    let lineCount = 0;
+    const countLines = (text) => (text.match(/\n/g) || []).length;
+    forEachWithDepth(root, source, (n, depth) => {
+        var _a;
+        const chunkStart = md.length;
+        const l = depth + 1;
+        let hPrefix = '', space = '';
+        if (l > 1) {
+            hPrefix = '\n';
+        }
+        const blockId = source.blockId(n);
+        const ending = blockId ? ` ^${blockId}` : '';
+        const text = source.text(n).trim();
+        if (depth < level) {
+            for (let i = 0; i < l; i++) {
+                hPrefix += '#';
+            }
+            md += hPrefix + ' ' + text.replace(/\n/g, '<br>') + ending + '\n';
+        }
+        else {
+            for (let i = 0; i < depth - level; i++) {
+                space += '    ';
+            }
+            // `- > quote` would swallow the next items as continuation lines.
+            const item = text.startsWith('>') ? `\\${text}` : text;
+            if (!text) {
+                md += `${space}-\n`;
+            }
+            else if (!text.includes('\n')) {
+                md += `${space}- ${item}${ending}\n`;
+            }
+            else if (CODE_FENCE.test(text)) {
+                md += `${space}-\n`;
+                text.split('\n').forEach((line) => {
+                    md += `${space}  ${line}\n`;
+                });
+                if (blockId) {
+                    md += `${space}  ^${blockId}\n`;
+                }
+            }
+            else {
+                md += `${space}- ${item.replace(/\n/g, '<br>')}${ending}\n`;
+            }
+        }
+        const chunk = md.slice(chunkStart);
+        const leadingBlankLines = chunk.length - chunk.replace(/^\n+/, '').length;
+        (_a = source.written) === null || _a === void 0 ? void 0 : _a.call(source, n, {
+            start: lineCount + leadingBlankLines,
+            end: lineCount + countLines(chunk),
+        });
+        lineCount += countLines(chunk);
+    });
+    return md.trim();
+}
+// Collapsed block ids in breadth-first order, as saved in `mindmark-state`.
+function collapsedIdsBreadthFirst(root, source, isCollapsed) {
+    const ids = [];
+    const queue = [root];
+    while (queue.length) {
+        const node = queue.shift();
+        if (isCollapsed(node)) {
+            ids.push(source.blockId(node));
+        }
+        queue.push(...source.children(node));
+    }
+    return ids;
+}
 
-JSZip uses the library pako released under the MIT license :
-https://github.com/nodeca/pako/blob/main/LICENSE
-*/
+function getMarkdown() {
+    return writeOutline(this.root, this.setting.headLevel, {
+        children: (n) => n.children,
+        text: (n) => n.data.text,
+        blockId: (n) => {
+            var _a;
+            const isPersistentlyCollapsed = !n.isExpand || ((_a = this.searchTemporarilyExpandedIds) === null || _a === void 0 ? void 0 : _a.has(n.getId()));
+            if (!n.data.blockId && isPersistentlyCollapsed) {
+                n.data.blockId = n.getId();
+            }
+            return n.data.blockId || '';
+        },
+        written: (n, range) => {
+            n.data.sourceRange = range;
+        },
+    });
+}
+// The node written at or before a body line (blank lines and paragraphs
+// belong to the node above). Nodes are visited in document order.
+function getNodeAtBodyLine(line) {
+    let found = null;
+    this.traverseDF((n) => {
+        const range = n.data.sourceRange;
+        if (range && range.start <= line) {
+            found = n;
+        }
+    }, this.root, true);
+    return found || this.root || null;
+}
+// Copies one node or a list of nodes; each becomes a root (pid null) in the data.
+function copyNode(node) {
+    var nodes = Array.isArray(node) ? node : [node || this.selectNode].filter(Boolean);
+    if (nodes.length) {
+        var data = [];
+        function copyNode(n, pid) {
+            var d = n.getData();
+            d.id = uuid();
+            d.pid = pid;
+            data.push({
+                id: d.id,
+                text: d.text,
+                pid: pid,
+                expanded: n.isExpand,
+                note: d.note
+            });
+            n.children.forEach((c) => {
+                copyNode(c, d.id);
+            });
+        }
+        nodes.forEach((n) => copyNode(n, null));
+        var _data = {
+            type: 'copyNode',
+            text: data
+        };
+        return JSON.stringify(_data);
+    }
+    else {
+        return '';
+    }
+}
+function pasteNode(text) {
+    var node = this.selectNode;
+    if (text) {
+        try {
+            var json = JSON.parse(text);
+            if (json.type && json.type == 'copyNode' && Array.isArray(json.text) && node) {
+                var data = remapNodeIds(json.text);
+                this.execute('pasteNode', {
+                    node: node,
+                    data: data
+                });
+                navigator.clipboard.writeText('');
+            }
+        }
+        catch (err) {
+            console.error(err);
+        }
+    }
+}
+function getCollapsedBlockIds() {
+    const ids = [];
+    this.traverseBF((node) => {
+        var _a;
+        if (!node.isExpand || ((_a = this.searchTemporarilyExpandedIds) === null || _a === void 0 ? void 0 : _a.has(node.getId()))) {
+            if (!node.data.blockId) {
+                node.data.blockId = node.getId();
+            }
+            ids.push(node.data.blockId);
+        }
+    });
+    return ids;
+}
 
-var jszip_min = createCommonjsModule(function (module, exports) {
-!function(e){module.exports=e();}(function(){return function s(a,o,h){function u(r,e){if(!o[r]){if(!a[r]){var t="function"==typeof commonjsRequire&&commonjsRequire;if(!e&&t)return t(r,!0);if(l)return l(r,!0);var n=new Error("Cannot find module '"+r+"'");throw n.code="MODULE_NOT_FOUND",n}var i=o[r]={exports:{}};a[r][0].call(i.exports,function(e){var t=a[r][1][e];return u(t||e)},i,i.exports,s,a,o,h);}return o[r].exports}for(var l="function"==typeof commonjsRequire&&commonjsRequire,e=0;e<h.length;e++)u(h[e]);return u}({1:[function(e,t,r){var d=e("./utils"),c=e("./support"),p="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";r.encode=function(e){for(var t,r,n,i,s,a,o,h=[],u=0,l=e.length,f=l,c="string"!==d.getTypeOf(e);u<e.length;)f=l-u,n=c?(t=e[u++],r=u<l?e[u++]:0,u<l?e[u++]:0):(t=e.charCodeAt(u++),r=u<l?e.charCodeAt(u++):0,u<l?e.charCodeAt(u++):0),i=t>>2,s=(3&t)<<4|r>>4,a=1<f?(15&r)<<2|n>>6:64,o=2<f?63&n:64,h.push(p.charAt(i)+p.charAt(s)+p.charAt(a)+p.charAt(o));return h.join("")},r.decode=function(e){var t,r,n,i,s,a,o=0,h=0,u="data:";if(e.substr(0,u.length)===u)throw new Error("Invalid base64 input, it looks like a data url.");var l,f=3*(e=e.replace(/[^A-Za-z0-9+/=]/g,"")).length/4;if(e.charAt(e.length-1)===p.charAt(64)&&f--,e.charAt(e.length-2)===p.charAt(64)&&f--,f%1!=0)throw new Error("Invalid base64 input, bad content length.");for(l=c.uint8array?new Uint8Array(0|f):new Array(0|f);o<e.length;)t=p.indexOf(e.charAt(o++))<<2|(i=p.indexOf(e.charAt(o++)))>>4,r=(15&i)<<4|(s=p.indexOf(e.charAt(o++)))>>2,n=(3&s)<<6|(a=p.indexOf(e.charAt(o++))),l[h++]=t,64!==s&&(l[h++]=r),64!==a&&(l[h++]=n);return l};},{"./support":30,"./utils":32}],2:[function(e,t,r){var n=e("./external"),i=e("./stream/DataWorker"),s=e("./stream/Crc32Probe"),a=e("./stream/DataLengthProbe");function o(e,t,r,n,i){this.compressedSize=e,this.uncompressedSize=t,this.crc32=r,this.compression=n,this.compressedContent=i;}o.prototype={getContentWorker:function(){var e=new i(n.Promise.resolve(this.compressedContent)).pipe(this.compression.uncompressWorker()).pipe(new a("data_length")),t=this;return e.on("end",function(){if(this.streamInfo.data_length!==t.uncompressedSize)throw new Error("Bug : uncompressed data size mismatch")}),e},getCompressedWorker:function(){return new i(n.Promise.resolve(this.compressedContent)).withStreamInfo("compressedSize",this.compressedSize).withStreamInfo("uncompressedSize",this.uncompressedSize).withStreamInfo("crc32",this.crc32).withStreamInfo("compression",this.compression)}},o.createWorkerFrom=function(e,t,r){return e.pipe(new s).pipe(new a("uncompressedSize")).pipe(t.compressWorker(r)).pipe(new a("compressedSize")).withStreamInfo("compression",t)},t.exports=o;},{"./external":6,"./stream/Crc32Probe":25,"./stream/DataLengthProbe":26,"./stream/DataWorker":27}],3:[function(e,t,r){var n=e("./stream/GenericWorker");r.STORE={magic:"\0\0",compressWorker:function(){return new n("STORE compression")},uncompressWorker:function(){return new n("STORE decompression")}},r.DEFLATE=e("./flate");},{"./flate":7,"./stream/GenericWorker":28}],4:[function(e,t,r){var n=e("./utils");var o=function(){for(var e,t=[],r=0;r<256;r++){e=r;for(var n=0;n<8;n++)e=1&e?3988292384^e>>>1:e>>>1;t[r]=e;}return t}();t.exports=function(e,t){return void 0!==e&&e.length?"string"!==n.getTypeOf(e)?function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t[a])];return -1^e}(0|t,e,e.length,0):function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t.charCodeAt(a))];return -1^e}(0|t,e,e.length,0):0};},{"./utils":32}],5:[function(e,t,r){r.base64=!1,r.binary=!1,r.dir=!1,r.createFolders=!0,r.date=null,r.compression=null,r.compressionOptions=null,r.comment=null,r.unixPermissions=null,r.dosPermissions=null;},{}],6:[function(e,t,r){var n=null;n="undefined"!=typeof Promise?Promise:e("lie"),t.exports={Promise:n};},{lie:37}],7:[function(e,t,r){var n="undefined"!=typeof Uint8Array&&"undefined"!=typeof Uint16Array&&"undefined"!=typeof Uint32Array,i=e("pako"),s=e("./utils"),a=e("./stream/GenericWorker"),o=n?"uint8array":"array";function h(e,t){a.call(this,"FlateWorker/"+e),this._pako=null,this._pakoAction=e,this._pakoOptions=t,this.meta={};}r.magic="\b\0",s.inherits(h,a),h.prototype.processChunk=function(e){this.meta=e.meta,null===this._pako&&this._createPako(),this._pako.push(s.transformTo(o,e.data),!1);},h.prototype.flush=function(){a.prototype.flush.call(this),null===this._pako&&this._createPako(),this._pako.push([],!0);},h.prototype.cleanUp=function(){a.prototype.cleanUp.call(this),this._pako=null;},h.prototype._createPako=function(){this._pako=new i[this._pakoAction]({raw:!0,level:this._pakoOptions.level||-1});var t=this;this._pako.onData=function(e){t.push({data:e,meta:t.meta});};},r.compressWorker=function(e){return new h("Deflate",e)},r.uncompressWorker=function(){return new h("Inflate",{})};},{"./stream/GenericWorker":28,"./utils":32,pako:38}],8:[function(e,t,r){function A(e,t){var r,n="";for(r=0;r<t;r++)n+=String.fromCharCode(255&e),e>>>=8;return n}function n(e,t,r,n,i,s){var a,o,h=e.file,u=e.compression,l=s!==O.utf8encode,f=I.transformTo("string",s(h.name)),c=I.transformTo("string",O.utf8encode(h.name)),d=h.comment,p=I.transformTo("string",s(d)),m=I.transformTo("string",O.utf8encode(d)),_=c.length!==h.name.length,g=m.length!==d.length,b="",v="",y="",w=h.dir,k=h.date,x={crc32:0,compressedSize:0,uncompressedSize:0};t&&!r||(x.crc32=e.crc32,x.compressedSize=e.compressedSize,x.uncompressedSize=e.uncompressedSize);var S=0;t&&(S|=8),l||!_&&!g||(S|=2048);var z=0,C=0;w&&(z|=16),"UNIX"===i?(C=798,z|=function(e,t){var r=e;return e||(r=t?16893:33204),(65535&r)<<16}(h.unixPermissions,w)):(C=20,z|=function(e){return 63&(e||0)}(h.dosPermissions)),a=k.getUTCHours(),a<<=6,a|=k.getUTCMinutes(),a<<=5,a|=k.getUTCSeconds()/2,o=k.getUTCFullYear()-1980,o<<=4,o|=k.getUTCMonth()+1,o<<=5,o|=k.getUTCDate(),_&&(v=A(1,1)+A(B(f),4)+c,b+="up"+A(v.length,2)+v),g&&(y=A(1,1)+A(B(p),4)+m,b+="uc"+A(y.length,2)+y);var E="";return E+="\n\0",E+=A(S,2),E+=u.magic,E+=A(a,2),E+=A(o,2),E+=A(x.crc32,4),E+=A(x.compressedSize,4),E+=A(x.uncompressedSize,4),E+=A(f.length,2),E+=A(b.length,2),{fileRecord:R.LOCAL_FILE_HEADER+E+f+b,dirRecord:R.CENTRAL_FILE_HEADER+A(C,2)+E+A(p.length,2)+"\0\0\0\0"+A(z,4)+A(n,4)+f+b+p}}var I=e("../utils"),i=e("../stream/GenericWorker"),O=e("../utf8"),B=e("../crc32"),R=e("../signature");function s(e,t,r,n){i.call(this,"ZipFileWorker"),this.bytesWritten=0,this.zipComment=t,this.zipPlatform=r,this.encodeFileName=n,this.streamFiles=e,this.accumulate=!1,this.contentBuffer=[],this.dirRecords=[],this.currentSourceOffset=0,this.entriesCount=0,this.currentFile=null,this._sources=[];}I.inherits(s,i),s.prototype.push=function(e){var t=e.meta.percent||0,r=this.entriesCount,n=this._sources.length;this.accumulate?this.contentBuffer.push(e):(this.bytesWritten+=e.data.length,i.prototype.push.call(this,{data:e.data,meta:{currentFile:this.currentFile,percent:r?(t+100*(r-n-1))/r:100}}));},s.prototype.openedSource=function(e){this.currentSourceOffset=this.bytesWritten,this.currentFile=e.file.name;var t=this.streamFiles&&!e.file.dir;if(t){var r=n(e,t,!1,this.currentSourceOffset,this.zipPlatform,this.encodeFileName);this.push({data:r.fileRecord,meta:{percent:0}});}else this.accumulate=!0;},s.prototype.closedSource=function(e){this.accumulate=!1;var t=this.streamFiles&&!e.file.dir,r=n(e,t,!0,this.currentSourceOffset,this.zipPlatform,this.encodeFileName);if(this.dirRecords.push(r.dirRecord),t)this.push({data:function(e){return R.DATA_DESCRIPTOR+A(e.crc32,4)+A(e.compressedSize,4)+A(e.uncompressedSize,4)}(e),meta:{percent:100}});else for(this.push({data:r.fileRecord,meta:{percent:0}});this.contentBuffer.length;)this.push(this.contentBuffer.shift());this.currentFile=null;},s.prototype.flush=function(){for(var e=this.bytesWritten,t=0;t<this.dirRecords.length;t++)this.push({data:this.dirRecords[t],meta:{percent:100}});var r=this.bytesWritten-e,n=function(e,t,r,n,i){var s=I.transformTo("string",i(n));return R.CENTRAL_DIRECTORY_END+"\0\0\0\0"+A(e,2)+A(e,2)+A(t,4)+A(r,4)+A(s.length,2)+s}(this.dirRecords.length,r,e,this.zipComment,this.encodeFileName);this.push({data:n,meta:{percent:100}});},s.prototype.prepareNextSource=function(){this.previous=this._sources.shift(),this.openedSource(this.previous.streamInfo),this.isPaused?this.previous.pause():this.previous.resume();},s.prototype.registerPrevious=function(e){this._sources.push(e);var t=this;return e.on("data",function(e){t.processChunk(e);}),e.on("end",function(){t.closedSource(t.previous.streamInfo),t._sources.length?t.prepareNextSource():t.end();}),e.on("error",function(e){t.error(e);}),this},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(!this.previous&&this._sources.length?(this.prepareNextSource(),!0):this.previous||this._sources.length||this.generatedError?void 0:(this.end(),!0))},s.prototype.error=function(e){var t=this._sources;if(!i.prototype.error.call(this,e))return !1;for(var r=0;r<t.length;r++)try{t[r].error(e);}catch(e){}return !0},s.prototype.lock=function(){i.prototype.lock.call(this);for(var e=this._sources,t=0;t<e.length;t++)e[t].lock();},t.exports=s;},{"../crc32":4,"../signature":23,"../stream/GenericWorker":28,"../utf8":31,"../utils":32}],9:[function(e,t,r){var u=e("../compressions"),n=e("./ZipFileWorker");r.generateWorker=function(e,a,t){var o=new n(a.streamFiles,t,a.platform,a.encodeFileName),h=0;try{e.forEach(function(e,t){h++;var r=function(e,t){var r=e||t,n=u[r];if(!n)throw new Error(r+" is not a valid compression method !");return n}(t.options.compression,a.compression),n=t.options.compressionOptions||a.compressionOptions||{},i=t.dir,s=t.date;t._compressWorker(r,n).withStreamInfo("file",{name:e,dir:i,date:s,comment:t.comment||"",unixPermissions:t.unixPermissions,dosPermissions:t.dosPermissions}).pipe(o);}),o.entriesCount=h;}catch(e){o.error(e);}return o};},{"../compressions":3,"./ZipFileWorker":8}],10:[function(e,t,r){function n(){if(!(this instanceof n))return new n;if(arguments.length)throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");this.files=Object.create(null),this.comment=null,this.root="",this.clone=function(){var e=new n;for(var t in this)"function"!=typeof this[t]&&(e[t]=this[t]);return e};}(n.prototype=e("./object")).loadAsync=e("./load"),n.support=e("./support"),n.defaults=e("./defaults"),n.version="3.10.1",n.loadAsync=function(e,t){return (new n).loadAsync(e,t)},n.external=e("./external"),t.exports=n;},{"./defaults":5,"./external":6,"./load":11,"./object":15,"./support":30}],11:[function(e,t,r){var u=e("./utils"),i=e("./external"),n=e("./utf8"),s=e("./zipEntries"),a=e("./stream/Crc32Probe"),l=e("./nodejsUtils");function f(n){return new i.Promise(function(e,t){var r=n.decompressed.getContentWorker().pipe(new a);r.on("error",function(e){t(e);}).on("end",function(){r.streamInfo.crc32!==n.decompressed.crc32?t(new Error("Corrupted zip : CRC32 mismatch")):e();}).resume();})}t.exports=function(e,o){var h=this;return o=u.extend(o||{},{base64:!1,checkCRC32:!1,optimizedBinaryString:!1,createFolders:!1,decodeFileName:n.utf8decode}),l.isNode&&l.isStream(e)?i.Promise.reject(new Error("JSZip can't accept a stream when loading a zip file.")):u.prepareContent("the loaded zip file",e,!0,o.optimizedBinaryString,o.base64).then(function(e){var t=new s(o);return t.load(e),t}).then(function(e){var t=[i.Promise.resolve(e)],r=e.files;if(o.checkCRC32)for(var n=0;n<r.length;n++)t.push(f(r[n]));return i.Promise.all(t)}).then(function(e){for(var t=e.shift(),r=t.files,n=0;n<r.length;n++){var i=r[n],s=i.fileNameStr,a=u.resolve(i.fileNameStr);h.file(a,i.decompressed,{binary:!0,optimizedBinaryString:!0,date:i.date,dir:i.dir,comment:i.fileCommentStr.length?i.fileCommentStr:null,unixPermissions:i.unixPermissions,dosPermissions:i.dosPermissions,createFolders:o.createFolders}),i.dir||(h.file(a).unsafeOriginalName=s);}return t.zipComment.length&&(h.comment=t.zipComment),h})};},{"./external":6,"./nodejsUtils":14,"./stream/Crc32Probe":25,"./utf8":31,"./utils":32,"./zipEntries":33}],12:[function(e,t,r){var n=e("../utils"),i=e("../stream/GenericWorker");function s(e,t){i.call(this,"Nodejs stream input adapter for "+e),this._upstreamEnded=!1,this._bindStream(t);}n.inherits(s,i),s.prototype._bindStream=function(e){var t=this;(this._stream=e).pause(),e.on("data",function(e){t.push({data:e,meta:{percent:0}});}).on("error",function(e){t.isPaused?this.generatedError=e:t.error(e);}).on("end",function(){t.isPaused?t._upstreamEnded=!0:t.end();});},s.prototype.pause=function(){return !!i.prototype.pause.call(this)&&(this._stream.pause(),!0)},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(this._upstreamEnded?this.end():this._stream.resume(),!0)},t.exports=s;},{"../stream/GenericWorker":28,"../utils":32}],13:[function(e,t,r){var i=e("readable-stream").Readable;function n(e,t,r){i.call(this,t),this._helper=e;var n=this;e.on("data",function(e,t){n.push(e)||n._helper.pause(),r&&r(t);}).on("error",function(e){n.emit("error",e);}).on("end",function(){n.push(null);});}e("../utils").inherits(n,i),n.prototype._read=function(){this._helper.resume();},t.exports=n;},{"../utils":32,"readable-stream":16}],14:[function(e,t,r){t.exports={isNode:"undefined"!=typeof Buffer,newBufferFrom:function(e,t){if(Buffer.from&&Buffer.from!==Uint8Array.from)return Buffer.from(e,t);if("number"==typeof e)throw new Error('The "data" argument must not be a number');return new Buffer(e,t)},allocBuffer:function(e){if(Buffer.alloc)return Buffer.alloc(e);var t=new Buffer(e);return t.fill(0),t},isBuffer:function(e){return Buffer.isBuffer(e)},isStream:function(e){return e&&"function"==typeof e.on&&"function"==typeof e.pause&&"function"==typeof e.resume}};},{}],15:[function(e,t,r){function s(e,t,r){var n,i=u.getTypeOf(t),s=u.extend(r||{},f);s.date=s.date||new Date,null!==s.compression&&(s.compression=s.compression.toUpperCase()),"string"==typeof s.unixPermissions&&(s.unixPermissions=parseInt(s.unixPermissions,8)),s.unixPermissions&&16384&s.unixPermissions&&(s.dir=!0),s.dosPermissions&&16&s.dosPermissions&&(s.dir=!0),s.dir&&(e=g(e)),s.createFolders&&(n=_(e))&&b.call(this,n,!0);var a="string"===i&&!1===s.binary&&!1===s.base64;r&&void 0!==r.binary||(s.binary=!a),(t instanceof c&&0===t.uncompressedSize||s.dir||!t||0===t.length)&&(s.base64=!1,s.binary=!0,t="",s.compression="STORE",i="string");var o=null;o=t instanceof c||t instanceof l?t:p.isNode&&p.isStream(t)?new m(e,t):u.prepareContent(e,t,s.binary,s.optimizedBinaryString,s.base64);var h=new d(e,o,s);this.files[e]=h;}var i=e("./utf8"),u=e("./utils"),l=e("./stream/GenericWorker"),a=e("./stream/StreamHelper"),f=e("./defaults"),c=e("./compressedObject"),d=e("./zipObject"),o=e("./generate"),p=e("./nodejsUtils"),m=e("./nodejs/NodejsStreamInputAdapter"),_=function(e){"/"===e.slice(-1)&&(e=e.substring(0,e.length-1));var t=e.lastIndexOf("/");return 0<t?e.substring(0,t):""},g=function(e){return "/"!==e.slice(-1)&&(e+="/"),e},b=function(e,t){return t=void 0!==t?t:f.createFolders,e=g(e),this.files[e]||s.call(this,e,null,{dir:!0,createFolders:t}),this.files[e]};function h(e){return "[object RegExp]"===Object.prototype.toString.call(e)}var n={load:function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},forEach:function(e){var t,r,n;for(t in this.files)n=this.files[t],(r=t.slice(this.root.length,t.length))&&t.slice(0,this.root.length)===this.root&&e(r,n);},filter:function(r){var n=[];return this.forEach(function(e,t){r(e,t)&&n.push(t);}),n},file:function(e,t,r){if(1!==arguments.length)return e=this.root+e,s.call(this,e,t,r),this;if(h(e)){var n=e;return this.filter(function(e,t){return !t.dir&&n.test(e)})}var i=this.files[this.root+e];return i&&!i.dir?i:null},folder:function(r){if(!r)return this;if(h(r))return this.filter(function(e,t){return t.dir&&r.test(e)});var e=this.root+r,t=b.call(this,e),n=this.clone();return n.root=t.name,n},remove:function(r){r=this.root+r;var e=this.files[r];if(e||("/"!==r.slice(-1)&&(r+="/"),e=this.files[r]),e&&!e.dir)delete this.files[r];else for(var t=this.filter(function(e,t){return t.name.slice(0,r.length)===r}),n=0;n<t.length;n++)delete this.files[t[n].name];return this},generate:function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},generateInternalStream:function(e){var t,r={};try{if((r=u.extend(e||{},{streamFiles:!1,compression:"STORE",compressionOptions:null,type:"",platform:"DOS",comment:null,mimeType:"application/zip",encodeFileName:i.utf8encode})).type=r.type.toLowerCase(),r.compression=r.compression.toUpperCase(),"binarystring"===r.type&&(r.type="string"),!r.type)throw new Error("No output type specified.");u.checkSupport(r.type),"darwin"!==r.platform&&"freebsd"!==r.platform&&"linux"!==r.platform&&"sunos"!==r.platform||(r.platform="UNIX"),"win32"===r.platform&&(r.platform="DOS");var n=r.comment||this.comment||"";t=o.generateWorker(this,r,n);}catch(e){(t=new l("error")).error(e);}return new a(t,r.type||"string",r.mimeType)},generateAsync:function(e,t){return this.generateInternalStream(e).accumulate(t)},generateNodeStream:function(e,t){return (e=e||{}).type||(e.type="nodebuffer"),this.generateInternalStream(e).toNodejsStream(t)}};t.exports=n;},{"./compressedObject":2,"./defaults":5,"./generate":9,"./nodejs/NodejsStreamInputAdapter":12,"./nodejsUtils":14,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31,"./utils":32,"./zipObject":35}],16:[function(e,t,r){t.exports=e("stream");},{stream:void 0}],17:[function(e,t,r){var n=e("./DataReader");function i(e){n.call(this,e);for(var t=0;t<this.data.length;t++)e[t]=255&e[t];}e("../utils").inherits(i,n),i.prototype.byteAt=function(e){return this.data[this.zero+e]},i.prototype.lastIndexOfSignature=function(e){for(var t=e.charCodeAt(0),r=e.charCodeAt(1),n=e.charCodeAt(2),i=e.charCodeAt(3),s=this.length-4;0<=s;--s)if(this.data[s]===t&&this.data[s+1]===r&&this.data[s+2]===n&&this.data[s+3]===i)return s-this.zero;return -1},i.prototype.readAndCheckSignature=function(e){var t=e.charCodeAt(0),r=e.charCodeAt(1),n=e.charCodeAt(2),i=e.charCodeAt(3),s=this.readData(4);return t===s[0]&&r===s[1]&&n===s[2]&&i===s[3]},i.prototype.readData=function(e){if(this.checkOffset(e),0===e)return [];var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./DataReader":18}],18:[function(e,t,r){var n=e("../utils");function i(e){this.data=e,this.length=e.length,this.index=0,this.zero=0;}i.prototype={checkOffset:function(e){this.checkIndex(this.index+e);},checkIndex:function(e){if(this.length<this.zero+e||e<0)throw new Error("End of data reached (data length = "+this.length+", asked index = "+e+"). Corrupted zip ?")},setIndex:function(e){this.checkIndex(e),this.index=e;},skip:function(e){this.setIndex(this.index+e);},byteAt:function(){},readInt:function(e){var t,r=0;for(this.checkOffset(e),t=this.index+e-1;t>=this.index;t--)r=(r<<8)+this.byteAt(t);return this.index+=e,r},readString:function(e){return n.transformTo("string",this.readData(e))},readData:function(){},lastIndexOfSignature:function(){},readAndCheckSignature:function(){},readDate:function(){var e=this.readInt(4);return new Date(Date.UTC(1980+(e>>25&127),(e>>21&15)-1,e>>16&31,e>>11&31,e>>5&63,(31&e)<<1))}},t.exports=i;},{"../utils":32}],19:[function(e,t,r){var n=e("./Uint8ArrayReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.readData=function(e){this.checkOffset(e);var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./Uint8ArrayReader":21}],20:[function(e,t,r){var n=e("./DataReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.byteAt=function(e){return this.data.charCodeAt(this.zero+e)},i.prototype.lastIndexOfSignature=function(e){return this.data.lastIndexOf(e)-this.zero},i.prototype.readAndCheckSignature=function(e){return e===this.readData(4)},i.prototype.readData=function(e){this.checkOffset(e);var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./DataReader":18}],21:[function(e,t,r){var n=e("./ArrayReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.readData=function(e){if(this.checkOffset(e),0===e)return new Uint8Array(0);var t=this.data.subarray(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./ArrayReader":17}],22:[function(e,t,r){var n=e("../utils"),i=e("../support"),s=e("./ArrayReader"),a=e("./StringReader"),o=e("./NodeBufferReader"),h=e("./Uint8ArrayReader");t.exports=function(e){var t=n.getTypeOf(e);return n.checkSupport(t),"string"!==t||i.uint8array?"nodebuffer"===t?new o(e):i.uint8array?new h(n.transformTo("uint8array",e)):new s(n.transformTo("array",e)):new a(e)};},{"../support":30,"../utils":32,"./ArrayReader":17,"./NodeBufferReader":19,"./StringReader":20,"./Uint8ArrayReader":21}],23:[function(e,t,r){r.LOCAL_FILE_HEADER="PK",r.CENTRAL_FILE_HEADER="PK",r.CENTRAL_DIRECTORY_END="PK",r.ZIP64_CENTRAL_DIRECTORY_LOCATOR="PK",r.ZIP64_CENTRAL_DIRECTORY_END="PK",r.DATA_DESCRIPTOR="PK\b";},{}],24:[function(e,t,r){var n=e("./GenericWorker"),i=e("../utils");function s(e){n.call(this,"ConvertWorker to "+e),this.destType=e;}i.inherits(s,n),s.prototype.processChunk=function(e){this.push({data:i.transformTo(this.destType,e.data),meta:e.meta});},t.exports=s;},{"../utils":32,"./GenericWorker":28}],25:[function(e,t,r){var n=e("./GenericWorker"),i=e("../crc32");function s(){n.call(this,"Crc32Probe"),this.withStreamInfo("crc32",0);}e("../utils").inherits(s,n),s.prototype.processChunk=function(e){this.streamInfo.crc32=i(e.data,this.streamInfo.crc32||0),this.push(e);},t.exports=s;},{"../crc32":4,"../utils":32,"./GenericWorker":28}],26:[function(e,t,r){var n=e("../utils"),i=e("./GenericWorker");function s(e){i.call(this,"DataLengthProbe for "+e),this.propName=e,this.withStreamInfo(e,0);}n.inherits(s,i),s.prototype.processChunk=function(e){if(e){var t=this.streamInfo[this.propName]||0;this.streamInfo[this.propName]=t+e.data.length;}i.prototype.processChunk.call(this,e);},t.exports=s;},{"../utils":32,"./GenericWorker":28}],27:[function(e,t,r){var n=e("../utils"),i=e("./GenericWorker");function s(e){i.call(this,"DataWorker");var t=this;this.dataIsReady=!1,this.index=0,this.max=0,this.data=null,this.type="",this._tickScheduled=!1,e.then(function(e){t.dataIsReady=!0,t.data=e,t.max=e&&e.length||0,t.type=n.getTypeOf(e),t.isPaused||t._tickAndRepeat();},function(e){t.error(e);});}n.inherits(s,i),s.prototype.cleanUp=function(){i.prototype.cleanUp.call(this),this.data=null;},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(!this._tickScheduled&&this.dataIsReady&&(this._tickScheduled=!0,n.delay(this._tickAndRepeat,[],this)),!0)},s.prototype._tickAndRepeat=function(){this._tickScheduled=!1,this.isPaused||this.isFinished||(this._tick(),this.isFinished||(n.delay(this._tickAndRepeat,[],this),this._tickScheduled=!0));},s.prototype._tick=function(){if(this.isPaused||this.isFinished)return !1;var e=null,t=Math.min(this.max,this.index+16384);if(this.index>=this.max)return this.end();switch(this.type){case"string":e=this.data.substring(this.index,t);break;case"uint8array":e=this.data.subarray(this.index,t);break;case"array":case"nodebuffer":e=this.data.slice(this.index,t);}return this.index=t,this.push({data:e,meta:{percent:this.max?this.index/this.max*100:0}})},t.exports=s;},{"../utils":32,"./GenericWorker":28}],28:[function(e,t,r){function n(e){this.name=e||"default",this.streamInfo={},this.generatedError=null,this.extraStreamInfo={},this.isPaused=!0,this.isFinished=!1,this.isLocked=!1,this._listeners={data:[],end:[],error:[]},this.previous=null;}n.prototype={push:function(e){this.emit("data",e);},end:function(){if(this.isFinished)return !1;this.flush();try{this.emit("end"),this.cleanUp(),this.isFinished=!0;}catch(e){this.emit("error",e);}return !0},error:function(e){return !this.isFinished&&(this.isPaused?this.generatedError=e:(this.isFinished=!0,this.emit("error",e),this.previous&&this.previous.error(e),this.cleanUp()),!0)},on:function(e,t){return this._listeners[e].push(t),this},cleanUp:function(){this.streamInfo=this.generatedError=this.extraStreamInfo=null,this._listeners=[];},emit:function(e,t){if(this._listeners[e])for(var r=0;r<this._listeners[e].length;r++)this._listeners[e][r].call(this,t);},pipe:function(e){return e.registerPrevious(this)},registerPrevious:function(e){if(this.isLocked)throw new Error("The stream '"+this+"' has already been used.");this.streamInfo=e.streamInfo,this.mergeStreamInfo(),this.previous=e;var t=this;return e.on("data",function(e){t.processChunk(e);}),e.on("end",function(){t.end();}),e.on("error",function(e){t.error(e);}),this},pause:function(){return !this.isPaused&&!this.isFinished&&(this.isPaused=!0,this.previous&&this.previous.pause(),!0)},resume:function(){if(!this.isPaused||this.isFinished)return !1;var e=this.isPaused=!1;return this.generatedError&&(this.error(this.generatedError),e=!0),this.previous&&this.previous.resume(),!e},flush:function(){},processChunk:function(e){this.push(e);},withStreamInfo:function(e,t){return this.extraStreamInfo[e]=t,this.mergeStreamInfo(),this},mergeStreamInfo:function(){for(var e in this.extraStreamInfo)Object.prototype.hasOwnProperty.call(this.extraStreamInfo,e)&&(this.streamInfo[e]=this.extraStreamInfo[e]);},lock:function(){if(this.isLocked)throw new Error("The stream '"+this+"' has already been used.");this.isLocked=!0,this.previous&&this.previous.lock();},toString:function(){var e="Worker "+this.name;return this.previous?this.previous+" -> "+e:e}},t.exports=n;},{}],29:[function(e,t,r){var h=e("../utils"),i=e("./ConvertWorker"),s=e("./GenericWorker"),u=e("../base64"),n=e("../support"),a=e("../external"),o=null;if(n.nodestream)try{o=e("../nodejs/NodejsStreamOutputAdapter");}catch(e){}function l(e,o){return new a.Promise(function(t,r){var n=[],i=e._internalType,s=e._outputType,a=e._mimeType;e.on("data",function(e,t){n.push(e),o&&o(t);}).on("error",function(e){n=[],r(e);}).on("end",function(){try{var e=function(e,t,r){switch(e){case"blob":return h.newBlob(h.transformTo("arraybuffer",t),r);case"base64":return u.encode(t);default:return h.transformTo(e,t)}}(s,function(e,t){var r,n=0,i=null,s=0;for(r=0;r<t.length;r++)s+=t[r].length;switch(e){case"string":return t.join("");case"array":return Array.prototype.concat.apply([],t);case"uint8array":for(i=new Uint8Array(s),r=0;r<t.length;r++)i.set(t[r],n),n+=t[r].length;return i;case"nodebuffer":return Buffer.concat(t);default:throw new Error("concat : unsupported type '"+e+"'")}}(i,n),a);t(e);}catch(e){r(e);}n=[];}).resume();})}function f(e,t,r){var n=t;switch(t){case"blob":case"arraybuffer":n="uint8array";break;case"base64":n="string";}try{this._internalType=n,this._outputType=t,this._mimeType=r,h.checkSupport(n),this._worker=e.pipe(new i(n)),e.lock();}catch(e){this._worker=new s("error"),this._worker.error(e);}}f.prototype={accumulate:function(e){return l(this,e)},on:function(e,t){var r=this;return "data"===e?this._worker.on(e,function(e){t.call(r,e.data,e.meta);}):this._worker.on(e,function(){h.delay(t,arguments,r);}),this},resume:function(){return h.delay(this._worker.resume,[],this._worker),this},pause:function(){return this._worker.pause(),this},toNodejsStream:function(e){if(h.checkSupport("nodestream"),"nodebuffer"!==this._outputType)throw new Error(this._outputType+" is not supported by this method");return new o(this,{objectMode:"nodebuffer"!==this._outputType},e)}},t.exports=f;},{"../base64":1,"../external":6,"../nodejs/NodejsStreamOutputAdapter":13,"../support":30,"../utils":32,"./ConvertWorker":24,"./GenericWorker":28}],30:[function(e,t,r){if(r.base64=!0,r.array=!0,r.string=!0,r.arraybuffer="undefined"!=typeof ArrayBuffer&&"undefined"!=typeof Uint8Array,r.nodebuffer="undefined"!=typeof Buffer,r.uint8array="undefined"!=typeof Uint8Array,"undefined"==typeof ArrayBuffer)r.blob=!1;else {var n=new ArrayBuffer(0);try{r.blob=0===new Blob([n],{type:"application/zip"}).size;}catch(e){try{var i=new(self.BlobBuilder||self.WebKitBlobBuilder||self.MozBlobBuilder||self.MSBlobBuilder);i.append(n),r.blob=0===i.getBlob("application/zip").size;}catch(e){r.blob=!1;}}}try{r.nodestream=!!e("readable-stream").Readable;}catch(e){r.nodestream=!1;}},{"readable-stream":16}],31:[function(e,t,s){for(var o=e("./utils"),h=e("./support"),r=e("./nodejsUtils"),n=e("./stream/GenericWorker"),u=new Array(256),i=0;i<256;i++)u[i]=252<=i?6:248<=i?5:240<=i?4:224<=i?3:192<=i?2:1;u[254]=u[254]=1;function a(){n.call(this,"utf-8 decode"),this.leftOver=null;}function l(){n.call(this,"utf-8 encode");}s.utf8encode=function(e){return h.nodebuffer?r.newBufferFrom(e,"utf-8"):function(e){var t,r,n,i,s,a=e.length,o=0;for(i=0;i<a;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),o+=r<128?1:r<2048?2:r<65536?3:4;for(t=h.uint8array?new Uint8Array(o):new Array(o),i=s=0;s<o;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),r<128?t[s++]=r:(r<2048?t[s++]=192|r>>>6:(r<65536?t[s++]=224|r>>>12:(t[s++]=240|r>>>18,t[s++]=128|r>>>12&63),t[s++]=128|r>>>6&63),t[s++]=128|63&r);return t}(e)},s.utf8decode=function(e){return h.nodebuffer?o.transformTo("nodebuffer",e).toString("utf-8"):function(e){var t,r,n,i,s=e.length,a=new Array(2*s);for(t=r=0;t<s;)if((n=e[t++])<128)a[r++]=n;else if(4<(i=u[n]))a[r++]=65533,t+=i-1;else {for(n&=2===i?31:3===i?15:7;1<i&&t<s;)n=n<<6|63&e[t++],i--;1<i?a[r++]=65533:n<65536?a[r++]=n:(n-=65536,a[r++]=55296|n>>10&1023,a[r++]=56320|1023&n);}return a.length!==r&&(a.subarray?a=a.subarray(0,r):a.length=r),o.applyFromCharCode(a)}(e=o.transformTo(h.uint8array?"uint8array":"array",e))},o.inherits(a,n),a.prototype.processChunk=function(e){var t=o.transformTo(h.uint8array?"uint8array":"array",e.data);if(this.leftOver&&this.leftOver.length){if(h.uint8array){var r=t;(t=new Uint8Array(r.length+this.leftOver.length)).set(this.leftOver,0),t.set(r,this.leftOver.length);}else t=this.leftOver.concat(t);this.leftOver=null;}var n=function(e,t){var r;for((t=t||e.length)>e.length&&(t=e.length),r=t-1;0<=r&&128==(192&e[r]);)r--;return r<0?t:0===r?t:r+u[e[r]]>t?r:t}(t),i=t;n!==t.length&&(h.uint8array?(i=t.subarray(0,n),this.leftOver=t.subarray(n,t.length)):(i=t.slice(0,n),this.leftOver=t.slice(n,t.length))),this.push({data:s.utf8decode(i),meta:e.meta});},a.prototype.flush=function(){this.leftOver&&this.leftOver.length&&(this.push({data:s.utf8decode(this.leftOver),meta:{}}),this.leftOver=null);},s.Utf8DecodeWorker=a,o.inherits(l,n),l.prototype.processChunk=function(e){this.push({data:s.utf8encode(e.data),meta:e.meta});},s.Utf8EncodeWorker=l;},{"./nodejsUtils":14,"./stream/GenericWorker":28,"./support":30,"./utils":32}],32:[function(e,t,a){var o=e("./support"),h=e("./base64"),r=e("./nodejsUtils"),u=e("./external");function n(e){return e}function l(e,t){for(var r=0;r<e.length;++r)t[r]=255&e.charCodeAt(r);return t}e("setimmediate"),a.newBlob=function(t,r){a.checkSupport("blob");try{return new Blob([t],{type:r})}catch(e){try{var n=new(self.BlobBuilder||self.WebKitBlobBuilder||self.MozBlobBuilder||self.MSBlobBuilder);return n.append(t),n.getBlob(r)}catch(e){throw new Error("Bug : can't construct the Blob.")}}};var i={stringifyByChunk:function(e,t,r){var n=[],i=0,s=e.length;if(s<=r)return String.fromCharCode.apply(null,e);for(;i<s;)"array"===t||"nodebuffer"===t?n.push(String.fromCharCode.apply(null,e.slice(i,Math.min(i+r,s)))):n.push(String.fromCharCode.apply(null,e.subarray(i,Math.min(i+r,s)))),i+=r;return n.join("")},stringifyByChar:function(e){for(var t="",r=0;r<e.length;r++)t+=String.fromCharCode(e[r]);return t},applyCanBeUsed:{uint8array:function(){try{return o.uint8array&&1===String.fromCharCode.apply(null,new Uint8Array(1)).length}catch(e){return !1}}(),nodebuffer:function(){try{return o.nodebuffer&&1===String.fromCharCode.apply(null,r.allocBuffer(1)).length}catch(e){return !1}}()}};function s(e){var t=65536,r=a.getTypeOf(e),n=!0;if("uint8array"===r?n=i.applyCanBeUsed.uint8array:"nodebuffer"===r&&(n=i.applyCanBeUsed.nodebuffer),n)for(;1<t;)try{return i.stringifyByChunk(e,r,t)}catch(e){t=Math.floor(t/2);}return i.stringifyByChar(e)}function f(e,t){for(var r=0;r<e.length;r++)t[r]=e[r];return t}a.applyFromCharCode=s;var c={};c.string={string:n,array:function(e){return l(e,new Array(e.length))},arraybuffer:function(e){return c.string.uint8array(e).buffer},uint8array:function(e){return l(e,new Uint8Array(e.length))},nodebuffer:function(e){return l(e,r.allocBuffer(e.length))}},c.array={string:s,array:n,arraybuffer:function(e){return new Uint8Array(e).buffer},uint8array:function(e){return new Uint8Array(e)},nodebuffer:function(e){return r.newBufferFrom(e)}},c.arraybuffer={string:function(e){return s(new Uint8Array(e))},array:function(e){return f(new Uint8Array(e),new Array(e.byteLength))},arraybuffer:n,uint8array:function(e){return new Uint8Array(e)},nodebuffer:function(e){return r.newBufferFrom(new Uint8Array(e))}},c.uint8array={string:s,array:function(e){return f(e,new Array(e.length))},arraybuffer:function(e){return e.buffer},uint8array:n,nodebuffer:function(e){return r.newBufferFrom(e)}},c.nodebuffer={string:s,array:function(e){return f(e,new Array(e.length))},arraybuffer:function(e){return c.nodebuffer.uint8array(e).buffer},uint8array:function(e){return f(e,new Uint8Array(e.length))},nodebuffer:n},a.transformTo=function(e,t){if(t=t||"",!e)return t;a.checkSupport(e);var r=a.getTypeOf(t);return c[r][e](t)},a.resolve=function(e){for(var t=e.split("/"),r=[],n=0;n<t.length;n++){var i=t[n];"."===i||""===i&&0!==n&&n!==t.length-1||(".."===i?r.pop():r.push(i));}return r.join("/")},a.getTypeOf=function(e){return "string"==typeof e?"string":"[object Array]"===Object.prototype.toString.call(e)?"array":o.nodebuffer&&r.isBuffer(e)?"nodebuffer":o.uint8array&&e instanceof Uint8Array?"uint8array":o.arraybuffer&&e instanceof ArrayBuffer?"arraybuffer":void 0},a.checkSupport=function(e){if(!o[e.toLowerCase()])throw new Error(e+" is not supported by this platform")},a.MAX_VALUE_16BITS=65535,a.MAX_VALUE_32BITS=-1,a.pretty=function(e){var t,r,n="";for(r=0;r<(e||"").length;r++)n+="\\x"+((t=e.charCodeAt(r))<16?"0":"")+t.toString(16).toUpperCase();return n},a.delay=function(e,t,r){setImmediate(function(){e.apply(r||null,t||[]);});},a.inherits=function(e,t){function r(){}r.prototype=t.prototype,e.prototype=new r;},a.extend=function(){var e,t,r={};for(e=0;e<arguments.length;e++)for(t in arguments[e])Object.prototype.hasOwnProperty.call(arguments[e],t)&&void 0===r[t]&&(r[t]=arguments[e][t]);return r},a.prepareContent=function(r,e,n,i,s){return u.Promise.resolve(e).then(function(n){return o.blob&&(n instanceof Blob||-1!==["[object File]","[object Blob]"].indexOf(Object.prototype.toString.call(n)))&&"undefined"!=typeof FileReader?new u.Promise(function(t,r){var e=new FileReader;e.onload=function(e){t(e.target.result);},e.onerror=function(e){r(e.target.error);},e.readAsArrayBuffer(n);}):n}).then(function(e){var t=a.getTypeOf(e);return t?("arraybuffer"===t?e=a.transformTo("uint8array",e):"string"===t&&(s?e=h.decode(e):n&&!0!==i&&(e=function(e){return l(e,o.uint8array?new Uint8Array(e.length):new Array(e.length))}(e))),e):u.Promise.reject(new Error("Can't read the data of '"+r+"'. Is it in a supported JavaScript type (String, Blob, ArrayBuffer, etc) ?"))})};},{"./base64":1,"./external":6,"./nodejsUtils":14,"./support":30,setimmediate:54}],33:[function(e,t,r){var n=e("./reader/readerFor"),i=e("./utils"),s=e("./signature"),a=e("./zipEntry"),o=e("./support");function h(e){this.files=[],this.loadOptions=e;}h.prototype={checkSignature:function(e){if(!this.reader.readAndCheckSignature(e)){this.reader.index-=4;var t=this.reader.readString(4);throw new Error("Corrupted zip or bug: unexpected signature ("+i.pretty(t)+", expected "+i.pretty(e)+")")}},isSignature:function(e,t){var r=this.reader.index;this.reader.setIndex(e);var n=this.reader.readString(4)===t;return this.reader.setIndex(r),n},readBlockEndOfCentral:function(){this.diskNumber=this.reader.readInt(2),this.diskWithCentralDirStart=this.reader.readInt(2),this.centralDirRecordsOnThisDisk=this.reader.readInt(2),this.centralDirRecords=this.reader.readInt(2),this.centralDirSize=this.reader.readInt(4),this.centralDirOffset=this.reader.readInt(4),this.zipCommentLength=this.reader.readInt(2);var e=this.reader.readData(this.zipCommentLength),t=o.uint8array?"uint8array":"array",r=i.transformTo(t,e);this.zipComment=this.loadOptions.decodeFileName(r);},readBlockZip64EndOfCentral:function(){this.zip64EndOfCentralSize=this.reader.readInt(8),this.reader.skip(4),this.diskNumber=this.reader.readInt(4),this.diskWithCentralDirStart=this.reader.readInt(4),this.centralDirRecordsOnThisDisk=this.reader.readInt(8),this.centralDirRecords=this.reader.readInt(8),this.centralDirSize=this.reader.readInt(8),this.centralDirOffset=this.reader.readInt(8),this.zip64ExtensibleData={};for(var e,t,r,n=this.zip64EndOfCentralSize-44;0<n;)e=this.reader.readInt(2),t=this.reader.readInt(4),r=this.reader.readData(t),this.zip64ExtensibleData[e]={id:e,length:t,value:r};},readBlockZip64EndOfCentralLocator:function(){if(this.diskWithZip64CentralDirStart=this.reader.readInt(4),this.relativeOffsetEndOfZip64CentralDir=this.reader.readInt(8),this.disksCount=this.reader.readInt(4),1<this.disksCount)throw new Error("Multi-volumes zip are not supported")},readLocalFiles:function(){var e,t;for(e=0;e<this.files.length;e++)t=this.files[e],this.reader.setIndex(t.localHeaderOffset),this.checkSignature(s.LOCAL_FILE_HEADER),t.readLocalPart(this.reader),t.handleUTF8(),t.processAttributes();},readCentralDir:function(){var e;for(this.reader.setIndex(this.centralDirOffset);this.reader.readAndCheckSignature(s.CENTRAL_FILE_HEADER);)(e=new a({zip64:this.zip64},this.loadOptions)).readCentralPart(this.reader),this.files.push(e);if(this.centralDirRecords!==this.files.length&&0!==this.centralDirRecords&&0===this.files.length)throw new Error("Corrupted zip or bug: expected "+this.centralDirRecords+" records in central dir, got "+this.files.length)},readEndOfCentral:function(){var e=this.reader.lastIndexOfSignature(s.CENTRAL_DIRECTORY_END);if(e<0)throw !this.isSignature(0,s.LOCAL_FILE_HEADER)?new Error("Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"):new Error("Corrupted zip: can't find end of central directory");this.reader.setIndex(e);var t=e;if(this.checkSignature(s.CENTRAL_DIRECTORY_END),this.readBlockEndOfCentral(),this.diskNumber===i.MAX_VALUE_16BITS||this.diskWithCentralDirStart===i.MAX_VALUE_16BITS||this.centralDirRecordsOnThisDisk===i.MAX_VALUE_16BITS||this.centralDirRecords===i.MAX_VALUE_16BITS||this.centralDirSize===i.MAX_VALUE_32BITS||this.centralDirOffset===i.MAX_VALUE_32BITS){if(this.zip64=!0,(e=this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR))<0)throw new Error("Corrupted zip: can't find the ZIP64 end of central directory locator");if(this.reader.setIndex(e),this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR),this.readBlockZip64EndOfCentralLocator(),!this.isSignature(this.relativeOffsetEndOfZip64CentralDir,s.ZIP64_CENTRAL_DIRECTORY_END)&&(this.relativeOffsetEndOfZip64CentralDir=this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_END),this.relativeOffsetEndOfZip64CentralDir<0))throw new Error("Corrupted zip: can't find the ZIP64 end of central directory");this.reader.setIndex(this.relativeOffsetEndOfZip64CentralDir),this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_END),this.readBlockZip64EndOfCentral();}var r=this.centralDirOffset+this.centralDirSize;this.zip64&&(r+=20,r+=12+this.zip64EndOfCentralSize);var n=t-r;if(0<n)this.isSignature(t,s.CENTRAL_FILE_HEADER)||(this.reader.zero=n);else if(n<0)throw new Error("Corrupted zip: missing "+Math.abs(n)+" bytes.")},prepareReader:function(e){this.reader=n(e);},load:function(e){this.prepareReader(e),this.readEndOfCentral(),this.readCentralDir(),this.readLocalFiles();}},t.exports=h;},{"./reader/readerFor":22,"./signature":23,"./support":30,"./utils":32,"./zipEntry":34}],34:[function(e,t,r){var n=e("./reader/readerFor"),s=e("./utils"),i=e("./compressedObject"),a=e("./crc32"),o=e("./utf8"),h=e("./compressions"),u=e("./support");function l(e,t){this.options=e,this.loadOptions=t;}l.prototype={isEncrypted:function(){return 1==(1&this.bitFlag)},useUTF8:function(){return 2048==(2048&this.bitFlag)},readLocalPart:function(e){var t,r;if(e.skip(22),this.fileNameLength=e.readInt(2),r=e.readInt(2),this.fileName=e.readData(this.fileNameLength),e.skip(r),-1===this.compressedSize||-1===this.uncompressedSize)throw new Error("Bug or corrupted zip : didn't get enough information from the central directory (compressedSize === -1 || uncompressedSize === -1)");if(null===(t=function(e){for(var t in h)if(Object.prototype.hasOwnProperty.call(h,t)&&h[t].magic===e)return h[t];return null}(this.compressionMethod)))throw new Error("Corrupted zip : compression "+s.pretty(this.compressionMethod)+" unknown (inner file : "+s.transformTo("string",this.fileName)+")");this.decompressed=new i(this.compressedSize,this.uncompressedSize,this.crc32,t,e.readData(this.compressedSize));},readCentralPart:function(e){this.versionMadeBy=e.readInt(2),e.skip(2),this.bitFlag=e.readInt(2),this.compressionMethod=e.readString(2),this.date=e.readDate(),this.crc32=e.readInt(4),this.compressedSize=e.readInt(4),this.uncompressedSize=e.readInt(4);var t=e.readInt(2);if(this.extraFieldsLength=e.readInt(2),this.fileCommentLength=e.readInt(2),this.diskNumberStart=e.readInt(2),this.internalFileAttributes=e.readInt(2),this.externalFileAttributes=e.readInt(4),this.localHeaderOffset=e.readInt(4),this.isEncrypted())throw new Error("Encrypted zip are not supported");e.skip(t),this.readExtraFields(e),this.parseZIP64ExtraField(e),this.fileComment=e.readData(this.fileCommentLength);},processAttributes:function(){this.unixPermissions=null,this.dosPermissions=null;var e=this.versionMadeBy>>8;this.dir=!!(16&this.externalFileAttributes),0==e&&(this.dosPermissions=63&this.externalFileAttributes),3==e&&(this.unixPermissions=this.externalFileAttributes>>16&65535),this.dir||"/"!==this.fileNameStr.slice(-1)||(this.dir=!0);},parseZIP64ExtraField:function(){if(this.extraFields[1]){var e=n(this.extraFields[1].value);this.uncompressedSize===s.MAX_VALUE_32BITS&&(this.uncompressedSize=e.readInt(8)),this.compressedSize===s.MAX_VALUE_32BITS&&(this.compressedSize=e.readInt(8)),this.localHeaderOffset===s.MAX_VALUE_32BITS&&(this.localHeaderOffset=e.readInt(8)),this.diskNumberStart===s.MAX_VALUE_32BITS&&(this.diskNumberStart=e.readInt(4));}},readExtraFields:function(e){var t,r,n,i=e.index+this.extraFieldsLength;for(this.extraFields||(this.extraFields={});e.index+4<i;)t=e.readInt(2),r=e.readInt(2),n=e.readData(r),this.extraFields[t]={id:t,length:r,value:n};e.setIndex(i);},handleUTF8:function(){var e=u.uint8array?"uint8array":"array";if(this.useUTF8())this.fileNameStr=o.utf8decode(this.fileName),this.fileCommentStr=o.utf8decode(this.fileComment);else {var t=this.findExtraFieldUnicodePath();if(null!==t)this.fileNameStr=t;else {var r=s.transformTo(e,this.fileName);this.fileNameStr=this.loadOptions.decodeFileName(r);}var n=this.findExtraFieldUnicodeComment();if(null!==n)this.fileCommentStr=n;else {var i=s.transformTo(e,this.fileComment);this.fileCommentStr=this.loadOptions.decodeFileName(i);}}},findExtraFieldUnicodePath:function(){var e=this.extraFields[28789];if(e){var t=n(e.value);return 1!==t.readInt(1)?null:a(this.fileName)!==t.readInt(4)?null:o.utf8decode(t.readData(e.length-5))}return null},findExtraFieldUnicodeComment:function(){var e=this.extraFields[25461];if(e){var t=n(e.value);return 1!==t.readInt(1)?null:a(this.fileComment)!==t.readInt(4)?null:o.utf8decode(t.readData(e.length-5))}return null}},t.exports=l;},{"./compressedObject":2,"./compressions":3,"./crc32":4,"./reader/readerFor":22,"./support":30,"./utf8":31,"./utils":32}],35:[function(e,t,r){function n(e,t,r){this.name=e,this.dir=r.dir,this.date=r.date,this.comment=r.comment,this.unixPermissions=r.unixPermissions,this.dosPermissions=r.dosPermissions,this._data=t,this._dataBinary=r.binary,this.options={compression:r.compression,compressionOptions:r.compressionOptions};}var s=e("./stream/StreamHelper"),i=e("./stream/DataWorker"),a=e("./utf8"),o=e("./compressedObject"),h=e("./stream/GenericWorker");n.prototype={internalStream:function(e){var t=null,r="string";try{if(!e)throw new Error("No output type specified.");var n="string"===(r=e.toLowerCase())||"text"===r;"binarystring"!==r&&"text"!==r||(r="string"),t=this._decompressWorker();var i=!this._dataBinary;i&&!n&&(t=t.pipe(new a.Utf8EncodeWorker)),!i&&n&&(t=t.pipe(new a.Utf8DecodeWorker));}catch(e){(t=new h("error")).error(e);}return new s(t,r,"")},async:function(e,t){return this.internalStream(e).accumulate(t)},nodeStream:function(e,t){return this.internalStream(e||"nodebuffer").toNodejsStream(t)},_compressWorker:function(e,t){if(this._data instanceof o&&this._data.compression.magic===e.magic)return this._data.getCompressedWorker();var r=this._decompressWorker();return this._dataBinary||(r=r.pipe(new a.Utf8EncodeWorker)),o.createWorkerFrom(r,e,t)},_decompressWorker:function(){return this._data instanceof o?this._data.getContentWorker():this._data instanceof h?this._data:new i(this._data)}};for(var u=["asText","asBinary","asNodeBuffer","asUint8Array","asArrayBuffer"],l=function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},f=0;f<u.length;f++)n.prototype[u[f]]=l;t.exports=n;},{"./compressedObject":2,"./stream/DataWorker":27,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31}],36:[function(e,l,t){(function(t){var r,n,e=t.MutationObserver||t.WebKitMutationObserver;if(e){var i=0,s=new e(u),a=t.document.createTextNode("");s.observe(a,{characterData:!0}),r=function(){a.data=i=++i%2;};}else if(t.setImmediate||void 0===t.MessageChannel)r="document"in t&&"onreadystatechange"in t.document.createElement("script")?function(){var e=t.document.createElement("script");e.onreadystatechange=function(){u(),e.onreadystatechange=null,e.parentNode.removeChild(e),e=null;},t.document.documentElement.appendChild(e);}:function(){setTimeout(u,0);};else {var o=new t.MessageChannel;o.port1.onmessage=u,r=function(){o.port2.postMessage(0);};}var h=[];function u(){var e,t;n=!0;for(var r=h.length;r;){for(t=h,h=[],e=-1;++e<r;)t[e]();r=h.length;}n=!1;}l.exports=function(e){1!==h.push(e)||n||r();};}).call(this,"undefined"!=typeof commonjsGlobal?commonjsGlobal:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{});},{}],37:[function(e,t,r){var i=e("immediate");function u(){}var l={},s=["REJECTED"],a=["FULFILLED"],n=["PENDING"];function o(e){if("function"!=typeof e)throw new TypeError("resolver must be a function");this.state=n,this.queue=[],this.outcome=void 0,e!==u&&d(this,e);}function h(e,t,r){this.promise=e,"function"==typeof t&&(this.onFulfilled=t,this.callFulfilled=this.otherCallFulfilled),"function"==typeof r&&(this.onRejected=r,this.callRejected=this.otherCallRejected);}function f(t,r,n){i(function(){var e;try{e=r(n);}catch(e){return l.reject(t,e)}e===t?l.reject(t,new TypeError("Cannot resolve promise with itself")):l.resolve(t,e);});}function c(e){var t=e&&e.then;if(e&&("object"==typeof e||"function"==typeof e)&&"function"==typeof t)return function(){t.apply(e,arguments);}}function d(t,e){var r=!1;function n(e){r||(r=!0,l.reject(t,e));}function i(e){r||(r=!0,l.resolve(t,e));}var s=p(function(){e(i,n);});"error"===s.status&&n(s.value);}function p(e,t){var r={};try{r.value=e(t),r.status="success";}catch(e){r.status="error",r.value=e;}return r}(t.exports=o).prototype.finally=function(t){if("function"!=typeof t)return this;var r=this.constructor;return this.then(function(e){return r.resolve(t()).then(function(){return e})},function(e){return r.resolve(t()).then(function(){throw e})})},o.prototype.catch=function(e){return this.then(null,e)},o.prototype.then=function(e,t){if("function"!=typeof e&&this.state===a||"function"!=typeof t&&this.state===s)return this;var r=new this.constructor(u);this.state!==n?f(r,this.state===a?e:t,this.outcome):this.queue.push(new h(r,e,t));return r},h.prototype.callFulfilled=function(e){l.resolve(this.promise,e);},h.prototype.otherCallFulfilled=function(e){f(this.promise,this.onFulfilled,e);},h.prototype.callRejected=function(e){l.reject(this.promise,e);},h.prototype.otherCallRejected=function(e){f(this.promise,this.onRejected,e);},l.resolve=function(e,t){var r=p(c,t);if("error"===r.status)return l.reject(e,r.value);var n=r.value;if(n)d(e,n);else {e.state=a,e.outcome=t;for(var i=-1,s=e.queue.length;++i<s;)e.queue[i].callFulfilled(t);}return e},l.reject=function(e,t){e.state=s,e.outcome=t;for(var r=-1,n=e.queue.length;++r<n;)e.queue[r].callRejected(t);return e},o.resolve=function(e){if(e instanceof this)return e;return l.resolve(new this(u),e)},o.reject=function(e){var t=new this(u);return l.reject(t,e)},o.all=function(e){var r=this;if("[object Array]"!==Object.prototype.toString.call(e))return this.reject(new TypeError("must be an array"));var n=e.length,i=!1;if(!n)return this.resolve([]);var s=new Array(n),a=0,t=-1,o=new this(u);for(;++t<n;)h(e[t],t);return o;function h(e,t){r.resolve(e).then(function(e){s[t]=e,++a!==n||i||(i=!0,l.resolve(o,s));},function(e){i||(i=!0,l.reject(o,e));});}},o.race=function(e){var t=this;if("[object Array]"!==Object.prototype.toString.call(e))return this.reject(new TypeError("must be an array"));var r=e.length,n=!1;if(!r)return this.resolve([]);var i=-1,s=new this(u);for(;++i<r;)a=e[i],t.resolve(a).then(function(e){n||(n=!0,l.resolve(s,e));},function(e){n||(n=!0,l.reject(s,e));});var a;return s};},{immediate:36}],38:[function(e,t,r){var n={};(0, e("./lib/utils/common").assign)(n,e("./lib/deflate"),e("./lib/inflate"),e("./lib/zlib/constants")),t.exports=n;},{"./lib/deflate":39,"./lib/inflate":40,"./lib/utils/common":41,"./lib/zlib/constants":44}],39:[function(e,t,r){var a=e("./zlib/deflate"),o=e("./utils/common"),h=e("./utils/strings"),i=e("./zlib/messages"),s=e("./zlib/zstream"),u=Object.prototype.toString,l=0,f=-1,c=0,d=8;function p(e){if(!(this instanceof p))return new p(e);this.options=o.assign({level:f,method:d,chunkSize:16384,windowBits:15,memLevel:8,strategy:c,to:""},e||{});var t=this.options;t.raw&&0<t.windowBits?t.windowBits=-t.windowBits:t.gzip&&0<t.windowBits&&t.windowBits<16&&(t.windowBits+=16),this.err=0,this.msg="",this.ended=!1,this.chunks=[],this.strm=new s,this.strm.avail_out=0;var r=a.deflateInit2(this.strm,t.level,t.method,t.windowBits,t.memLevel,t.strategy);if(r!==l)throw new Error(i[r]);if(t.header&&a.deflateSetHeader(this.strm,t.header),t.dictionary){var n;if(n="string"==typeof t.dictionary?h.string2buf(t.dictionary):"[object ArrayBuffer]"===u.call(t.dictionary)?new Uint8Array(t.dictionary):t.dictionary,(r=a.deflateSetDictionary(this.strm,n))!==l)throw new Error(i[r]);this._dict_set=!0;}}function n(e,t){var r=new p(t);if(r.push(e,!0),r.err)throw r.msg||i[r.err];return r.result}p.prototype.push=function(e,t){var r,n,i=this.strm,s=this.options.chunkSize;if(this.ended)return !1;n=t===~~t?t:!0===t?4:0,"string"==typeof e?i.input=h.string2buf(e):"[object ArrayBuffer]"===u.call(e)?i.input=new Uint8Array(e):i.input=e,i.next_in=0,i.avail_in=i.input.length;do{if(0===i.avail_out&&(i.output=new o.Buf8(s),i.next_out=0,i.avail_out=s),1!==(r=a.deflate(i,n))&&r!==l)return this.onEnd(r),!(this.ended=!0);0!==i.avail_out&&(0!==i.avail_in||4!==n&&2!==n)||("string"===this.options.to?this.onData(h.buf2binstring(o.shrinkBuf(i.output,i.next_out))):this.onData(o.shrinkBuf(i.output,i.next_out)));}while((0<i.avail_in||0===i.avail_out)&&1!==r);return 4===n?(r=a.deflateEnd(this.strm),this.onEnd(r),this.ended=!0,r===l):2!==n||(this.onEnd(l),!(i.avail_out=0))},p.prototype.onData=function(e){this.chunks.push(e);},p.prototype.onEnd=function(e){e===l&&("string"===this.options.to?this.result=this.chunks.join(""):this.result=o.flattenChunks(this.chunks)),this.chunks=[],this.err=e,this.msg=this.strm.msg;},r.Deflate=p,r.deflate=n,r.deflateRaw=function(e,t){return (t=t||{}).raw=!0,n(e,t)},r.gzip=function(e,t){return (t=t||{}).gzip=!0,n(e,t)};},{"./utils/common":41,"./utils/strings":42,"./zlib/deflate":46,"./zlib/messages":51,"./zlib/zstream":53}],40:[function(e,t,r){var c=e("./zlib/inflate"),d=e("./utils/common"),p=e("./utils/strings"),m=e("./zlib/constants"),n=e("./zlib/messages"),i=e("./zlib/zstream"),s=e("./zlib/gzheader"),_=Object.prototype.toString;function a(e){if(!(this instanceof a))return new a(e);this.options=d.assign({chunkSize:16384,windowBits:0,to:""},e||{});var t=this.options;t.raw&&0<=t.windowBits&&t.windowBits<16&&(t.windowBits=-t.windowBits,0===t.windowBits&&(t.windowBits=-15)),!(0<=t.windowBits&&t.windowBits<16)||e&&e.windowBits||(t.windowBits+=32),15<t.windowBits&&t.windowBits<48&&0==(15&t.windowBits)&&(t.windowBits|=15),this.err=0,this.msg="",this.ended=!1,this.chunks=[],this.strm=new i,this.strm.avail_out=0;var r=c.inflateInit2(this.strm,t.windowBits);if(r!==m.Z_OK)throw new Error(n[r]);this.header=new s,c.inflateGetHeader(this.strm,this.header);}function o(e,t){var r=new a(t);if(r.push(e,!0),r.err)throw r.msg||n[r.err];return r.result}a.prototype.push=function(e,t){var r,n,i,s,a,o,h=this.strm,u=this.options.chunkSize,l=this.options.dictionary,f=!1;if(this.ended)return !1;n=t===~~t?t:!0===t?m.Z_FINISH:m.Z_NO_FLUSH,"string"==typeof e?h.input=p.binstring2buf(e):"[object ArrayBuffer]"===_.call(e)?h.input=new Uint8Array(e):h.input=e,h.next_in=0,h.avail_in=h.input.length;do{if(0===h.avail_out&&(h.output=new d.Buf8(u),h.next_out=0,h.avail_out=u),(r=c.inflate(h,m.Z_NO_FLUSH))===m.Z_NEED_DICT&&l&&(o="string"==typeof l?p.string2buf(l):"[object ArrayBuffer]"===_.call(l)?new Uint8Array(l):l,r=c.inflateSetDictionary(this.strm,o)),r===m.Z_BUF_ERROR&&!0===f&&(r=m.Z_OK,f=!1),r!==m.Z_STREAM_END&&r!==m.Z_OK)return this.onEnd(r),!(this.ended=!0);h.next_out&&(0!==h.avail_out&&r!==m.Z_STREAM_END&&(0!==h.avail_in||n!==m.Z_FINISH&&n!==m.Z_SYNC_FLUSH)||("string"===this.options.to?(i=p.utf8border(h.output,h.next_out),s=h.next_out-i,a=p.buf2string(h.output,i),h.next_out=s,h.avail_out=u-s,s&&d.arraySet(h.output,h.output,i,s,0),this.onData(a)):this.onData(d.shrinkBuf(h.output,h.next_out)))),0===h.avail_in&&0===h.avail_out&&(f=!0);}while((0<h.avail_in||0===h.avail_out)&&r!==m.Z_STREAM_END);return r===m.Z_STREAM_END&&(n=m.Z_FINISH),n===m.Z_FINISH?(r=c.inflateEnd(this.strm),this.onEnd(r),this.ended=!0,r===m.Z_OK):n!==m.Z_SYNC_FLUSH||(this.onEnd(m.Z_OK),!(h.avail_out=0))},a.prototype.onData=function(e){this.chunks.push(e);},a.prototype.onEnd=function(e){e===m.Z_OK&&("string"===this.options.to?this.result=this.chunks.join(""):this.result=d.flattenChunks(this.chunks)),this.chunks=[],this.err=e,this.msg=this.strm.msg;},r.Inflate=a,r.inflate=o,r.inflateRaw=function(e,t){return (t=t||{}).raw=!0,o(e,t)},r.ungzip=o;},{"./utils/common":41,"./utils/strings":42,"./zlib/constants":44,"./zlib/gzheader":47,"./zlib/inflate":49,"./zlib/messages":51,"./zlib/zstream":53}],41:[function(e,t,r){var n="undefined"!=typeof Uint8Array&&"undefined"!=typeof Uint16Array&&"undefined"!=typeof Int32Array;r.assign=function(e){for(var t=Array.prototype.slice.call(arguments,1);t.length;){var r=t.shift();if(r){if("object"!=typeof r)throw new TypeError(r+"must be non-object");for(var n in r)r.hasOwnProperty(n)&&(e[n]=r[n]);}}return e},r.shrinkBuf=function(e,t){return e.length===t?e:e.subarray?e.subarray(0,t):(e.length=t,e)};var i={arraySet:function(e,t,r,n,i){if(t.subarray&&e.subarray)e.set(t.subarray(r,r+n),i);else for(var s=0;s<n;s++)e[i+s]=t[r+s];},flattenChunks:function(e){var t,r,n,i,s,a;for(t=n=0,r=e.length;t<r;t++)n+=e[t].length;for(a=new Uint8Array(n),t=i=0,r=e.length;t<r;t++)s=e[t],a.set(s,i),i+=s.length;return a}},s={arraySet:function(e,t,r,n,i){for(var s=0;s<n;s++)e[i+s]=t[r+s];},flattenChunks:function(e){return [].concat.apply([],e)}};r.setTyped=function(e){e?(r.Buf8=Uint8Array,r.Buf16=Uint16Array,r.Buf32=Int32Array,r.assign(r,i)):(r.Buf8=Array,r.Buf16=Array,r.Buf32=Array,r.assign(r,s));},r.setTyped(n);},{}],42:[function(e,t,r){var h=e("./common"),i=!0,s=!0;try{String.fromCharCode.apply(null,[0]);}catch(e){i=!1;}try{String.fromCharCode.apply(null,new Uint8Array(1));}catch(e){s=!1;}for(var u=new h.Buf8(256),n=0;n<256;n++)u[n]=252<=n?6:248<=n?5:240<=n?4:224<=n?3:192<=n?2:1;function l(e,t){if(t<65537&&(e.subarray&&s||!e.subarray&&i))return String.fromCharCode.apply(null,h.shrinkBuf(e,t));for(var r="",n=0;n<t;n++)r+=String.fromCharCode(e[n]);return r}u[254]=u[254]=1,r.string2buf=function(e){var t,r,n,i,s,a=e.length,o=0;for(i=0;i<a;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),o+=r<128?1:r<2048?2:r<65536?3:4;for(t=new h.Buf8(o),i=s=0;s<o;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),r<128?t[s++]=r:(r<2048?t[s++]=192|r>>>6:(r<65536?t[s++]=224|r>>>12:(t[s++]=240|r>>>18,t[s++]=128|r>>>12&63),t[s++]=128|r>>>6&63),t[s++]=128|63&r);return t},r.buf2binstring=function(e){return l(e,e.length)},r.binstring2buf=function(e){for(var t=new h.Buf8(e.length),r=0,n=t.length;r<n;r++)t[r]=e.charCodeAt(r);return t},r.buf2string=function(e,t){var r,n,i,s,a=t||e.length,o=new Array(2*a);for(r=n=0;r<a;)if((i=e[r++])<128)o[n++]=i;else if(4<(s=u[i]))o[n++]=65533,r+=s-1;else {for(i&=2===s?31:3===s?15:7;1<s&&r<a;)i=i<<6|63&e[r++],s--;1<s?o[n++]=65533:i<65536?o[n++]=i:(i-=65536,o[n++]=55296|i>>10&1023,o[n++]=56320|1023&i);}return l(o,n)},r.utf8border=function(e,t){var r;for((t=t||e.length)>e.length&&(t=e.length),r=t-1;0<=r&&128==(192&e[r]);)r--;return r<0?t:0===r?t:r+u[e[r]]>t?r:t};},{"./common":41}],43:[function(e,t,r){t.exports=function(e,t,r,n){for(var i=65535&e|0,s=e>>>16&65535|0,a=0;0!==r;){for(r-=a=2e3<r?2e3:r;s=s+(i=i+t[n++]|0)|0,--a;);i%=65521,s%=65521;}return i|s<<16|0};},{}],44:[function(e,t,r){t.exports={Z_NO_FLUSH:0,Z_PARTIAL_FLUSH:1,Z_SYNC_FLUSH:2,Z_FULL_FLUSH:3,Z_FINISH:4,Z_BLOCK:5,Z_TREES:6,Z_OK:0,Z_STREAM_END:1,Z_NEED_DICT:2,Z_ERRNO:-1,Z_STREAM_ERROR:-2,Z_DATA_ERROR:-3,Z_BUF_ERROR:-5,Z_NO_COMPRESSION:0,Z_BEST_SPEED:1,Z_BEST_COMPRESSION:9,Z_DEFAULT_COMPRESSION:-1,Z_FILTERED:1,Z_HUFFMAN_ONLY:2,Z_RLE:3,Z_FIXED:4,Z_DEFAULT_STRATEGY:0,Z_BINARY:0,Z_TEXT:1,Z_UNKNOWN:2,Z_DEFLATED:8};},{}],45:[function(e,t,r){var o=function(){for(var e,t=[],r=0;r<256;r++){e=r;for(var n=0;n<8;n++)e=1&e?3988292384^e>>>1:e>>>1;t[r]=e;}return t}();t.exports=function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t[a])];return -1^e};},{}],46:[function(e,t,r){var h,c=e("../utils/common"),u=e("./trees"),d=e("./adler32"),p=e("./crc32"),n=e("./messages"),l=0,f=4,m=0,_=-2,g=-1,b=4,i=2,v=8,y=9,s=286,a=30,o=19,w=2*s+1,k=15,x=3,S=258,z=S+x+1,C=42,E=113,A=1,I=2,O=3,B=4;function R(e,t){return e.msg=n[t],t}function T(e){return (e<<1)-(4<e?9:0)}function D(e){for(var t=e.length;0<=--t;)e[t]=0;}function F(e){var t=e.state,r=t.pending;r>e.avail_out&&(r=e.avail_out),0!==r&&(c.arraySet(e.output,t.pending_buf,t.pending_out,r,e.next_out),e.next_out+=r,t.pending_out+=r,e.total_out+=r,e.avail_out-=r,t.pending-=r,0===t.pending&&(t.pending_out=0));}function N(e,t){u._tr_flush_block(e,0<=e.block_start?e.block_start:-1,e.strstart-e.block_start,t),e.block_start=e.strstart,F(e.strm);}function U(e,t){e.pending_buf[e.pending++]=t;}function P(e,t){e.pending_buf[e.pending++]=t>>>8&255,e.pending_buf[e.pending++]=255&t;}function L(e,t){var r,n,i=e.max_chain_length,s=e.strstart,a=e.prev_length,o=e.nice_match,h=e.strstart>e.w_size-z?e.strstart-(e.w_size-z):0,u=e.window,l=e.w_mask,f=e.prev,c=e.strstart+S,d=u[s+a-1],p=u[s+a];e.prev_length>=e.good_match&&(i>>=2),o>e.lookahead&&(o=e.lookahead);do{if(u[(r=t)+a]===p&&u[r+a-1]===d&&u[r]===u[s]&&u[++r]===u[s+1]){s+=2,r++;do{}while(u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&s<c);if(n=S-(c-s),s=c-S,a<n){if(e.match_start=t,o<=(a=n))break;d=u[s+a-1],p=u[s+a];}}}while((t=f[t&l])>h&&0!=--i);return a<=e.lookahead?a:e.lookahead}function j(e){var t,r,n,i,s,a,o,h,u,l,f=e.w_size;do{if(i=e.window_size-e.lookahead-e.strstart,e.strstart>=f+(f-z)){for(c.arraySet(e.window,e.window,f,f,0),e.match_start-=f,e.strstart-=f,e.block_start-=f,t=r=e.hash_size;n=e.head[--t],e.head[t]=f<=n?n-f:0,--r;);for(t=r=f;n=e.prev[--t],e.prev[t]=f<=n?n-f:0,--r;);i+=f;}if(0===e.strm.avail_in)break;if(a=e.strm,o=e.window,h=e.strstart+e.lookahead,u=i,l=void 0,l=a.avail_in,u<l&&(l=u),r=0===l?0:(a.avail_in-=l,c.arraySet(o,a.input,a.next_in,l,h),1===a.state.wrap?a.adler=d(a.adler,o,l,h):2===a.state.wrap&&(a.adler=p(a.adler,o,l,h)),a.next_in+=l,a.total_in+=l,l),e.lookahead+=r,e.lookahead+e.insert>=x)for(s=e.strstart-e.insert,e.ins_h=e.window[s],e.ins_h=(e.ins_h<<e.hash_shift^e.window[s+1])&e.hash_mask;e.insert&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[s+x-1])&e.hash_mask,e.prev[s&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=s,s++,e.insert--,!(e.lookahead+e.insert<x)););}while(e.lookahead<z&&0!==e.strm.avail_in)}function Z(e,t){for(var r,n;;){if(e.lookahead<z){if(j(e),e.lookahead<z&&t===l)return A;if(0===e.lookahead)break}if(r=0,e.lookahead>=x&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),0!==r&&e.strstart-r<=e.w_size-z&&(e.match_length=L(e,r)),e.match_length>=x)if(n=u._tr_tally(e,e.strstart-e.match_start,e.match_length-x),e.lookahead-=e.match_length,e.match_length<=e.max_lazy_match&&e.lookahead>=x){for(e.match_length--;e.strstart++,e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart,0!=--e.match_length;);e.strstart++;}else e.strstart+=e.match_length,e.match_length=0,e.ins_h=e.window[e.strstart],e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+1])&e.hash_mask;else n=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++;if(n&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=e.strstart<x-1?e.strstart:x-1,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}function W(e,t){for(var r,n,i;;){if(e.lookahead<z){if(j(e),e.lookahead<z&&t===l)return A;if(0===e.lookahead)break}if(r=0,e.lookahead>=x&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),e.prev_length=e.match_length,e.prev_match=e.match_start,e.match_length=x-1,0!==r&&e.prev_length<e.max_lazy_match&&e.strstart-r<=e.w_size-z&&(e.match_length=L(e,r),e.match_length<=5&&(1===e.strategy||e.match_length===x&&4096<e.strstart-e.match_start)&&(e.match_length=x-1)),e.prev_length>=x&&e.match_length<=e.prev_length){for(i=e.strstart+e.lookahead-x,n=u._tr_tally(e,e.strstart-1-e.prev_match,e.prev_length-x),e.lookahead-=e.prev_length-1,e.prev_length-=2;++e.strstart<=i&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),0!=--e.prev_length;);if(e.match_available=0,e.match_length=x-1,e.strstart++,n&&(N(e,!1),0===e.strm.avail_out))return A}else if(e.match_available){if((n=u._tr_tally(e,0,e.window[e.strstart-1]))&&N(e,!1),e.strstart++,e.lookahead--,0===e.strm.avail_out)return A}else e.match_available=1,e.strstart++,e.lookahead--;}return e.match_available&&(n=u._tr_tally(e,0,e.window[e.strstart-1]),e.match_available=0),e.insert=e.strstart<x-1?e.strstart:x-1,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}function M(e,t,r,n,i){this.good_length=e,this.max_lazy=t,this.nice_length=r,this.max_chain=n,this.func=i;}function H(){this.strm=null,this.status=0,this.pending_buf=null,this.pending_buf_size=0,this.pending_out=0,this.pending=0,this.wrap=0,this.gzhead=null,this.gzindex=0,this.method=v,this.last_flush=-1,this.w_size=0,this.w_bits=0,this.w_mask=0,this.window=null,this.window_size=0,this.prev=null,this.head=null,this.ins_h=0,this.hash_size=0,this.hash_bits=0,this.hash_mask=0,this.hash_shift=0,this.block_start=0,this.match_length=0,this.prev_match=0,this.match_available=0,this.strstart=0,this.match_start=0,this.lookahead=0,this.prev_length=0,this.max_chain_length=0,this.max_lazy_match=0,this.level=0,this.strategy=0,this.good_match=0,this.nice_match=0,this.dyn_ltree=new c.Buf16(2*w),this.dyn_dtree=new c.Buf16(2*(2*a+1)),this.bl_tree=new c.Buf16(2*(2*o+1)),D(this.dyn_ltree),D(this.dyn_dtree),D(this.bl_tree),this.l_desc=null,this.d_desc=null,this.bl_desc=null,this.bl_count=new c.Buf16(k+1),this.heap=new c.Buf16(2*s+1),D(this.heap),this.heap_len=0,this.heap_max=0,this.depth=new c.Buf16(2*s+1),D(this.depth),this.l_buf=0,this.lit_bufsize=0,this.last_lit=0,this.d_buf=0,this.opt_len=0,this.static_len=0,this.matches=0,this.insert=0,this.bi_buf=0,this.bi_valid=0;}function G(e){var t;return e&&e.state?(e.total_in=e.total_out=0,e.data_type=i,(t=e.state).pending=0,t.pending_out=0,t.wrap<0&&(t.wrap=-t.wrap),t.status=t.wrap?C:E,e.adler=2===t.wrap?0:1,t.last_flush=l,u._tr_init(t),m):R(e,_)}function K(e){var t=G(e);return t===m&&function(e){e.window_size=2*e.w_size,D(e.head),e.max_lazy_match=h[e.level].max_lazy,e.good_match=h[e.level].good_length,e.nice_match=h[e.level].nice_length,e.max_chain_length=h[e.level].max_chain,e.strstart=0,e.block_start=0,e.lookahead=0,e.insert=0,e.match_length=e.prev_length=x-1,e.match_available=0,e.ins_h=0;}(e.state),t}function Y(e,t,r,n,i,s){if(!e)return _;var a=1;if(t===g&&(t=6),n<0?(a=0,n=-n):15<n&&(a=2,n-=16),i<1||y<i||r!==v||n<8||15<n||t<0||9<t||s<0||b<s)return R(e,_);8===n&&(n=9);var o=new H;return (e.state=o).strm=e,o.wrap=a,o.gzhead=null,o.w_bits=n,o.w_size=1<<o.w_bits,o.w_mask=o.w_size-1,o.hash_bits=i+7,o.hash_size=1<<o.hash_bits,o.hash_mask=o.hash_size-1,o.hash_shift=~~((o.hash_bits+x-1)/x),o.window=new c.Buf8(2*o.w_size),o.head=new c.Buf16(o.hash_size),o.prev=new c.Buf16(o.w_size),o.lit_bufsize=1<<i+6,o.pending_buf_size=4*o.lit_bufsize,o.pending_buf=new c.Buf8(o.pending_buf_size),o.d_buf=1*o.lit_bufsize,o.l_buf=3*o.lit_bufsize,o.level=t,o.strategy=s,o.method=r,K(e)}h=[new M(0,0,0,0,function(e,t){var r=65535;for(r>e.pending_buf_size-5&&(r=e.pending_buf_size-5);;){if(e.lookahead<=1){if(j(e),0===e.lookahead&&t===l)return A;if(0===e.lookahead)break}e.strstart+=e.lookahead,e.lookahead=0;var n=e.block_start+r;if((0===e.strstart||e.strstart>=n)&&(e.lookahead=e.strstart-n,e.strstart=n,N(e,!1),0===e.strm.avail_out))return A;if(e.strstart-e.block_start>=e.w_size-z&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):(e.strstart>e.block_start&&(N(e,!1),e.strm.avail_out),A)}),new M(4,4,8,4,Z),new M(4,5,16,8,Z),new M(4,6,32,32,Z),new M(4,4,16,16,W),new M(8,16,32,32,W),new M(8,16,128,128,W),new M(8,32,128,256,W),new M(32,128,258,1024,W),new M(32,258,258,4096,W)],r.deflateInit=function(e,t){return Y(e,t,v,15,8,0)},r.deflateInit2=Y,r.deflateReset=K,r.deflateResetKeep=G,r.deflateSetHeader=function(e,t){return e&&e.state?2!==e.state.wrap?_:(e.state.gzhead=t,m):_},r.deflate=function(e,t){var r,n,i,s;if(!e||!e.state||5<t||t<0)return e?R(e,_):_;if(n=e.state,!e.output||!e.input&&0!==e.avail_in||666===n.status&&t!==f)return R(e,0===e.avail_out?-5:_);if(n.strm=e,r=n.last_flush,n.last_flush=t,n.status===C)if(2===n.wrap)e.adler=0,U(n,31),U(n,139),U(n,8),n.gzhead?(U(n,(n.gzhead.text?1:0)+(n.gzhead.hcrc?2:0)+(n.gzhead.extra?4:0)+(n.gzhead.name?8:0)+(n.gzhead.comment?16:0)),U(n,255&n.gzhead.time),U(n,n.gzhead.time>>8&255),U(n,n.gzhead.time>>16&255),U(n,n.gzhead.time>>24&255),U(n,9===n.level?2:2<=n.strategy||n.level<2?4:0),U(n,255&n.gzhead.os),n.gzhead.extra&&n.gzhead.extra.length&&(U(n,255&n.gzhead.extra.length),U(n,n.gzhead.extra.length>>8&255)),n.gzhead.hcrc&&(e.adler=p(e.adler,n.pending_buf,n.pending,0)),n.gzindex=0,n.status=69):(U(n,0),U(n,0),U(n,0),U(n,0),U(n,0),U(n,9===n.level?2:2<=n.strategy||n.level<2?4:0),U(n,3),n.status=E);else {var a=v+(n.w_bits-8<<4)<<8;a|=(2<=n.strategy||n.level<2?0:n.level<6?1:6===n.level?2:3)<<6,0!==n.strstart&&(a|=32),a+=31-a%31,n.status=E,P(n,a),0!==n.strstart&&(P(n,e.adler>>>16),P(n,65535&e.adler)),e.adler=1;}if(69===n.status)if(n.gzhead.extra){for(i=n.pending;n.gzindex<(65535&n.gzhead.extra.length)&&(n.pending!==n.pending_buf_size||(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending!==n.pending_buf_size));)U(n,255&n.gzhead.extra[n.gzindex]),n.gzindex++;n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),n.gzindex===n.gzhead.extra.length&&(n.gzindex=0,n.status=73);}else n.status=73;if(73===n.status)if(n.gzhead.name){i=n.pending;do{if(n.pending===n.pending_buf_size&&(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending===n.pending_buf_size)){s=1;break}s=n.gzindex<n.gzhead.name.length?255&n.gzhead.name.charCodeAt(n.gzindex++):0,U(n,s);}while(0!==s);n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),0===s&&(n.gzindex=0,n.status=91);}else n.status=91;if(91===n.status)if(n.gzhead.comment){i=n.pending;do{if(n.pending===n.pending_buf_size&&(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending===n.pending_buf_size)){s=1;break}s=n.gzindex<n.gzhead.comment.length?255&n.gzhead.comment.charCodeAt(n.gzindex++):0,U(n,s);}while(0!==s);n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),0===s&&(n.status=103);}else n.status=103;if(103===n.status&&(n.gzhead.hcrc?(n.pending+2>n.pending_buf_size&&F(e),n.pending+2<=n.pending_buf_size&&(U(n,255&e.adler),U(n,e.adler>>8&255),e.adler=0,n.status=E)):n.status=E),0!==n.pending){if(F(e),0===e.avail_out)return n.last_flush=-1,m}else if(0===e.avail_in&&T(t)<=T(r)&&t!==f)return R(e,-5);if(666===n.status&&0!==e.avail_in)return R(e,-5);if(0!==e.avail_in||0!==n.lookahead||t!==l&&666!==n.status){var o=2===n.strategy?function(e,t){for(var r;;){if(0===e.lookahead&&(j(e),0===e.lookahead)){if(t===l)return A;break}if(e.match_length=0,r=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++,r&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}(n,t):3===n.strategy?function(e,t){for(var r,n,i,s,a=e.window;;){if(e.lookahead<=S){if(j(e),e.lookahead<=S&&t===l)return A;if(0===e.lookahead)break}if(e.match_length=0,e.lookahead>=x&&0<e.strstart&&(n=a[i=e.strstart-1])===a[++i]&&n===a[++i]&&n===a[++i]){s=e.strstart+S;do{}while(n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&i<s);e.match_length=S-(s-i),e.match_length>e.lookahead&&(e.match_length=e.lookahead);}if(e.match_length>=x?(r=u._tr_tally(e,1,e.match_length-x),e.lookahead-=e.match_length,e.strstart+=e.match_length,e.match_length=0):(r=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++),r&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}(n,t):h[n.level].func(n,t);if(o!==O&&o!==B||(n.status=666),o===A||o===O)return 0===e.avail_out&&(n.last_flush=-1),m;if(o===I&&(1===t?u._tr_align(n):5!==t&&(u._tr_stored_block(n,0,0,!1),3===t&&(D(n.head),0===n.lookahead&&(n.strstart=0,n.block_start=0,n.insert=0))),F(e),0===e.avail_out))return n.last_flush=-1,m}return t!==f?m:n.wrap<=0?1:(2===n.wrap?(U(n,255&e.adler),U(n,e.adler>>8&255),U(n,e.adler>>16&255),U(n,e.adler>>24&255),U(n,255&e.total_in),U(n,e.total_in>>8&255),U(n,e.total_in>>16&255),U(n,e.total_in>>24&255)):(P(n,e.adler>>>16),P(n,65535&e.adler)),F(e),0<n.wrap&&(n.wrap=-n.wrap),0!==n.pending?m:1)},r.deflateEnd=function(e){var t;return e&&e.state?(t=e.state.status)!==C&&69!==t&&73!==t&&91!==t&&103!==t&&t!==E&&666!==t?R(e,_):(e.state=null,t===E?R(e,-3):m):_},r.deflateSetDictionary=function(e,t){var r,n,i,s,a,o,h,u,l=t.length;if(!e||!e.state)return _;if(2===(s=(r=e.state).wrap)||1===s&&r.status!==C||r.lookahead)return _;for(1===s&&(e.adler=d(e.adler,t,l,0)),r.wrap=0,l>=r.w_size&&(0===s&&(D(r.head),r.strstart=0,r.block_start=0,r.insert=0),u=new c.Buf8(r.w_size),c.arraySet(u,t,l-r.w_size,r.w_size,0),t=u,l=r.w_size),a=e.avail_in,o=e.next_in,h=e.input,e.avail_in=l,e.next_in=0,e.input=t,j(r);r.lookahead>=x;){for(n=r.strstart,i=r.lookahead-(x-1);r.ins_h=(r.ins_h<<r.hash_shift^r.window[n+x-1])&r.hash_mask,r.prev[n&r.w_mask]=r.head[r.ins_h],r.head[r.ins_h]=n,n++,--i;);r.strstart=n,r.lookahead=x-1,j(r);}return r.strstart+=r.lookahead,r.block_start=r.strstart,r.insert=r.lookahead,r.lookahead=0,r.match_length=r.prev_length=x-1,r.match_available=0,e.next_in=o,e.input=h,e.avail_in=a,r.wrap=s,m},r.deflateInfo="pako deflate (from Nodeca project)";},{"../utils/common":41,"./adler32":43,"./crc32":45,"./messages":51,"./trees":52}],47:[function(e,t,r){t.exports=function(){this.text=0,this.time=0,this.xflags=0,this.os=0,this.extra=null,this.extra_len=0,this.name="",this.comment="",this.hcrc=0,this.done=!1;};},{}],48:[function(e,t,r){t.exports=function(e,t){var r,n,i,s,a,o,h,u,l,f,c,d,p,m,_,g,b,v,y,w,k,x,S,z,C;r=e.state,n=e.next_in,z=e.input,i=n+(e.avail_in-5),s=e.next_out,C=e.output,a=s-(t-e.avail_out),o=s+(e.avail_out-257),h=r.dmax,u=r.wsize,l=r.whave,f=r.wnext,c=r.window,d=r.hold,p=r.bits,m=r.lencode,_=r.distcode,g=(1<<r.lenbits)-1,b=(1<<r.distbits)-1;e:do{p<15&&(d+=z[n++]<<p,p+=8,d+=z[n++]<<p,p+=8),v=m[d&g];t:for(;;){if(d>>>=y=v>>>24,p-=y,0===(y=v>>>16&255))C[s++]=65535&v;else {if(!(16&y)){if(0==(64&y)){v=m[(65535&v)+(d&(1<<y)-1)];continue t}if(32&y){r.mode=12;break e}e.msg="invalid literal/length code",r.mode=30;break e}w=65535&v,(y&=15)&&(p<y&&(d+=z[n++]<<p,p+=8),w+=d&(1<<y)-1,d>>>=y,p-=y),p<15&&(d+=z[n++]<<p,p+=8,d+=z[n++]<<p,p+=8),v=_[d&b];r:for(;;){if(d>>>=y=v>>>24,p-=y,!(16&(y=v>>>16&255))){if(0==(64&y)){v=_[(65535&v)+(d&(1<<y)-1)];continue r}e.msg="invalid distance code",r.mode=30;break e}if(k=65535&v,p<(y&=15)&&(d+=z[n++]<<p,(p+=8)<y&&(d+=z[n++]<<p,p+=8)),h<(k+=d&(1<<y)-1)){e.msg="invalid distance too far back",r.mode=30;break e}if(d>>>=y,p-=y,(y=s-a)<k){if(l<(y=k-y)&&r.sane){e.msg="invalid distance too far back",r.mode=30;break e}if(S=c,(x=0)===f){if(x+=u-y,y<w){for(w-=y;C[s++]=c[x++],--y;);x=s-k,S=C;}}else if(f<y){if(x+=u+f-y,(y-=f)<w){for(w-=y;C[s++]=c[x++],--y;);if(x=0,f<w){for(w-=y=f;C[s++]=c[x++],--y;);x=s-k,S=C;}}}else if(x+=f-y,y<w){for(w-=y;C[s++]=c[x++],--y;);x=s-k,S=C;}for(;2<w;)C[s++]=S[x++],C[s++]=S[x++],C[s++]=S[x++],w-=3;w&&(C[s++]=S[x++],1<w&&(C[s++]=S[x++]));}else {for(x=s-k;C[s++]=C[x++],C[s++]=C[x++],C[s++]=C[x++],2<(w-=3););w&&(C[s++]=C[x++],1<w&&(C[s++]=C[x++]));}break}}break}}while(n<i&&s<o);n-=w=p>>3,d&=(1<<(p-=w<<3))-1,e.next_in=n,e.next_out=s,e.avail_in=n<i?i-n+5:5-(n-i),e.avail_out=s<o?o-s+257:257-(s-o),r.hold=d,r.bits=p;};},{}],49:[function(e,t,r){var I=e("../utils/common"),O=e("./adler32"),B=e("./crc32"),R=e("./inffast"),T=e("./inftrees"),D=1,F=2,N=0,U=-2,P=1,n=852,i=592;function L(e){return (e>>>24&255)+(e>>>8&65280)+((65280&e)<<8)+((255&e)<<24)}function s(){this.mode=0,this.last=!1,this.wrap=0,this.havedict=!1,this.flags=0,this.dmax=0,this.check=0,this.total=0,this.head=null,this.wbits=0,this.wsize=0,this.whave=0,this.wnext=0,this.window=null,this.hold=0,this.bits=0,this.length=0,this.offset=0,this.extra=0,this.lencode=null,this.distcode=null,this.lenbits=0,this.distbits=0,this.ncode=0,this.nlen=0,this.ndist=0,this.have=0,this.next=null,this.lens=new I.Buf16(320),this.work=new I.Buf16(288),this.lendyn=null,this.distdyn=null,this.sane=0,this.back=0,this.was=0;}function a(e){var t;return e&&e.state?(t=e.state,e.total_in=e.total_out=t.total=0,e.msg="",t.wrap&&(e.adler=1&t.wrap),t.mode=P,t.last=0,t.havedict=0,t.dmax=32768,t.head=null,t.hold=0,t.bits=0,t.lencode=t.lendyn=new I.Buf32(n),t.distcode=t.distdyn=new I.Buf32(i),t.sane=1,t.back=-1,N):U}function o(e){var t;return e&&e.state?((t=e.state).wsize=0,t.whave=0,t.wnext=0,a(e)):U}function h(e,t){var r,n;return e&&e.state?(n=e.state,t<0?(r=0,t=-t):(r=1+(t>>4),t<48&&(t&=15)),t&&(t<8||15<t)?U:(null!==n.window&&n.wbits!==t&&(n.window=null),n.wrap=r,n.wbits=t,o(e))):U}function u(e,t){var r,n;return e?(n=new s,(e.state=n).window=null,(r=h(e,t))!==N&&(e.state=null),r):U}var l,f,c=!0;function j(e){if(c){var t;for(l=new I.Buf32(512),f=new I.Buf32(32),t=0;t<144;)e.lens[t++]=8;for(;t<256;)e.lens[t++]=9;for(;t<280;)e.lens[t++]=7;for(;t<288;)e.lens[t++]=8;for(T(D,e.lens,0,288,l,0,e.work,{bits:9}),t=0;t<32;)e.lens[t++]=5;T(F,e.lens,0,32,f,0,e.work,{bits:5}),c=!1;}e.lencode=l,e.lenbits=9,e.distcode=f,e.distbits=5;}function Z(e,t,r,n){var i,s=e.state;return null===s.window&&(s.wsize=1<<s.wbits,s.wnext=0,s.whave=0,s.window=new I.Buf8(s.wsize)),n>=s.wsize?(I.arraySet(s.window,t,r-s.wsize,s.wsize,0),s.wnext=0,s.whave=s.wsize):(n<(i=s.wsize-s.wnext)&&(i=n),I.arraySet(s.window,t,r-n,i,s.wnext),(n-=i)?(I.arraySet(s.window,t,r-n,n,0),s.wnext=n,s.whave=s.wsize):(s.wnext+=i,s.wnext===s.wsize&&(s.wnext=0),s.whave<s.wsize&&(s.whave+=i))),0}r.inflateReset=o,r.inflateReset2=h,r.inflateResetKeep=a,r.inflateInit=function(e){return u(e,15)},r.inflateInit2=u,r.inflate=function(e,t){var r,n,i,s,a,o,h,u,l,f,c,d,p,m,_,g,b,v,y,w,k,x,S,z,C=0,E=new I.Buf8(4),A=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];if(!e||!e.state||!e.output||!e.input&&0!==e.avail_in)return U;12===(r=e.state).mode&&(r.mode=13),a=e.next_out,i=e.output,h=e.avail_out,s=e.next_in,n=e.input,o=e.avail_in,u=r.hold,l=r.bits,f=o,c=h,x=N;e:for(;;)switch(r.mode){case P:if(0===r.wrap){r.mode=13;break}for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(2&r.wrap&&35615===u){E[r.check=0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0),l=u=0,r.mode=2;break}if(r.flags=0,r.head&&(r.head.done=!1),!(1&r.wrap)||(((255&u)<<8)+(u>>8))%31){e.msg="incorrect header check",r.mode=30;break}if(8!=(15&u)){e.msg="unknown compression method",r.mode=30;break}if(l-=4,k=8+(15&(u>>>=4)),0===r.wbits)r.wbits=k;else if(k>r.wbits){e.msg="invalid window size",r.mode=30;break}r.dmax=1<<k,e.adler=r.check=1,r.mode=512&u?10:12,l=u=0;break;case 2:for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(r.flags=u,8!=(255&r.flags)){e.msg="unknown compression method",r.mode=30;break}if(57344&r.flags){e.msg="unknown header flags set",r.mode=30;break}r.head&&(r.head.text=u>>8&1),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0,r.mode=3;case 3:for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.head&&(r.head.time=u),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,E[2]=u>>>16&255,E[3]=u>>>24&255,r.check=B(r.check,E,4,0)),l=u=0,r.mode=4;case 4:for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.head&&(r.head.xflags=255&u,r.head.os=u>>8),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0,r.mode=5;case 5:if(1024&r.flags){for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.length=u,r.head&&(r.head.extra_len=u),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0;}else r.head&&(r.head.extra=null);r.mode=6;case 6:if(1024&r.flags&&(o<(d=r.length)&&(d=o),d&&(r.head&&(k=r.head.extra_len-r.length,r.head.extra||(r.head.extra=new Array(r.head.extra_len)),I.arraySet(r.head.extra,n,s,d,k)),512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,r.length-=d),r.length))break e;r.length=0,r.mode=7;case 7:if(2048&r.flags){if(0===o)break e;for(d=0;k=n[s+d++],r.head&&k&&r.length<65536&&(r.head.name+=String.fromCharCode(k)),k&&d<o;);if(512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,k)break e}else r.head&&(r.head.name=null);r.length=0,r.mode=8;case 8:if(4096&r.flags){if(0===o)break e;for(d=0;k=n[s+d++],r.head&&k&&r.length<65536&&(r.head.comment+=String.fromCharCode(k)),k&&d<o;);if(512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,k)break e}else r.head&&(r.head.comment=null);r.mode=9;case 9:if(512&r.flags){for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u!==(65535&r.check)){e.msg="header crc mismatch",r.mode=30;break}l=u=0;}r.head&&(r.head.hcrc=r.flags>>9&1,r.head.done=!0),e.adler=r.check=0,r.mode=12;break;case 10:for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}e.adler=r.check=L(u),l=u=0,r.mode=11;case 11:if(0===r.havedict)return e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,2;e.adler=r.check=1,r.mode=12;case 12:if(5===t||6===t)break e;case 13:if(r.last){u>>>=7&l,l-=7&l,r.mode=27;break}for(;l<3;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}switch(r.last=1&u,l-=1,3&(u>>>=1)){case 0:r.mode=14;break;case 1:if(j(r),r.mode=20,6!==t)break;u>>>=2,l-=2;break e;case 2:r.mode=17;break;case 3:e.msg="invalid block type",r.mode=30;}u>>>=2,l-=2;break;case 14:for(u>>>=7&l,l-=7&l;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if((65535&u)!=(u>>>16^65535)){e.msg="invalid stored block lengths",r.mode=30;break}if(r.length=65535&u,l=u=0,r.mode=15,6===t)break e;case 15:r.mode=16;case 16:if(d=r.length){if(o<d&&(d=o),h<d&&(d=h),0===d)break e;I.arraySet(i,n,s,d,a),o-=d,s+=d,h-=d,a+=d,r.length-=d;break}r.mode=12;break;case 17:for(;l<14;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(r.nlen=257+(31&u),u>>>=5,l-=5,r.ndist=1+(31&u),u>>>=5,l-=5,r.ncode=4+(15&u),u>>>=4,l-=4,286<r.nlen||30<r.ndist){e.msg="too many length or distance symbols",r.mode=30;break}r.have=0,r.mode=18;case 18:for(;r.have<r.ncode;){for(;l<3;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.lens[A[r.have++]]=7&u,u>>>=3,l-=3;}for(;r.have<19;)r.lens[A[r.have++]]=0;if(r.lencode=r.lendyn,r.lenbits=7,S={bits:r.lenbits},x=T(0,r.lens,0,19,r.lencode,0,r.work,S),r.lenbits=S.bits,x){e.msg="invalid code lengths set",r.mode=30;break}r.have=0,r.mode=19;case 19:for(;r.have<r.nlen+r.ndist;){for(;g=(C=r.lencode[u&(1<<r.lenbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(b<16)u>>>=_,l-=_,r.lens[r.have++]=b;else {if(16===b){for(z=_+2;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u>>>=_,l-=_,0===r.have){e.msg="invalid bit length repeat",r.mode=30;break}k=r.lens[r.have-1],d=3+(3&u),u>>>=2,l-=2;}else if(17===b){for(z=_+3;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}l-=_,k=0,d=3+(7&(u>>>=_)),u>>>=3,l-=3;}else {for(z=_+7;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}l-=_,k=0,d=11+(127&(u>>>=_)),u>>>=7,l-=7;}if(r.have+d>r.nlen+r.ndist){e.msg="invalid bit length repeat",r.mode=30;break}for(;d--;)r.lens[r.have++]=k;}}if(30===r.mode)break;if(0===r.lens[256]){e.msg="invalid code -- missing end-of-block",r.mode=30;break}if(r.lenbits=9,S={bits:r.lenbits},x=T(D,r.lens,0,r.nlen,r.lencode,0,r.work,S),r.lenbits=S.bits,x){e.msg="invalid literal/lengths set",r.mode=30;break}if(r.distbits=6,r.distcode=r.distdyn,S={bits:r.distbits},x=T(F,r.lens,r.nlen,r.ndist,r.distcode,0,r.work,S),r.distbits=S.bits,x){e.msg="invalid distances set",r.mode=30;break}if(r.mode=20,6===t)break e;case 20:r.mode=21;case 21:if(6<=o&&258<=h){e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,R(e,c),a=e.next_out,i=e.output,h=e.avail_out,s=e.next_in,n=e.input,o=e.avail_in,u=r.hold,l=r.bits,12===r.mode&&(r.back=-1);break}for(r.back=0;g=(C=r.lencode[u&(1<<r.lenbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(g&&0==(240&g)){for(v=_,y=g,w=b;g=(C=r.lencode[w+((u&(1<<v+y)-1)>>v)])>>>16&255,b=65535&C,!(v+(_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}u>>>=v,l-=v,r.back+=v;}if(u>>>=_,l-=_,r.back+=_,r.length=b,0===g){r.mode=26;break}if(32&g){r.back=-1,r.mode=12;break}if(64&g){e.msg="invalid literal/length code",r.mode=30;break}r.extra=15&g,r.mode=22;case 22:if(r.extra){for(z=r.extra;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.length+=u&(1<<r.extra)-1,u>>>=r.extra,l-=r.extra,r.back+=r.extra;}r.was=r.length,r.mode=23;case 23:for(;g=(C=r.distcode[u&(1<<r.distbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(0==(240&g)){for(v=_,y=g,w=b;g=(C=r.distcode[w+((u&(1<<v+y)-1)>>v)])>>>16&255,b=65535&C,!(v+(_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}u>>>=v,l-=v,r.back+=v;}if(u>>>=_,l-=_,r.back+=_,64&g){e.msg="invalid distance code",r.mode=30;break}r.offset=b,r.extra=15&g,r.mode=24;case 24:if(r.extra){for(z=r.extra;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.offset+=u&(1<<r.extra)-1,u>>>=r.extra,l-=r.extra,r.back+=r.extra;}if(r.offset>r.dmax){e.msg="invalid distance too far back",r.mode=30;break}r.mode=25;case 25:if(0===h)break e;if(d=c-h,r.offset>d){if((d=r.offset-d)>r.whave&&r.sane){e.msg="invalid distance too far back",r.mode=30;break}p=d>r.wnext?(d-=r.wnext,r.wsize-d):r.wnext-d,d>r.length&&(d=r.length),m=r.window;}else m=i,p=a-r.offset,d=r.length;for(h<d&&(d=h),h-=d,r.length-=d;i[a++]=m[p++],--d;);0===r.length&&(r.mode=21);break;case 26:if(0===h)break e;i[a++]=r.length,h--,r.mode=21;break;case 27:if(r.wrap){for(;l<32;){if(0===o)break e;o--,u|=n[s++]<<l,l+=8;}if(c-=h,e.total_out+=c,r.total+=c,c&&(e.adler=r.check=r.flags?B(r.check,i,c,a-c):O(r.check,i,c,a-c)),c=h,(r.flags?u:L(u))!==r.check){e.msg="incorrect data check",r.mode=30;break}l=u=0;}r.mode=28;case 28:if(r.wrap&&r.flags){for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u!==(4294967295&r.total)){e.msg="incorrect length check",r.mode=30;break}l=u=0;}r.mode=29;case 29:x=1;break e;case 30:x=-3;break e;case 31:return -4;case 32:default:return U}return e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,(r.wsize||c!==e.avail_out&&r.mode<30&&(r.mode<27||4!==t))&&Z(e,e.output,e.next_out,c-e.avail_out)?(r.mode=31,-4):(f-=e.avail_in,c-=e.avail_out,e.total_in+=f,e.total_out+=c,r.total+=c,r.wrap&&c&&(e.adler=r.check=r.flags?B(r.check,i,c,e.next_out-c):O(r.check,i,c,e.next_out-c)),e.data_type=r.bits+(r.last?64:0)+(12===r.mode?128:0)+(20===r.mode||15===r.mode?256:0),(0==f&&0===c||4===t)&&x===N&&(x=-5),x)},r.inflateEnd=function(e){if(!e||!e.state)return U;var t=e.state;return t.window&&(t.window=null),e.state=null,N},r.inflateGetHeader=function(e,t){var r;return e&&e.state?0==(2&(r=e.state).wrap)?U:((r.head=t).done=!1,N):U},r.inflateSetDictionary=function(e,t){var r,n=t.length;return e&&e.state?0!==(r=e.state).wrap&&11!==r.mode?U:11===r.mode&&O(1,t,n,0)!==r.check?-3:Z(e,t,n,n)?(r.mode=31,-4):(r.havedict=1,N):U},r.inflateInfo="pako inflate (from Nodeca project)";},{"../utils/common":41,"./adler32":43,"./crc32":45,"./inffast":48,"./inftrees":50}],50:[function(e,t,r){var D=e("../utils/common"),F=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258,0,0],N=[16,16,16,16,16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,19,20,20,20,20,21,21,21,21,16,72,78],U=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577,0,0],P=[16,16,16,16,17,17,18,18,19,19,20,20,21,21,22,22,23,23,24,24,25,25,26,26,27,27,28,28,29,29,64,64];t.exports=function(e,t,r,n,i,s,a,o){var h,u,l,f,c,d,p,m,_,g=o.bits,b=0,v=0,y=0,w=0,k=0,x=0,S=0,z=0,C=0,E=0,A=null,I=0,O=new D.Buf16(16),B=new D.Buf16(16),R=null,T=0;for(b=0;b<=15;b++)O[b]=0;for(v=0;v<n;v++)O[t[r+v]]++;for(k=g,w=15;1<=w&&0===O[w];w--);if(w<k&&(k=w),0===w)return i[s++]=20971520,i[s++]=20971520,o.bits=1,0;for(y=1;y<w&&0===O[y];y++);for(k<y&&(k=y),b=z=1;b<=15;b++)if(z<<=1,(z-=O[b])<0)return -1;if(0<z&&(0===e||1!==w))return -1;for(B[1]=0,b=1;b<15;b++)B[b+1]=B[b]+O[b];for(v=0;v<n;v++)0!==t[r+v]&&(a[B[t[r+v]]++]=v);if(d=0===e?(A=R=a,19):1===e?(A=F,I-=257,R=N,T-=257,256):(A=U,R=P,-1),b=y,c=s,S=v=E=0,l=-1,f=(C=1<<(x=k))-1,1===e&&852<C||2===e&&592<C)return 1;for(;;){for(p=b-S,_=a[v]<d?(m=0,a[v]):a[v]>d?(m=R[T+a[v]],A[I+a[v]]):(m=96,0),h=1<<b-S,y=u=1<<x;i[c+(E>>S)+(u-=h)]=p<<24|m<<16|_|0,0!==u;);for(h=1<<b-1;E&h;)h>>=1;if(0!==h?(E&=h-1,E+=h):E=0,v++,0==--O[b]){if(b===w)break;b=t[r+a[v]];}if(k<b&&(E&f)!==l){for(0===S&&(S=k),c+=y,z=1<<(x=b-S);x+S<w&&!((z-=O[x+S])<=0);)x++,z<<=1;if(C+=1<<x,1===e&&852<C||2===e&&592<C)return 1;i[l=E&f]=k<<24|x<<16|c-s|0;}}return 0!==E&&(i[c+E]=b-S<<24|64<<16|0),o.bits=k,0};},{"../utils/common":41}],51:[function(e,t,r){t.exports={2:"need dictionary",1:"stream end",0:"","-1":"file error","-2":"stream error","-3":"data error","-4":"insufficient memory","-5":"buffer error","-6":"incompatible version"};},{}],52:[function(e,t,r){var i=e("../utils/common"),o=0,h=1;function n(e){for(var t=e.length;0<=--t;)e[t]=0;}var s=0,a=29,u=256,l=u+1+a,f=30,c=19,_=2*l+1,g=15,d=16,p=7,m=256,b=16,v=17,y=18,w=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],k=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],x=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7],S=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],z=new Array(2*(l+2));n(z);var C=new Array(2*f);n(C);var E=new Array(512);n(E);var A=new Array(256);n(A);var I=new Array(a);n(I);var O,B,R,T=new Array(f);function D(e,t,r,n,i){this.static_tree=e,this.extra_bits=t,this.extra_base=r,this.elems=n,this.max_length=i,this.has_stree=e&&e.length;}function F(e,t){this.dyn_tree=e,this.max_code=0,this.stat_desc=t;}function N(e){return e<256?E[e]:E[256+(e>>>7)]}function U(e,t){e.pending_buf[e.pending++]=255&t,e.pending_buf[e.pending++]=t>>>8&255;}function P(e,t,r){e.bi_valid>d-r?(e.bi_buf|=t<<e.bi_valid&65535,U(e,e.bi_buf),e.bi_buf=t>>d-e.bi_valid,e.bi_valid+=r-d):(e.bi_buf|=t<<e.bi_valid&65535,e.bi_valid+=r);}function L(e,t,r){P(e,r[2*t],r[2*t+1]);}function j(e,t){for(var r=0;r|=1&e,e>>>=1,r<<=1,0<--t;);return r>>>1}function Z(e,t,r){var n,i,s=new Array(g+1),a=0;for(n=1;n<=g;n++)s[n]=a=a+r[n-1]<<1;for(i=0;i<=t;i++){var o=e[2*i+1];0!==o&&(e[2*i]=j(s[o]++,o));}}function W(e){var t;for(t=0;t<l;t++)e.dyn_ltree[2*t]=0;for(t=0;t<f;t++)e.dyn_dtree[2*t]=0;for(t=0;t<c;t++)e.bl_tree[2*t]=0;e.dyn_ltree[2*m]=1,e.opt_len=e.static_len=0,e.last_lit=e.matches=0;}function M(e){8<e.bi_valid?U(e,e.bi_buf):0<e.bi_valid&&(e.pending_buf[e.pending++]=e.bi_buf),e.bi_buf=0,e.bi_valid=0;}function H(e,t,r,n){var i=2*t,s=2*r;return e[i]<e[s]||e[i]===e[s]&&n[t]<=n[r]}function G(e,t,r){for(var n=e.heap[r],i=r<<1;i<=e.heap_len&&(i<e.heap_len&&H(t,e.heap[i+1],e.heap[i],e.depth)&&i++,!H(t,n,e.heap[i],e.depth));)e.heap[r]=e.heap[i],r=i,i<<=1;e.heap[r]=n;}function K(e,t,r){var n,i,s,a,o=0;if(0!==e.last_lit)for(;n=e.pending_buf[e.d_buf+2*o]<<8|e.pending_buf[e.d_buf+2*o+1],i=e.pending_buf[e.l_buf+o],o++,0===n?L(e,i,t):(L(e,(s=A[i])+u+1,t),0!==(a=w[s])&&P(e,i-=I[s],a),L(e,s=N(--n),r),0!==(a=k[s])&&P(e,n-=T[s],a)),o<e.last_lit;);L(e,m,t);}function Y(e,t){var r,n,i,s=t.dyn_tree,a=t.stat_desc.static_tree,o=t.stat_desc.has_stree,h=t.stat_desc.elems,u=-1;for(e.heap_len=0,e.heap_max=_,r=0;r<h;r++)0!==s[2*r]?(e.heap[++e.heap_len]=u=r,e.depth[r]=0):s[2*r+1]=0;for(;e.heap_len<2;)s[2*(i=e.heap[++e.heap_len]=u<2?++u:0)]=1,e.depth[i]=0,e.opt_len--,o&&(e.static_len-=a[2*i+1]);for(t.max_code=u,r=e.heap_len>>1;1<=r;r--)G(e,s,r);for(i=h;r=e.heap[1],e.heap[1]=e.heap[e.heap_len--],G(e,s,1),n=e.heap[1],e.heap[--e.heap_max]=r,e.heap[--e.heap_max]=n,s[2*i]=s[2*r]+s[2*n],e.depth[i]=(e.depth[r]>=e.depth[n]?e.depth[r]:e.depth[n])+1,s[2*r+1]=s[2*n+1]=i,e.heap[1]=i++,G(e,s,1),2<=e.heap_len;);e.heap[--e.heap_max]=e.heap[1],function(e,t){var r,n,i,s,a,o,h=t.dyn_tree,u=t.max_code,l=t.stat_desc.static_tree,f=t.stat_desc.has_stree,c=t.stat_desc.extra_bits,d=t.stat_desc.extra_base,p=t.stat_desc.max_length,m=0;for(s=0;s<=g;s++)e.bl_count[s]=0;for(h[2*e.heap[e.heap_max]+1]=0,r=e.heap_max+1;r<_;r++)p<(s=h[2*h[2*(n=e.heap[r])+1]+1]+1)&&(s=p,m++),h[2*n+1]=s,u<n||(e.bl_count[s]++,a=0,d<=n&&(a=c[n-d]),o=h[2*n],e.opt_len+=o*(s+a),f&&(e.static_len+=o*(l[2*n+1]+a)));if(0!==m){do{for(s=p-1;0===e.bl_count[s];)s--;e.bl_count[s]--,e.bl_count[s+1]+=2,e.bl_count[p]--,m-=2;}while(0<m);for(s=p;0!==s;s--)for(n=e.bl_count[s];0!==n;)u<(i=e.heap[--r])||(h[2*i+1]!==s&&(e.opt_len+=(s-h[2*i+1])*h[2*i],h[2*i+1]=s),n--);}}(e,t),Z(s,u,e.bl_count);}function X(e,t,r){var n,i,s=-1,a=t[1],o=0,h=7,u=4;for(0===a&&(h=138,u=3),t[2*(r+1)+1]=65535,n=0;n<=r;n++)i=a,a=t[2*(n+1)+1],++o<h&&i===a||(o<u?e.bl_tree[2*i]+=o:0!==i?(i!==s&&e.bl_tree[2*i]++,e.bl_tree[2*b]++):o<=10?e.bl_tree[2*v]++:e.bl_tree[2*y]++,s=i,u=(o=0)===a?(h=138,3):i===a?(h=6,3):(h=7,4));}function V(e,t,r){var n,i,s=-1,a=t[1],o=0,h=7,u=4;for(0===a&&(h=138,u=3),n=0;n<=r;n++)if(i=a,a=t[2*(n+1)+1],!(++o<h&&i===a)){if(o<u)for(;L(e,i,e.bl_tree),0!=--o;);else 0!==i?(i!==s&&(L(e,i,e.bl_tree),o--),L(e,b,e.bl_tree),P(e,o-3,2)):o<=10?(L(e,v,e.bl_tree),P(e,o-3,3)):(L(e,y,e.bl_tree),P(e,o-11,7));s=i,u=(o=0)===a?(h=138,3):i===a?(h=6,3):(h=7,4);}}n(T);var q=!1;function J(e,t,r,n){P(e,(s<<1)+(n?1:0),3),function(e,t,r,n){M(e),n&&(U(e,r),U(e,~r)),i.arraySet(e.pending_buf,e.window,t,r,e.pending),e.pending+=r;}(e,t,r,!0);}r._tr_init=function(e){q||(function(){var e,t,r,n,i,s=new Array(g+1);for(n=r=0;n<a-1;n++)for(I[n]=r,e=0;e<1<<w[n];e++)A[r++]=n;for(A[r-1]=n,n=i=0;n<16;n++)for(T[n]=i,e=0;e<1<<k[n];e++)E[i++]=n;for(i>>=7;n<f;n++)for(T[n]=i<<7,e=0;e<1<<k[n]-7;e++)E[256+i++]=n;for(t=0;t<=g;t++)s[t]=0;for(e=0;e<=143;)z[2*e+1]=8,e++,s[8]++;for(;e<=255;)z[2*e+1]=9,e++,s[9]++;for(;e<=279;)z[2*e+1]=7,e++,s[7]++;for(;e<=287;)z[2*e+1]=8,e++,s[8]++;for(Z(z,l+1,s),e=0;e<f;e++)C[2*e+1]=5,C[2*e]=j(e,5);O=new D(z,w,u+1,l,g),B=new D(C,k,0,f,g),R=new D(new Array(0),x,0,c,p);}(),q=!0),e.l_desc=new F(e.dyn_ltree,O),e.d_desc=new F(e.dyn_dtree,B),e.bl_desc=new F(e.bl_tree,R),e.bi_buf=0,e.bi_valid=0,W(e);},r._tr_stored_block=J,r._tr_flush_block=function(e,t,r,n){var i,s,a=0;0<e.level?(2===e.strm.data_type&&(e.strm.data_type=function(e){var t,r=4093624447;for(t=0;t<=31;t++,r>>>=1)if(1&r&&0!==e.dyn_ltree[2*t])return o;if(0!==e.dyn_ltree[18]||0!==e.dyn_ltree[20]||0!==e.dyn_ltree[26])return h;for(t=32;t<u;t++)if(0!==e.dyn_ltree[2*t])return h;return o}(e)),Y(e,e.l_desc),Y(e,e.d_desc),a=function(e){var t;for(X(e,e.dyn_ltree,e.l_desc.max_code),X(e,e.dyn_dtree,e.d_desc.max_code),Y(e,e.bl_desc),t=c-1;3<=t&&0===e.bl_tree[2*S[t]+1];t--);return e.opt_len+=3*(t+1)+5+5+4,t}(e),i=e.opt_len+3+7>>>3,(s=e.static_len+3+7>>>3)<=i&&(i=s)):i=s=r+5,r+4<=i&&-1!==t?J(e,t,r,n):4===e.strategy||s===i?(P(e,2+(n?1:0),3),K(e,z,C)):(P(e,4+(n?1:0),3),function(e,t,r,n){var i;for(P(e,t-257,5),P(e,r-1,5),P(e,n-4,4),i=0;i<n;i++)P(e,e.bl_tree[2*S[i]+1],3);V(e,e.dyn_ltree,t-1),V(e,e.dyn_dtree,r-1);}(e,e.l_desc.max_code+1,e.d_desc.max_code+1,a+1),K(e,e.dyn_ltree,e.dyn_dtree)),W(e),n&&M(e);},r._tr_tally=function(e,t,r){return e.pending_buf[e.d_buf+2*e.last_lit]=t>>>8&255,e.pending_buf[e.d_buf+2*e.last_lit+1]=255&t,e.pending_buf[e.l_buf+e.last_lit]=255&r,e.last_lit++,0===t?e.dyn_ltree[2*r]++:(e.matches++,t--,e.dyn_ltree[2*(A[r]+u+1)]++,e.dyn_dtree[2*N(t)]++),e.last_lit===e.lit_bufsize-1},r._tr_align=function(e){P(e,2,3),L(e,m,z),function(e){16===e.bi_valid?(U(e,e.bi_buf),e.bi_buf=0,e.bi_valid=0):8<=e.bi_valid&&(e.pending_buf[e.pending++]=255&e.bi_buf,e.bi_buf>>=8,e.bi_valid-=8);}(e);};},{"../utils/common":41}],53:[function(e,t,r){t.exports=function(){this.input=null,this.next_in=0,this.avail_in=0,this.total_in=0,this.output=null,this.next_out=0,this.avail_out=0,this.total_out=0,this.msg="",this.state=null,this.data_type=2,this.adler=0;};},{}],54:[function(e,t,r){(function(e){!function(r,n){if(!r.setImmediate){var i,s,t,a,o=1,h={},u=!1,l=r.document,e=Object.getPrototypeOf&&Object.getPrototypeOf(r);e=e&&e.setTimeout?e:r,i="[object process]"==={}.toString.call(r.process)?function(e){process.nextTick(function(){c(e);});}:function(){if(r.postMessage&&!r.importScripts){var e=!0,t=r.onmessage;return r.onmessage=function(){e=!1;},r.postMessage("","*"),r.onmessage=t,e}}()?(a="setImmediate$"+Math.random()+"$",r.addEventListener?r.addEventListener("message",d,!1):r.attachEvent("onmessage",d),function(e){r.postMessage(a+e,"*");}):r.MessageChannel?((t=new MessageChannel).port1.onmessage=function(e){c(e.data);},function(e){t.port2.postMessage(e);}):l&&"onreadystatechange"in l.createElement("script")?(s=l.documentElement,function(e){var t=l.createElement("script");t.onreadystatechange=function(){c(e),t.onreadystatechange=null,s.removeChild(t),t=null;},s.appendChild(t);}):function(e){setTimeout(c,0,e);},e.setImmediate=function(e){"function"!=typeof e&&(e=new Function(""+e));for(var t=new Array(arguments.length-1),r=0;r<t.length;r++)t[r]=arguments[r+1];var n={callback:e,args:t};return h[o]=n,i(o),o++},e.clearImmediate=f;}function f(e){delete h[e];}function c(e){if(u)setTimeout(c,0,e);else {var t=h[e];if(t){u=!0;try{!function(e){var t=e.callback,r=e.args;switch(r.length){case 0:t();break;case 1:t(r[0]);break;case 2:t(r[0],r[1]);break;case 3:t(r[0],r[1],r[2]);break;default:t.apply(n,r);}}(t);}finally{f(e),u=!1;}}}}function d(e){e.source===r&&"string"==typeof e.data&&0===e.data.indexOf(a)&&c(+e.data.slice(a.length));}}("undefined"==typeof self?void 0===e?this:e:self);}).call(this,"undefined"!=typeof commonjsGlobal?commonjsGlobal:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{});},{}]},{},[10])(10)});
-});
+function center() {
+    //console.log("Center mindmap")
+    this._setMindScalePointer(this.root);
+    var oldScale = this.mindScale;
+    this.scale(100);
+    var w = this.containerEL.clientWidth;
+    var h = this.containerEL.clientHeight;
+    this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
+    this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
+    this.scale(oldScale);
+}
+function centerOnNode(node) {
+    if (node == null) { //No node given as input argument
+        this.center();
+    }
+    else {
+        //console.log("Center mindmap on node "+node.getId())
+        this._setMindScalePointer(node);
+        var oldScale = this.mindScale;
+        this.scale(100);
+        var w = this.containerEL.clientWidth;
+        var h = this.containerEL.clientHeight;
+        let pos_x = node.getPosition().x;
+        let pos_y = node.getPosition().y;
+        let dim_x = node.getDimensions().x;
+        let dim_y = node.getDimensions().y;
+        //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
+        //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
+        this.containerEL.scrollTop = pos_y - (h / 2 - dim_y / 2) + 90;
+        //this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
+        this.containerEL.scrollLeft = pos_x - (w / 2 - dim_x / 2) + 200;
+        this.scale(oldScale);
+    }
+}
+// Bounding box of the visible nodes under `from`.
+function visibleBounds(from) {
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity;
+    this.traverseBF((n) => {
+        if (n.containEl.style.display === 'none')
+            return;
+        const pos = n.getPosition();
+        const dim = n.getDimensions();
+        minX = Math.min(minX, pos.x);
+        minY = Math.min(minY, pos.y);
+        maxX = Math.max(maxX, pos.x + dim.x);
+        maxY = Math.max(maxY, pos.y + dim.y);
+    }, from);
+    return minX === Infinity ? null : { minX, minY, maxX, maxY };
+}
+// Scale around (x, y) and scroll so that point is centered in the viewport.
+function showPoint(x, y, scalePercent) {
+    this.scalePointer = [x, y];
+    this.scale(scalePercent);
+    this.containerEL.scrollLeft = x - this.containerEL.clientWidth / 2;
+    this.containerEL.scrollTop = y - this.containerEL.clientHeight / 2;
+}
+function fit() {
+    if (!this.root)
+        return;
+    const bounds = visibleBounds.call(this, this.focusedNode || this.root);
+    const w = this.containerEL.clientWidth;
+    const h = this.containerEL.clientHeight;
+    if (!bounds || !w || !h)
+        return;
+    const padding = 80;
+    const scaleX = w / (bounds.maxX - bounds.minX + padding * 2);
+    const scaleY = h / (bounds.maxY - bounds.minY + padding * 2);
+    const newScale = Math.min(scaleX, scaleY, 1);
+    showPoint.call(this, (bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2, newScale * 100);
+}
+// First view of a map: show the whole map when it fits at a readable size,
+// otherwise keep the root in the middle.
+function fitOnOpen() {
+    if (!this.root)
+        return;
+    const bounds = visibleBounds.call(this, this.root);
+    const w = this.containerEL.clientWidth;
+    const h = this.containerEL.clientHeight;
+    if (!bounds || !w || !h) {
+        this.centerOnNode(this.root);
+        return;
+    }
+    const padding = 60;
+    const fitScale = Math.min(w / (bounds.maxX - bounds.minX + padding * 2), h / (bounds.maxY - bounds.minY + padding * 2), 1);
+    const MIN_READABLE = 0.6;
+    if (fitScale >= MIN_READABLE) {
+        showPoint.call(this, (bounds.minX + bounds.maxX) / 2, (bounds.minY + bounds.maxY) / 2, Math.floor(fitScale * 100));
+        return;
+    }
+    const box = this.root.getBox();
+    showPoint.call(this, box.x + box.width / 2, box.y + box.height / 2, MIN_READABLE * 100);
+}
+function _setMindScalePointer(node) {
+    this.scalePointer = [];
+    // var root = this.root;
+    if (node) {
+        var rbox = node.getBox();
+        this.scalePointer.push(rbox.x + rbox.width / 2, rbox.y + rbox.height / 2);
+        if (!node.isSelect) {
+            this.clearSelectNode();
+            node.select();
+        }
+    }
+}
+function scale(num) {
+    if (num < 20) {
+        num = 20;
+    }
+    if (num > 300) {
+        num = 300;
+    }
+    this.mindScale = num;
+    if (this.scalePointer.length) {
+        this.appEl.style.transformOrigin = `${this.scalePointer[0]}px ${this.scalePointer[1]}px`;
+        this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
+    }
+    else {
+        this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
+    }
+}
+function setScale(type) {
+    if (type == "up") {
+        var n = this.mindScale + 10;
+    }
+    else {
+        var n = this.mindScale - 10;
+    }
+    this.scale(n);
+    if (this.timeOut) {
+        clearTimeout(this.timeOut);
+    }
+    this.timeOut = setTimeout(() => {
+        new obsidian.Notice(`${n} %`);
+    }, 600);
+}
+
+// In-place update of the map from re-parsed Markdown (typing in a linked
+// Pairs new siblings with old ones: equal text and block id first (longest
+// common subsequence), then the unmatched nodes between two matches by
+// position, so a node whose text was edited keeps its identity.
+function matchSiblings(adapter, oldList, newList) {
+    const key = (text, blockId) => `${blockId || ''}\u0000${text}`;
+    const oldKeys = oldList.map((n) => key(adapter.text(n), adapter.blockId(n)));
+    const newKeys = newList.map((d) => key(d.text, d.blockId));
+    const n = oldKeys.length, m = newKeys.length;
+    const lcs = Array.from({ length: n + 1 }, () => new Array(m + 1).fill(0));
+    for (let i = n - 1; i >= 0; i--) {
+        for (let j = m - 1; j >= 0; j--) {
+            lcs[i][j] = oldKeys[i] === newKeys[j]
+                ? lcs[i + 1][j + 1] + 1
+                : Math.max(lcs[i + 1][j], lcs[i][j + 1]);
+        }
+    }
+    const result = new Array(m).fill(-1);
+    const anchors = [];
+    for (let i = 0, j = 0; i < n && j < m;) {
+        if (oldKeys[i] === newKeys[j]) {
+            anchors.push([i, j]);
+            result[j] = i;
+            i++;
+            j++;
+        }
+        else if (lcs[i + 1][j] >= lcs[i][j + 1]) {
+            i++;
+        }
+        else {
+            j++;
+        }
+    }
+    anchors.push([n, m]);
+    let previousOld = 0, previousNew = 0;
+    for (const [anchorOld, anchorNew] of anchors) {
+        const gap = Math.min(anchorOld - previousOld, anchorNew - previousNew);
+        for (let k = 0; k < gap; k++) {
+            const i = previousOld + k, j = previousNew + k;
+            if ((adapter.blockId(oldList[i]) || '') === (newList[j].blockId || '')) {
+                result[j] = i;
+            }
+        }
+        previousOld = anchorOld + 1;
+        previousNew = anchorNew + 1;
+    }
+    return result;
+}
+function planPatch(adapter, oldRoot, newRoot) {
+    const summary = { created: 0, changed: 0, removed: 0 };
+    const countSubtree = (node) => 1 + adapter.children(node).reduce((sum, c) => sum + countSubtree(c), 0);
+    const createPlan = (data) => {
+        summary.created++;
+        return {
+            node: null,
+            data,
+            children: (data.children || []).map(createPlan),
+            removed: [],
+            textChanged: false,
+        };
+    };
+    const pairPlan = (node, data) => {
+        const oldChildren = adapter.children(node);
+        const newChildren = data.children || [];
+        const match = matchSiblings(adapter, oldChildren, newChildren);
+        const used = new Set(match.filter((i) => i >= 0));
+        const removed = oldChildren.filter((_, i) => !used.has(i));
+        removed.forEach((r) => summary.removed += countSubtree(r));
+        const textChanged = adapter.text(node) !== data.text;
+        if (textChanged) {
+            summary.changed++;
+        }
+        return {
+            node,
+            data,
+            children: newChildren.map((c, j) => match[j] >= 0 ? pairPlan(oldChildren[match[j]], c) : createPlan(c)),
+            removed,
+            textChanged,
+        };
+    };
+    // The root always keeps its node, even when its title changes.
+    return { plan: pairPlan(oldRoot, newRoot), summary };
+}
+const inodeAdapter = {
+    text: (node) => node.data.text,
+    blockId: (node) => node.data.blockId,
+    children: (node) => node.children,
+};
+// Returns false when the change is too large to be worth patching; the caller
+// then rebuilds the map.
+function patchFromData(newRoot) {
+    var _a, _b;
+    if (!this.root || ((_a = this.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit) || this._dragNode) {
+        return false;
+    }
+    const placeholder = t('Sub title');
+    const normalize = (d) => {
+        if (!d.text) {
+            d.text = placeholder;
+        }
+        (d.children || []).forEach(normalize);
+    };
+    normalize(newRoot);
+    const { plan, summary } = planPatch(inodeAdapter, this.root, newRoot);
+    let total = 0;
+    this.traverseBF(() => total++);
+    if (summary.created + summary.changed > Math.max(30, total * 0.3)) {
+        return false;
+    }
+    const removedNodes = new Set();
+    const release = (node) => {
+        this.traverseBF((n) => {
+            removedNodes.add(n);
+            n.releaseRenderComponent();
+        }, node);
+        this._removeChildDom(node);
+    };
+    const apply = (p, parent) => {
+        let node = p.node;
+        if (!node) {
+            node = new Node$1(p.data, this);
+            if (parent === null || parent === void 0 ? void 0 : parent.direct) {
+                node.direct = parent.direct;
+            }
+        }
+        else {
+            node.data.blockId = p.data.blockId;
+            if (p.textChanged) {
+                node.setText(p.data.text);
+                node.refreshBox();
+                node.clearCacheData();
+            }
+        }
+        node.data.sourceRange = p.data.sourceRange;
+        const expanded = p.data.expanded !== false;
+        if (node.isExpand !== expanded) {
+            node.isExpand = expanded;
+            node.containEl.classList.toggle('mm-node-collapse', !expanded);
+        }
+        p.removed.forEach(release);
+        const children = p.children.map((c) => apply(c, node));
+        const changed = children.length !== node.children.length ||
+            children.some((c, i) => c !== node.children[i]);
+        if (changed) {
+            node.children = children;
+            children.forEach((c) => {
+                if (!c.parent || c.parent !== node || !this.contentEL.contains(c.containEl)) {
+                    c.parent = node;
+                    this._addNodeDom(c);
+                }
+            });
+            node.clearCacheData();
+        }
+        return node;
+    };
+    apply(plan);
+    const isRemoved = (node) => !!node && removedNodes.has(node);
+    if (isRemoved(this.selectNode)) {
+        this.selectNode.unSelect();
+        this.selectNode = null;
+    }
+    if (isRemoved(this.editNode)) {
+        this.editNode = null;
+    }
+    if (isRemoved(this.lastSelectedNode)) {
+        this.lastSelectedNode = null;
+    }
+    if (isRemoved(this.focusedNode)) {
+        this.focusedNode = undefined;
+    }
+    this.selectedNodes.forEach((n) => {
+        if (isRemoved(n)) {
+            n.unSelect();
+        }
+    });
+    if (!this.selectNode && this.selectedNodes.size) {
+        (_b = this.selectedList().pop()) === null || _b === void 0 ? void 0 : _b.addToSelection(true);
+    }
+    // Commands recorded before the text changed would replay onto a different tree.
+    this.resetHistory();
+    this.updateEffectiveNodeVisibility();
+    // One layout in the next frame; nodes whose Markdown renders later
+    // request their own (see MindMap.initNode).
+    if (summary.created || summary.changed || summary.removed) {
+        this.requestRenderRefresh();
+    }
+    if (this.searchPanel) {
+        this.scheduleSearchRefresh();
+    }
+    return true;
+}
+
+function isSelectableNode(node) {
+    return this.isNodeInTree(node) && node.isShow() &&
+        (!this.focusedNode || this.isNodeWithinFocus(node));
+}
+// Visits nodes in document order (parents before children); traverseDF
+// visits children first.
+function forEachInOrder(node, visit) {
+    visit(node);
+    node.children.forEach((c) => forEachInOrder(c, visit));
+}
+// Selected nodes in document order.
+function selectedList() {
+    const list = [];
+    if (!this.root) {
+        return list;
+    }
+    forEachInOrder(this.root, (n) => {
+        if (this.selectedNodes.has(n)) {
+            list.push(n);
+        }
+    });
+    return list;
+}
+// Selected nodes without a selected ancestor, in document order. The root
+// is left out (it cannot be deleted or moved) and does not cover its children.
+function topmostSelected() {
+    return this.selectedList().filter((node) => {
+        if (node === this.root) {
+            return false;
+        }
+        for (let p = node.parent; p && p !== this.root; p = p.parent) {
+            if (this.selectedNodes.has(p)) {
+                return false;
+            }
+        }
+        return true;
+    });
+}
+function toggleSelection(node) {
+    var _a;
+    if (!this.selectedNodes.has(node)) {
+        node.addToSelection(true);
+        return;
+    }
+    node.unSelect();
+    if (this.selectNode === node) {
+        this.selectNode = null;
+        const rest = this.selectedList();
+        (_a = rest[rest.length - 1]) === null || _a === void 0 ? void 0 : _a.addToSelection(true);
+    }
+}
+// Shift+click: the sibling range from the primary node when both share a
+// parent, otherwise a toggle.
+function selectRange(node) {
+    var _a;
+    const anchor = this.selectNode;
+    const siblings = (_a = node.parent) === null || _a === void 0 ? void 0 : _a.children;
+    if (!anchor || anchor === node || !siblings || anchor.parent !== node.parent) {
+        this.toggleSelection(node);
+        return;
+    }
+    const from = siblings.indexOf(anchor), to = siblings.indexOf(node);
+    const range = siblings.slice(Math.min(from, to), Math.max(from, to) + 1);
+    range.forEach((n) => {
+        if (n !== node && this.isSelectableNode(n)) {
+            n.addToSelection(false);
+        }
+    });
+    node.addToSelection(true);
+}
+// Drops every selected node except `node`, without touching the edit state.
+function collapseSelectionTo(node) {
+    Array.from(this.selectedNodes).forEach((n) => {
+        if (n !== node) {
+            n.unSelect();
+        }
+    });
+}
+function selectAllVisible() {
+    const primary = this.selectNode && this.isSelectableNode(this.selectNode)
+        ? this.selectNode
+        : (this.focusedNode || this.root);
+    primary === null || primary === void 0 ? void 0 : primary.addToSelection(true);
+    forEachInOrder(this.root, (n) => {
+        if (n !== primary && this.isSelectableNode(n)) {
+            n.addToSelection(false);
+        }
+    });
+}
+// Removes nodes that were deleted or became hidden (collapse, focus mode).
+function pruneSelection() {
+    var _a;
+    let primaryLost = !this.selectNode;
+    this.selectedNodes.forEach((n) => {
+        if (!this.isSelectableNode(n)) {
+            n.unSelect();
+            if (this.selectNode === n) {
+                primaryLost = true;
+            }
+        }
+    });
+    if (primaryLost && this.selectedNodes.size) {
+        this.selectNode = null;
+        const rest = this.selectedList();
+        (_a = rest[rest.length - 1]) === null || _a === void 0 ? void 0 : _a.addToSelection(true);
+    }
+}
+function captureSelection() {
+    return { nodes: this.selectedList(), primary: this.selectNode || undefined };
+}
+function restoreSelection(snapshot) {
+    const nodes = snapshot.nodes.filter((n) => this.isSelectableNode(n));
+    const primary = snapshot.primary && nodes.includes(snapshot.primary)
+        ? snapshot.primary
+        : nodes[nodes.length - 1];
+    if (!primary) {
+        return;
+    }
+    primary.select();
+    nodes.forEach((n) => {
+        if (n !== primary) {
+            n.addToSelection(false);
+        }
+    });
+}
+// Box selection: the selectable nodes the client rect touches, so a box only
+// has to cross a node rather than enclose it.
+function selectInRect(rect, additive) {
+    const hits = [];
+    forEachInOrder(this.root, (n) => {
+        if (!this.isSelectableNode(n)) {
+            return;
+        }
+        const b = n.contentEl.getBoundingClientRect();
+        if (b.right >= rect.left && b.left <= rect.right && b.bottom >= rect.top && b.top <= rect.bottom) {
+            hits.push(n);
+        }
+    });
+    if (!additive) {
+        this.clearSelectNode();
+        if (hits.length) {
+            hits[0].select();
+        }
+    }
+    hits.forEach((n) => n.addToSelection(false));
+}
 
 let deleteIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M799.2 874.4c0 34.4-28 62.4-62.368 62.4H287.2a62.496 62.496 0 0 1-62.4-62.4V212h574.4v662.4zM349.6 100c0-7.2 5.6-12.8 12.8-12.8h300c7.2 0 12.768 5.6 12.768 12.8v37.6H349.6V100z m636.8 37.6H749.6V100c0-48-39.2-87.2-87.2-87.2h-300a87.392 87.392 0 0 0-87.2 87.2v37.6H37.6C16.8 137.6 0 154.4 0 175.2s16.8 37.6 37.6 37.6h112v661.6A137.6 137.6 0 0 0 287.2 1012h449.6a137.6 137.6 0 0 0 137.6-137.6V212h112c20.8 0 37.6-16.8 37.6-37.6s-16.8-36.8-37.6-36.8zM512 824c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.768-37.6-37.6-37.6-20.8 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6m-175.2 0c20.8 0 37.6-16.8 37.6-37.6v-400c0-20.8-16.8-37.6-37.6-37.6s-37.6 16.8-37.6 37.6v400c0.8 20.8 17.6 37.6 37.6 37.6m350.4 0c20.8 0 37.632-16.8 37.632-37.6v-400c0-20.8-16.8-37.6-37.632-37.6-20.768 0-37.6 16.8-37.6 37.6v400c0 20.8 16.8 37.6 37.6 37.6" /></svg>';
 let addIcon = '<svg class="icon" width="16px" height="16.00px" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"><path  d="M512 1024C230.4 1024 0 793.6 0 512S230.4 0 512 0s512 230.4 512 512-230.4 512-512 512z m0-960C265.6 64 64 265.6 64 512s201.6 448 448 448 448-201.6 448-448S758.4 64 512 64z"  /><path d="M800 544H224c-19.2 0-32-12.8-32-32s12.8-32 32-32h576c19.2 0 32 12.8 32 32s-12.8 32-32 32z"  /><path  d="M512 832c-19.2 0-32-12.8-32-32V224c0-19.2 12.8-32 32-32s32 12.8 32 32v576c0 19.2-12.8 32-32 32z"  /></svg>';
@@ -8171,6 +10630,15 @@ let focusIcon = '<svg class="icon" width="16px" height="16px" viewBox="0 0 1024 
 let tempDispLevel = 0;
 class MindMap {
     constructor(data, containerEL, setting, view) {
+        // Every selected node, including the primary `selectNode`.
+        this.selectedNodes = new Set();
+        // The primary node the view was last told about (Markdown selection sync).
+        this.reportedSelectNode = null;
+        // Set while a batch runs; commands then defer layout and saving.
+        this.refreshSuspended = 0;
+        this.refreshPending = false;
+        this.marqueeEndedAt = 0;
+        this.panMoved = false;
         this._nodeNum = 0;
         this._tempNum = 0;
         this.colors = [];
@@ -8179,9 +10647,25 @@ class MindMap {
         this.timeOut = null;
         this._dragType = '';
         this.isComposing = false;
-        this.isFocused = true;
+        // Set by focusin/focusout only; a map must not handle keys typed elsewhere.
+        this.isFocused = false;
+        // A rebuild while focus is in another view (e.g. typing in the Markdown
+        // split) must not pull focus into the map; cleared on the next interaction.
+        this.suppressFocus = false;
         this.renderRefreshFrame = null;
+        this.revealGeneration = 0;
+        this.nodeRemeasureTimer = null;
+        this.pendingNodeRemeasure = new Set();
         this.isInitializingNodes = false;
+        this.focusTimer = null;
+        this.searchQuery = '';
+        this.searchMatchIds = [];
+        this.searchTimer = null;
+        this.searchGeneration = 0;
+        this.searchScrollGeneration = 0;
+        this.searchComposing = false;
+        this.searchTemporarilyExpandedIds = new Set();
+        this.isApplyingSearchExpansion = false;
         this.setting = Object.assign({
             theme: 'default',
             //canvasSize: 8000,
@@ -8192,7 +10676,10 @@ class MindMap {
             exportMdModel: 'default',
             headLevel: 1,
             layoutDirect: '',
-            focusOverlayOpacity: 0.4
+            focusOverlayOpacity: 0.4,
+            focusGlowSize: 150,
+            nodeGlowSize: 10,
+            nodeMaxWidth: 800
         }, setting || {});
         this.data = data;
         this.view = view;
@@ -8224,8 +10711,9 @@ class MindMap {
         this.setMenuIcon();
         this.contentEL.appendChild(this._indicateDom);
         this.contentEL.appendChild(this._menuDom);
+        this.containerEL.classList.add('mapdown-viewport');
         //history
-        this.exec = new Exec();
+        this.resetHistory();
         // link line
         this.edgeGroup = this.draw.group();
         this.appClickFn = this.appClickFn.bind(this);
@@ -8239,6 +10727,7 @@ class MindMap {
         this.compositionStart = this.compositionStart.bind(this);
         this.compositionEnd = this.compositionEnd.bind(this);
         this.appKeydown = this.appKeydown.bind(this);
+        this.appPointerDownCapture = this.appPointerDownCapture.bind(this);
         this.appMousewheel = this.appMousewheel.bind(this);
         this.appMouseMove = this.appMouseMove.bind(this);
         this.appContextMenu = this.appContextMenu.bind(this);
@@ -8256,59 +10745,131 @@ class MindMap {
         this.initControlPanel();
     }
     initControlPanel() {
-        const panel = document.createElement('div');
+        const ownerDocument = this.containerEL.ownerDocument;
+        const panel = ownerDocument.createElement('div');
         panel.classList.add('mm-control-panel');
-        panel.innerHTML = `
-            <div class="mm-control-group">
-                <div class="mm-ctrl-btn mm-ctrl-new-mindmap" title="${t('Create new mindmap')}" aria-label="${t('Create new mindmap')}">＋</div>
-                <div class="mm-ctrl-btn mm-ctrl-undo" title="Undo">↶</div>
-                <div class="mm-ctrl-btn mm-ctrl-redo" title="Redo">↷</div>
-                <div class="mm-ctrl-btn mm-ctrl-export-png" title="Export PNG">📷</div>
-                <div class="mm-ctrl-btn mm-ctrl-export-jpg" title="Export JPG">🖼️</div>
-            </div>
-            <div class="mm-control-group">
-                <div class="mm-ctrl-btn mm-ctrl-zoom-in" title="Zoom In">+</div>
-                <div class="mm-ctrl-btn mm-ctrl-zoom-out" title="Zoom Out">-</div>
-                <div class="mm-ctrl-btn mm-ctrl-center" title="Center/Fit">⛶</div>
-            </div>
-        `;
+        const group = () => {
+            const el = ownerDocument.createElement('div');
+            el.classList.add('mm-control-group');
+            panel.appendChild(el);
+            return el;
+        };
+        const button = (parent, cls, icon, label, onClick) => {
+            const el = ownerDocument.createElement('button');
+            el.type = 'button';
+            el.classList.add('mm-ctrl-btn', cls);
+            el.setAttribute('aria-label', label);
+            obsidian.setIcon(el, icon);
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                if (!el.classList.contains('is-disabled')) {
+                    onClick(e);
+                }
+            });
+            parent.appendChild(el);
+            return el;
+        };
+        const edit = group();
+        button(edit, 'mm-ctrl-new-mindmap', 'file-plus', t('Create new mindmap'), () => { var _a; return (_a = this.view) === null || _a === void 0 ? void 0 : _a.plugin.newMindMap(); });
+        button(edit, 'mm-ctrl-search', 'search', t('Search nodes'), () => this.openSearch());
+        this.undoButton = button(edit, 'mm-ctrl-undo', 'undo-2', t('Undo'), () => this.undo());
+        this.redoButton = button(edit, 'mm-ctrl-redo', 'redo-2', t('Redo'), () => this.redo());
+        button(edit, 'mm-ctrl-export', 'download', t('Export'), (e) => this.showExportMenu(e));
+        const view = group();
+        button(view, 'mm-ctrl-zoom-in', 'zoom-in', t('Zoom in'), () => this.setScale('up'));
+        button(view, 'mm-ctrl-zoom-out', 'zoom-out', t('Zoom out'), () => this.setScale('down'));
+        button(view, 'mm-ctrl-center', 'scan', t('Fit to view'), () => this.fit());
         // Append to containerEL so it stays fixed relative to the viewport, not the scaled content
         this.containerEL.appendChild(panel);
-        panel.querySelector('.mm-ctrl-new-mindmap').addEventListener('click', (e) => {
-            var _a;
-            e.stopPropagation();
-            (_a = this.view) === null || _a === void 0 ? void 0 : _a.plugin.newMindMap();
-        });
-        panel.querySelector('.mm-ctrl-undo').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.undo();
-        });
-        panel.querySelector('.mm-ctrl-redo').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.redo();
-        });
-        panel.querySelector('.mm-ctrl-export-png').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (this.view)
-                this.view.exportToPng(2);
-        });
-        panel.querySelector('.mm-ctrl-export-jpg').addEventListener('click', (e) => {
-            e.stopPropagation();
-            if (this.view)
-                this.view.exportToJpeg(2);
-        });
-        panel.querySelector('.mm-ctrl-zoom-in').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setScale("up");
-        });
-        panel.querySelector('.mm-ctrl-zoom-out').addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.setScale("down");
-        });
-        panel.querySelector('.mm-ctrl-center').addEventListener('click', (e) => {
-            e.preventDefault();
-            this.fit();
-        });
+        this.controlPanel = panel;
+        this.updateHistoryButtons();
+    }
+    showExportMenu(evt) {
+        const view = this.view;
+        if (!view) {
+            return;
+        }
+        const menu = new obsidian.Menu();
+        menu.addItem((item) => item.setTitle(t('Export to PNG (HQ)')).setIcon('image').onClick(() => view.exportToPng(2)));
+        menu.addItem((item) => item.setTitle(t('Export to JPEG (HQ)')).setIcon('image').onClick(() => view.exportToJpeg(2)));
+        menu.addItem((item) => item.setTitle(t('Export to html')).setIcon('file-code').onClick(() => view.exportToHtml()));
+        menu.addItem((item) => item.setTitle(t('Export to XMind')).setIcon('network').onClick(() => view.exportToXmind()));
+        menu.showAtMouseEvent(evt);
+    }
+    // A fresh history (new map or text changed outside the map) with the
+    // toolbar's undo/redo state kept in sync.
+    resetHistory() {
+        this.exec = new Exec();
+        this.exec.history.change = () => this.updateHistoryButtons();
+        this.updateHistoryButtons();
+    }
+    updateHistoryButtons() {
+        var _a, _b, _c;
+        const history = (_a = this.exec) === null || _a === void 0 ? void 0 : _a.history;
+        (_b = this.undoButton) === null || _b === void 0 ? void 0 : _b.classList.toggle('is-disabled', !(history === null || history === void 0 ? void 0 : history.canUndo()));
+        (_c = this.redoButton) === null || _c === void 0 ? void 0 : _c.classList.toggle('is-disabled', !(history === null || history === void 0 ? void 0 : history.canRedo()));
+    }
+    openSearch() {
+        return openSearch.call(this);
+    }
+    createSearchButton(ownerDocument, icon, label) {
+        return createSearchButton.call(this, ownerDocument, icon, label);
+    }
+    scheduleSearchRefresh() {
+        return scheduleSearchRefresh.call(this);
+    }
+    updateSearchResults(generation) {
+        return updateSearchResults.call(this, generation);
+    }
+    flushSearchRefresh() {
+        return flushSearchRefresh.call(this);
+    }
+    refreshSearchHighlights() {
+        return refreshSearchHighlights.call(this);
+    }
+    navigateSearch(direction) {
+        return navigateSearch.call(this, direction);
+    }
+    isNodeWithin(node, ancestor) {
+        return isNodeWithin.call(this, node, ancestor);
+    }
+    scrollNodeIntoView(node) {
+        return scrollNodeIntoView.call(this, node);
+    }
+    revealNode(node) {
+        return revealNode.call(this, node);
+    }
+    patchFromData(data) {
+        return patchFromData.call(this, data);
+    }
+    onNodeExpansionChanged(node) {
+        this.searchTemporarilyExpandedIds.delete(node.getId());
+        this.updateEffectiveNodeVisibility();
+    }
+    updateEffectiveNodeVisibility() {
+        if (!this.root) {
+            return;
+        }
+        const visit = (node, visible) => {
+            const wasVisible = node.isShow();
+            if (visible) {
+                node.show();
+                if (!wasVisible) {
+                    node.refreshBox();
+                    node.clearCacheData();
+                }
+            }
+            else {
+                node.hide();
+            }
+            const childrenVisible = visible && (node.isExpand || this.searchTemporarilyExpandedIds.has(node.getId()));
+            node.children.forEach((child) => visit(child, childrenVisible));
+        };
+        visit(this.root, true);
+    }
+    closeSearch(restoreTemporaryExpansion = true) {
+        return closeSearch.call(this, restoreTemporaryExpansion);
     }
     setMenuIcon() {
         var addNodeDom = document.createElement('span');
@@ -8335,6 +10896,12 @@ class MindMap {
         //  this.contentEL.style.color=`${this.setting.color};`;
         this.contentEL.style.background = `${this.setting.background}`;
         this.contentEL.style.fontSize = `${this.setting.fontSize}px`;
+        this.contentEL.style.setProperty('--mm-node-max-width', `${this.setting.nodeMaxWidth || 800}px`);
+        const nodeGlowSize = Math.min(24, Math.max(0, Number(this.setting.nodeGlowSize) || 0));
+        this.contentEL.style.setProperty('--mm-node-glow-offset', `${nodeGlowSize}px`);
+        this.contentEL.style.setProperty('--mm-node-glow-offset-negative', `${-nodeGlowSize}px`);
+        this.contentEL.style.setProperty('--mm-node-glow-blur', `${nodeGlowSize * 1.6}px`);
+        this.contentEL.style.setProperty('--mm-node-glow-spread', `${-nodeGlowSize}px`);
     }
     //create node
     init(collapsedIds) {
@@ -8345,9 +10912,13 @@ class MindMap {
         var waitCollapseNodes = [];
         var nodeFragment = document.createDocumentFragment();
         this.isInitializingNodes = true;
-        function initNode(d, isRoot, p) {
+        function initNode(d, isRoot, p, level = 0) {
             that._nodeNum++;
             var n = new Node$1(d, that);
+            // Set before the first measurement so nodes are sized with their level's font.
+            if (level) {
+                n.containEl.classList.add(levelClass(level));
+            }
             // if (collapsedIds && collapsedIds.includes(n.getId())) {
             //     n.isExpand = false;
             // }
@@ -8370,7 +10941,7 @@ class MindMap {
             }
             if (d.children && d.children.length) {
                 d.children.forEach((dd) => {
-                    initNode(dd, false, n);
+                    initNode(dd, false, n, level + 1);
                 });
             }
         }
@@ -8422,37 +10993,55 @@ class MindMap {
         return snode;
     }
     clearSelectNode() {
+        this.reportedSelectNode = null;
         if (this.selectNode) {
             this.lastSelectedNode = this.selectNode;
             this.selectNode.unSelect();
             this.selectNode = null;
         }
+        this.collapseSelectionTo();
         if (this.editNode) {
             if (this.editNode.data.isEdit) {
-                this.editNode.cancelEdit();
+                this.editNode.commitEdit();
             }
             this.editNode = null;
         }
-        // if(this.selectingNodes)
-        // {// Add the node to the selectedNodes
-        //     this.selectedNodes.push(this.selectNode);
-        // }
-        // else {
-        //     this.selectedNodes = [];
-        // }
-        // console.log(this.selectedNodes.length+" selected: "+this.selectedNodes);
-        // if (this.selectNode) {
-        //     this.selectNode.unSelect();
-        //     this.selectNode = null
-        // }
-        // if (this.editNode) {
-        //     if(this.editNode.data.isEdit){
-        //         this.editNode.cancelEdit();
-        //     }
-        //     this.editNode = null;
-        // }
+    }
+    isSelectableNode(node) {
+        return isSelectableNode.call(this, node);
+    }
+    selectedList() {
+        return selectedList.call(this);
+    }
+    topmostSelected() {
+        return topmostSelected.call(this);
+    }
+    toggleSelection(node) {
+        return toggleSelection.call(this, node);
+    }
+    selectRange(node) {
+        return selectRange.call(this, node);
+    }
+    collapseSelectionTo(node) {
+        return collapseSelectionTo.call(this, node);
+    }
+    selectAllVisible() {
+        return selectAllVisible.call(this);
+    }
+    selectInRect(rect, additive) {
+        return selectInRect.call(this, rect, additive);
+    }
+    pruneSelection() {
+        return pruneSelection.call(this);
+    }
+    captureSelection() {
+        return captureSelection.call(this);
+    }
+    restoreSelection(snapshot) {
+        return restoreSelection.call(this, snapshot);
     }
     initEvent() {
+        const hostDocument = this.containerEL.ownerDocument;
         this.appEl.addEventListener('click', this.appClickFn);
         this.appEl.addEventListener('contextmenu', this.appContextMenu);
         this.appEl.addEventListener('mouseover', this.appMouseOverFn);
@@ -8461,17 +11050,18 @@ class MindMap {
         this.appEl.addEventListener('dragover', this.appDragover);
         this.appEl.addEventListener('dragend', this.appDragend);
         this.appEl.addEventListener('drop', this.appDrop);
-        document.addEventListener('keyup', this.appKeyup);
-        document.addEventListener('keydown', this.appKeydown);
-        document.addEventListener('compositionstart', this.compositionStart);
-        document.addEventListener('compositionend', this.compositionEnd);
-        document.body.addEventListener('mousewheel', this.appMousewheel);
+        hostDocument.addEventListener('keyup', this.appKeyup);
+        hostDocument.addEventListener('keydown', this.appKeydown);
+        hostDocument.addEventListener('compositionstart', this.compositionStart);
+        hostDocument.addEventListener('compositionend', this.compositionEnd);
+        hostDocument.body.addEventListener('wheel', this.appMousewheel);
         if (obsidian.Platform.isDesktop) {
             this.appEl.addEventListener('mousedown', this.appMouseDown);
             this.appEl.addEventListener('mouseup', this.appMouseUp);
         }
         this.appEl.addEventListener('mousemove', this.appMouseMove);
         this.containerEL.addEventListener('focusin', this.appFocusIn);
+        this.containerEL.addEventListener('mousedown', this.appPointerDownCapture, true);
         this.containerEL.addEventListener('focusout', this.appFocusOut);
         //custom event
         this.on('initNode', this.initNode);
@@ -8479,6 +11069,8 @@ class MindMap {
         this.on('mindMapChange', this.mindMapChange);
     }
     removeEvent() {
+        var _a, _b, _c;
+        const hostDocument = this.containerEL.ownerDocument;
         this.appEl.removeEventListener('click', this.appClickFn);
         this.appEl.removeEventListener('contextmenu', this.appContextMenu);
         this.appEl.removeEventListener('dragstart', this.appDragstart);
@@ -8487,27 +11079,45 @@ class MindMap {
         this.appEl.removeEventListener('dblclick', this.appDblclickFn);
         this.appEl.removeEventListener('mouseover', this.appMouseOverFn);
         this.appEl.removeEventListener('drop', this.appDrop);
-        document.removeEventListener('keyup', this.appKeyup);
-        document.removeEventListener('keydown', this.appKeydown);
-        document.removeEventListener('compositionstart', this.compositionStart);
-        document.removeEventListener('compositionend', this.compositionEnd);
-        document.body.removeEventListener('mousewheel', this.appMousewheel);
+        hostDocument.removeEventListener('keyup', this.appKeyup);
+        hostDocument.removeEventListener('keydown', this.appKeydown);
+        hostDocument.removeEventListener('compositionstart', this.compositionStart);
+        hostDocument.removeEventListener('compositionend', this.compositionEnd);
+        hostDocument.body.removeEventListener('wheel', this.appMousewheel);
         if (obsidian.Platform.isDesktop) {
             this.appEl.removeEventListener('mousedown', this.appMouseDown);
             this.appEl.removeEventListener('mouseup', this.appMouseUp);
         }
         this.appEl.removeEventListener('mousemove', this.appMouseMove);
         this.containerEL.removeEventListener('focusin', this.appFocusIn);
+        this.containerEL.removeEventListener('mousedown', this.appPointerDownCapture, true);
         this.containerEL.removeEventListener('focusout', this.appFocusOut);
+        this.containerEL.classList.remove('mapdown-viewport');
         this.off('initNode', this.initNode);
         this.off('renderEditNode', this.renderEditNode);
         this.off('mindMapChange', this.mindMapChange);
         if (this.renderRefreshFrame !== null) {
-            cancelAnimationFrame(this.renderRefreshFrame);
+            (_a = this.containerEL.ownerDocument.defaultView) === null || _a === void 0 ? void 0 : _a.cancelAnimationFrame(this.renderRefreshFrame);
             this.renderRefreshFrame = null;
+        }
+        if (this.nodeRemeasureTimer !== null) {
+            (_b = this.containerEL.ownerDocument.defaultView) === null || _b === void 0 ? void 0 : _b.clearTimeout(this.nodeRemeasureTimer);
+            this.nodeRemeasureTimer = null;
+        }
+        this.pendingNodeRemeasure.clear();
+        if (this.focusTimer !== null) {
+            (_c = this.containerEL.ownerDocument.defaultView) === null || _c === void 0 ? void 0 : _c.clearTimeout(this.focusTimer);
+            this.focusTimer = null;
         }
     }
     initNode(evt) {
+        var _a, _b;
+        if (!this.isInitializingNodes) {
+            // A node rendered after the initial build (patched or re-rendered text).
+            (_b = (_a = evt.detail) === null || _a === void 0 ? void 0 : _a.node) === null || _b === void 0 ? void 0 : _b.clearCacheData();
+            this.requestRenderRefresh();
+            return;
+        }
         this._tempNum++;
         //console.log(this._nodeNum,this._tempNum);
         if (this._tempNum == this._nodeNum) {
@@ -8523,6 +11133,39 @@ class MindMap {
             n.refreshBox();
         });
     }
+    scheduleNodeRemeasure(node) {
+        this.pendingNodeRemeasure.add(node);
+        if (this.nodeRemeasureTimer !== null) {
+            return;
+        }
+        const ownerWindow = this.containerEL.ownerDocument.defaultView;
+        if (!ownerWindow) {
+            node.refreshBox();
+            node.clearCacheData();
+            return;
+        }
+        this.nodeRemeasureTimer = ownerWindow.setTimeout(() => {
+            this.nodeRemeasureTimer = null;
+            const nodes = Array.from(this.pendingNodeRemeasure);
+            this.pendingNodeRemeasure.clear();
+            let changed = false;
+            nodes.forEach((pendingNode) => {
+                if (!this.isNodeInTree(pendingNode)) {
+                    return;
+                }
+                const { width, height } = pendingNode.box;
+                pendingNode.refreshBox();
+                if (pendingNode.box.width !== width || pendingNode.box.height !== height) {
+                    pendingNode.clearCacheData();
+                    changed = true;
+                }
+            });
+            // Relayout only when a size actually changed.
+            if (changed) {
+                this.refresh();
+            }
+        }, 230);
+    }
     renderEditNode(evt) {
         var node = evt.detail.node || null;
         node === null || node === void 0 ? void 0 : node.clearCacheData();
@@ -8532,7 +11175,12 @@ class MindMap {
         if (this.renderRefreshFrame !== null) {
             return;
         }
-        this.renderRefreshFrame = requestAnimationFrame(() => {
+        const ownerWindow = this.containerEL.ownerDocument.defaultView;
+        if (!ownerWindow) {
+            this.refresh();
+            return;
+        }
+        this.renderRefreshFrame = ownerWindow.requestAnimationFrame(() => {
             this.renderRefreshFrame = null;
             this.refresh();
         });
@@ -8541,169 +11189,46 @@ class MindMap {
         var _a;
         //console.log(this.view)
         (_a = this.view) === null || _a === void 0 ? void 0 : _a.mindMapChange();
+        if (this.searchPanel) {
+            this.scheduleSearchRefresh();
+        }
+    }
+    appPointerDownCapture() {
+        this.suppressFocus = false;
     }
     appFocusIn(evt) {
-        setTimeout(() => {
+        var _a;
+        this.suppressFocus = false;
+        if (this.focusTimer !== null) {
+            (_a = this.containerEL.ownerDocument.defaultView) === null || _a === void 0 ? void 0 : _a.clearTimeout(this.focusTimer);
+        }
+        this.focusTimer = this.containerEL.ownerDocument.defaultView.setTimeout(() => {
+            this.focusTimer = null;
             if (this.containerEL.contains(evt.relatedTarget))
                 return;
             this.isFocused = true;
         }, 100);
     }
     appFocusOut(evt) {
+        var _a;
         if (this.containerEL.contains(evt.relatedTarget))
             return;
+        if (this.focusTimer !== null) {
+            (_a = this.containerEL.ownerDocument.defaultView) === null || _a === void 0 ? void 0 : _a.clearTimeout(this.focusTimer);
+            this.focusTimer = null;
+        }
         this.isFocused = false;
     }
     appKeydown(e) {
         if (!this.isFocused)
             return; // Check if Mindmap is in focus or not
         var keyCode = e.keyCode || e.which || e.charCode;
-        var ctrlKey = e.ctrlKey || e.metaKey;
-        var shiftKey = e.shiftKey;
-        var altKey = e.altKey;
-        // if (ctrlKey) {                         // Shift -> Selecting
-        //     // ctrl -> selecting
-        //     this.selectingNodes = true;
-        // } else {
-        //     this.selectingNodes = false;
-        // }
-        if (!ctrlKey && !shiftKey && !altKey) { // No special key
-            // Focus Mode: F key (70)
-            if (keyCode == 70) {
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    if (this.focusedNode === node) {
-                        this.exitFocusMode();
-                    }
-                    else {
-                        this.focusedNode = node;
-                        this.refresh();
-                        this.centerOnNode(node);
-                    }
-                }
-            }
-            // Esc key (27) to exit Focus Mode
-            if (keyCode == 27) {
-                if (this.focusedNode) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    this.exitFocusMode();
-                }
-            }
-            // Space
-            if (keyCode == 32) {
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    node.edit();
-                    this._menuDom.style.display = 'none';
-                }
-            }
-            // Enter
-            if (keyCode == 13 || e.key == 'Enter') {
-                var node = this.selectNode;
-                if (node) {
-                    if (!node.data.isEdit) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!node.parent)
-                            return;
-                        var newNode = node.mindmap.execute('addSiblingNode', {
-                            parent: node.parent
-                        });
-                        this._menuDom.style.display = 'none';
-                        this.moveNode(newNode, node, 'down', false);
-                    }
-                    else {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.clearSelectNode();
-                        node.select();
-                        node.mindmap.editNode = null;
-                    }
-                }
-            }
-            // Delete / Backspace
-            if (keyCode == 46 || e.key == 'Delete' || e.key == 'Backspace') {
-                var node = this.selectNode;
-                if (node && !node.data.isRoot && !node.data.isEdit) {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    node.mindmap.execute("deleteNodeAndChild", { node });
-                    this._menuDom.style.display = 'none';
-                }
-            }
-            // Tab / Insert
-            if (keyCode == 9 || keyCode == 45 || e.key == 'Tab') {
-                var node = this.selectNode;
-                if (node) {
-                    if (!node.data.isEdit) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        if (!node.isExpand) {
-                            node.expand();
-                        }
-                        node.mindmap.execute("addChildNode", { parent: node });
-                        this._menuDom.style.display = 'none';
-                    }
-                    else {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        this.clearSelectNode();
-                        node.select();
-                        node.mindmap.editNode = null;
-                    }
-                }
-            }
-            // Escape
-            if (keyCode == 27) {
-                e.preventDefault();
-                e.stopPropagation();
-                var node = this.selectNode;
-                if (node && node.data.isEdit) {
-                    node.select();
-                    node.mindmap.editNode = null;
-                    node.cancelEdit();
-                    this.undo();
-                }
-            }
-        }
-        if (ctrlKey && !shiftKey && !altKey) { // CTRL key
-            //ctrl + y
-            if (keyCode == 89) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.redo();
-            }
-            //ctrl + z
-            if (keyCode == 90) {
-                e.preventDefault();
-                e.stopPropagation();
-                this.undo();
-            }
-        }
-        // Shift + F2 : Edit as space does
-        // if (!ctrlKey && shiftKey && !altKey) {  // SHIFT key
-        //     if (keyCode == 113) {
-        //     // if (keyCode == 45) {
-        //         var node = this.selectNode;
-        //         if (node && !node.data.isEdit) {
-        //             e.preventDefault();
-        //             e.stopPropagation();
-        //             if (!node.isExpand) {
-        //                 node.expand();
-        //             }
-        //             if (!node.parent) return;
-        //             node.mindmap.execute('addSiblingNode', {
-        //                 parent: node.parent
-        //             });
-        //             this._menuDom.style.display='none';
-        //         }
-        //     }
-        // }
+        if (e.isComposing || this.isComposing || keyCode === 229)
+            return;
+        this.handleAppKeydown(e, keyCode);
+    }
+    handleAppKeydown(e, keyCode) {
+        return handleAppKeydown.call(this, e, keyCode);
     }
     compositionStart(e) {
         this.isComposing = true;
@@ -8714,467 +11239,23 @@ class MindMap {
     appKeyup(e) {
         if (!this.isFocused)
             return; // Check if Mindmap is in focus or not
-        var keyCode = e.keyCode || e.which || e.charCode;
-        var ctrlKey = e.ctrlKey || e.metaKey;
-        var shiftKey = e.shiftKey;
-        var altKey = e.altKey;
-        // if (ctrlKey) {                         // Shift -> Selecting
-        //     // Ctrl -> selecting
-        //     this.selectingNodes = true;
-        // } else {
-        //     this.selectingNodes = false;
-        // }
-        if (!ctrlKey && !shiftKey && !altKey) { // NO SPECIAL KEY
-            // up
-            if (keyCode == 38 || e.key == 'ArrowUp') {
-                e.preventDefault();
-                e.stopPropagation();
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    var l_selectedNode = node;
-                    while ((this.selectNode == node) &&
-                        (l_selectedNode != this.root)) {
-                        this._selectNode(l_selectedNode, "up");
-                        l_selectedNode = l_selectedNode.parent;
-                    }
-                }
-            }
-            if (keyCode == 40 || e.key == 'ArrowDown') {
-                e.preventDefault();
-                e.stopPropagation();
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    var l_selectedNode = node;
-                    while ((this.selectNode == node) &&
-                        (l_selectedNode != this.root)) {
-                        this._selectNode(l_selectedNode, "down");
-                        l_selectedNode = l_selectedNode.parent;
-                    }
-                }
-            }
-            if (keyCode == 39 || e.key == 'ArrowRight') {
-                e.preventDefault();
-                e.stopPropagation();
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    var rootPos = this.root.getPosition();
-                    var nodePos = node.getPosition();
-                    if (rootPos.x > nodePos.x) { // Node on left side of the mindmap
-                        node.unSelect();
-                        node.parent.select();
-                    }
-                    else {
-                        var node = this.selectNode;
-                        node.mindmap.execute('expandNode', {
-                            node
-                        });
-                        this._selectNode(node, "right");
-                    }
-                }
-            }
-            if (keyCode == 37 || e.key == 'ArrowLeft') {
-                e.preventDefault();
-                e.stopPropagation();
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    var rootPos = this.root.getPosition();
-                    var nodePos = node.getPosition();
-                    if (rootPos.x < nodePos.x) { // Node on right side of the mindmap
-                        node.unSelect();
-                        node.parent.select();
-                    }
-                    else {
-                        var node = this.selectNode;
-                        node.mindmap.execute('expandNode', {
-                            node
-                        });
-                        this._selectNode(node, "left");
-                    }
-                }
-            }
-            // Home : Select root node
-            if (keyCode == 36) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ((!this.selectNode) ||
-                    (!this.selectNode.data.isEdit)) { // No edition: select root node
-                    if (this.selectNode) {
-                        this.selectNode.unSelect();
-                    }
-                    this.root.select();
-                    this.center();
-                }
-            }
+        // Arrow navigation runs on keyup; reveal the node it moved to.
+        const selectedBefore = this.selectNode;
+        this.handleAppKeyup(e);
+        const keyCode = e.keyCode || e.which || e.charCode;
+        const isArrowKey = keyCode >= 37 && keyCode <= 40;
+        if (isArrowKey && this.selectNode && this.selectNode !== selectedBefore && !this.selectNode.data.isEdit) {
+            this.revealNode(this.selectNode);
         }
-        if (ctrlKey && !shiftKey && !altKey) { // CTRL KEY
-            /*//ctr + /  (or Ctrl + NumpadDivide) toggle expand node
-            // if ((keyCode == 191) || (keyCode == 111)) {
-            //     var node = this.selectNode;
-            //     this._toggleExpandNode(node);
-            // }
-            if ((keyCode == 191) || (keyCode == 111)) {
-                var node = this.selectNode;
-                if (node && !node.data.isEdit) {
-                    if (node.isExpand) {
-                        node.mindmap.execute('collapseNode', {
-                            node
-                        })
-                    } else {
-                        node.mindmap.execute('expandNode', {
-                            node
-                        })
-                    }
-                }
-            }*/
-            // Ctrl + B => Bold
-            // if (keyCode == 66) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     if(this.selectNode) {
-            //         var l_prefix_1 = "**";
-            //         var l_prefix_2 = "__";
-            //         var node = this.selectNode;
-            //         if(node.data.isEdit)
-            //         {// A node is edited: set in bold only the selected part
-            //             var l_check_prefix = true;
-            //             node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix);
-            //         }
-            //         else
-            //         {// Set in bold the whole node
-            //             this._formatNode(node, l_prefix_1, l_prefix_2);
-            //             e.preventDefault();
-            //             e.stopPropagation();
-            //         }
-            //         this.refresh();
-            //         this.scale(this.mindScale);
-            //     }
-            //     //else: no node selected: nothing to do
-            // }
-            // Ctrl + I => Italic
-            // if (keyCode == 73) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     if(this.selectNode) {
-            //         var node = this.selectNode;
-            //         if(node.data.isEdit)
-            //         {// A node is edited: set in italics only the selected part
-            //             node.setSelectedText_italic();
-            //         }
-            //         else
-            //         {// Set in italics the whole node
-            //             var text = node.data.text;
-            //             if( (  ((text.substring(0,1)=="*") ||
-            //                     (text.substring(0,1)=="_") )        &&
-            //                 (text.substring(0,2)!="**")             &&
-            //                 (text.substring(0,2)!="__")             )   ||
-            //                 (text.substring(0,3)=="***")                ||
-            //                 (text.substring(0,3)=="___")                )
-            //             {// Already italic
-            //                 text = text.substring(1); // Remove leading * / _
-            //                 if( (text.substring(text.length-1)=="*") ||
-            //                     (text.substring(text.length-1)=="_") )   {
-            //                     // Remove trailing * / _
-            //                     text = text.substring(0,text.length-1);
-            //                 }
-            //                 // else: no trailing *
-            //             }
-            //             else {// Not in italic
-            //                 text = "*"+text+"*"; // Use "*" to allow bold/italic change in whatever order
-            //             }
-            //             // Set in node text
-            //             node.data.oldText = node.data.text;
-            //             node.setText(text);
-            //             e.preventDefault();
-            //             e.stopPropagation();
-            //         }
-            //         this.refresh();
-            //         this.scale(this.mindScale);
-            //     }
-            //     //else: no node selected: nothing to do
-            // }
-            // ctrl + E  center mindmap view
-            // if (keyCode == 69) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     //this.center();
-            //     this.centerOnNode(this.selectNode);
-            // }
-            // ctrl + Up: Move one node above
-            // if (keyCode == 38 || e.key == 'ArrowUp') {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var node = this.selectNode;
-            //     if(!node)
-            //     {// No node selected: select root node
-            //         this.root.select();
-            //         node = this.selectNode;
-            //     }
-            //     else if((!node.data.isEdit)  &&
-            //             (!node.data.isRoot)  )
-            //     {// The node can be moved
-            //         var type='top';
-            //         if(node.getIndex() == 0)
-            //         {// First sibling: move BELOW "previous" (=last) node
-            //             type='down';
-            //         }
-            //         //else: no special treatment
-            //         this.moveNode(node, node.getPreviousSibling(), type);
-            //     }
-            //     this.centerOnNode(this.selectNode);
-            // }
-            // // Ctrl + Down: Move one step below
-            // if (keyCode == 40 || e.key == 'ArrowDown') {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var node = this.selectNode;
-            //     if(!node)
-            //     {// No node selected: select root node
-            //         this.root.select();
-            //         node = this.selectNode;
-            //     }
-            //     else if((!node.data.isEdit)  &&
-            //             (!node.data.isRoot)  )
-            //     {// The node can be moved
-            //         var type='down';
-            //         if(node.getIndex() == node.parent.children.length-1)
-            //         {// Last sibling: move ABOVE "next" (=first) node
-            //             type='top';
-            //         }
-            //         //else: no special treatment
-            //         this.moveNode(node, node.getNextSibling(), type);
-            //     }
-            //     this.centerOnNode(this.selectNode);
-            // }
-            // // Ctrl + Left
-            // if (keyCode == 37 || e.key == 'ArrowLeft') {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var node = this.selectNode;
-            //     if(!node)
-            //     {// No node selected: select root node
-            //         this.root.select();
-            //         node = this.selectNode;
-            //     }
-            //     else {// Move current node as parent/child depending on the position
-            //         var rootPos = this.root.getPosition();
-            //         var nodePos = node.getPosition();
-            //         if(rootPos.x < nodePos.x)
-            //         {
-            //             this._moveAsParent(node);
-            //         }
-            //         else
-            //         {
-            //             this._moveAsChild(node, node.getPreviousSibling());
-            //         }
-            //     }
-            //     this.centerOnNode(this.selectNode);
-            // }
-            // // Ctrl + Right
-            // if (keyCode == 39 || e.key == 'ArrowRight') {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var node = this.selectNode;
-            //     if(!node)
-            //     {// No node selected
-            //         this.root.select();
-            //         node = this.selectNode;
-            //     }
-            //     else {
-            //         var rootPos = this.root.getPosition();
-            //         var nodePos = node.getPosition();
-            //         if(rootPos.x < nodePos.x)
-            //         {
-            //             // this.selectedNodes.forEach((n:INode) => {
-            //             //     this._moveAsChild(n);
-            //             // });
-            //             this._moveAsChild(node, node.getPreviousSibling());
-            //         }
-            //         else
-            //         {
-            //             this._moveAsParent(node);
-            //         }
-            //     }
-            //     this.centerOnNode(this.selectNode);
-            // }
-            // // Ctrl + J: Join with following node
-            // if (keyCode == 74) {
-            //     e.preventDefault();
-            //     e.stopPropagation();
-            //     var node = this.selectNode;
-            //     if(node)
-            //     {  this.joinWithFollowingNode(node); }
-            //     // else: No node selected: nothing to do
-            // }
-            // Ctrl + Home : Select root node
-            if (keyCode == 36) {
-                e.preventDefault();
-                e.stopPropagation();
-                if ((!this.selectNode) ||
-                    (!this.selectNode.data.isEdit)) { // No edition: select root node
-                    if (this.selectNode && !this.selectNode.data.isRoot) {
-                        this.selectNode.unSelect();
-                        this.root.select();
-                    }
-                    this.center();
-                }
-            }
-        }
+    }
+    handleAppKeyup(e) {
+        return handleAppKeyup.call(this, e);
     }
     _hierarchySelectNode(node, direct) {
-        if (!node) {
-            return;
-        }
-        var viewportWidth = this.containerEL.clientWidth;
-        var viewportHeight = this.containerEL.clientHeight;
-        var diagonalViewport = Math.sqrt(viewportWidth * viewportWidth + viewportHeight * viewportHeight);
-        const MAX_PARENT_DISTANCE = diagonalViewport / 5;
-        var waitNode = null;
-        var nodePos = node.getPosition();
-        // var mind = this;
-        var rootPos = this.root.getPosition();
-        var rootDirect = rootPos.x > nodePos.x ? 'right' : 'left';
-        if (node === this.root) {
-            waitNode = this.__selectChildren(node, direct);
-            if (waitNode) {
-                this.clearSelectNode();
-                waitNode.select();
-                return;
-            }
-        }
-        if (direct === 'up') {
-            if (node.parent) {
-                var indexOfNode = node.parent.children.indexOf(node);
-                if (indexOfNode === 0) {
-                    var parentPos = node.parent.getPosition();
-                    var dx = Math.abs(parentPos.x - nodePos.x);
-                    var dy = Math.abs(parentPos.y - nodePos.y);
-                    var dis = Math.sqrt(dx * dx + dy * dy);
-                    if (dis > MAX_PARENT_DISTANCE) {
-                        this._selectNode(node, direct);
-                        return;
-                    }
-                    waitNode = node.parent;
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-                else if (indexOfNode > 0) {
-                    waitNode = node.parent.children[indexOfNode - 1];
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-            }
-            this._selectNode(node, direct);
-        }
-        else if (direct === 'down') {
-            if (node.parent) {
-                var indexOfNode = node.parent.children.indexOf(node);
-                if (indexOfNode === (node.parent.children.length - 1)) {
-                    var parentPos = node.parent.getPosition();
-                    var dx = Math.abs(parentPos.x - nodePos.x);
-                    var dy = Math.abs(parentPos.y - nodePos.y);
-                    var dis = Math.sqrt(dx * dx + dy * dy);
-                    if (dis > MAX_PARENT_DISTANCE) {
-                        this._selectNode(node, direct);
-                        return;
-                    }
-                    waitNode = node.parent;
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-                else if (indexOfNode < (node.parent.children.length - 1)) {
-                    waitNode = node.parent.children[indexOfNode + 1];
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-            }
-            this._selectNode(node, direct);
-        }
-        else if (direct === 'right') {
-            if (rootDirect === 'right' && node.parent) {
-                waitNode = node.parent;
-                this.clearSelectNode();
-                waitNode.select();
-                return;
-            }
-            else {
-                waitNode = this.__selectChildren(node, direct);
-                if (waitNode) {
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-            }
-            // this._selectNode(node,direct);
-        }
-        else if (direct === 'left') {
-            if (rootDirect === 'left' && node.parent) {
-                waitNode = node.parent;
-                this.clearSelectNode();
-                waitNode.select();
-                return;
-            }
-            else {
-                waitNode = this.__selectChildren(node, direct);
-                if (waitNode) {
-                    this.clearSelectNode();
-                    waitNode.select();
-                    return;
-                }
-            }
-            // this._selectNode(node,direct);
-        }
+        return _hierarchySelectNode.call(this, node, direct);
     }
     __selectChildren(node, direct) {
-        if (!node)
-            return;
-        if (!node.isExpand)
-            return;
-        var minDis;
-        var waitNode = null;
-        var pos = node.getPosition();
-        if (node.children) {
-            node.children.forEach(n => {
-                var p = n.getPosition();
-                var dx = Math.abs(p.x - pos.x);
-                var dy = Math.abs(p.y - pos.y);
-                var dis = Math.sqrt(dx * dx + dy * dy);
-                var _helper = () => {
-                    if (minDis) {
-                        if (minDis > dis) {
-                            minDis = dis;
-                            waitNode = n;
-                        }
-                    }
-                    else {
-                        minDis = dis;
-                        waitNode = n;
-                    }
-                };
-                switch (direct) {
-                    case "right":
-                        if (p.x > pos.x)
-                            _helper();
-                        break;
-                    case "left":
-                        if (p.x < pos.x)
-                            _helper();
-                        break;
-                    case "up":
-                        if (p.y < pos.y)
-                            _helper();
-                        break;
-                    case "down":
-                        if (p.y > pos.y)
-                            _helper();
-                        break;
-                }
-            });
-        }
-        return waitNode;
+        return __selectChildren.call(this, node, direct);
     }
     _formatNode(node, i_prefix_1, i_prefix_2) {
         var text = node.data.text;
@@ -9251,491 +11332,46 @@ class MindMap {
         return;
     }
     _selectNode(node, direct) {
-        if (!node) {
-            return;
-        }
-        var minDis;
-        var waitNode = null;
-        var pos = node.getPosition();
-        var rootPos = this.root.getPosition();
-        var level = node.getLevel();
-        var mind = this;
-        mind.traverseDF((n) => {
-            var p = n.getPosition();
-            var l = n.getLevel();
-            var dx = Math.abs(p.x - pos.x);
-            var dy = Math.abs(p.y - pos.y);
-            var dis = Math.sqrt(dx * dx + dy * dy);
-            switch (direct) {
-                case "right":
-                    if (((pos.x > this.root.getPosition().x) &&
-                        (l == level + 1)) ||
-                        ((pos.x < this.root.getPosition().x) &&
-                            (l == level - 1)) ||
-                        ((level == 0) &&
-                            l == 1)) { // The tested node is at the correct level
-                        if ((n == node.parent) || (node == n.parent)) { // Move only within same lineage
-                            if (p.x > pos.x) {
-                                if (minDis) {
-                                    if (minDis > dis) {
-                                        minDis = dis;
-                                        waitNode = n;
-                                    }
-                                }
-                                else {
-                                    minDis = dis;
-                                    waitNode = n;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "left":
-                    if (((pos.x > this.root.getPosition().x) &&
-                        (l == level - 1)) ||
-                        ((pos.x < this.root.getPosition().x) &&
-                            (l == level + 1)) ||
-                        ((level == 0) &&
-                            l == 1)) { // The tested node is at the correct level
-                        if ((n == node.parent) || (node == n.parent)) { // Move only within same lineage
-                            if (p.x < pos.x) {
-                                if (minDis) {
-                                    if (minDis > dis) {
-                                        minDis = dis;
-                                        waitNode = n;
-                                    }
-                                }
-                                else {
-                                    minDis = dis;
-                                    waitNode = n;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "up":
-                    if ((n.isShow()) &&
-                        (((pos.x < rootPos.x) &&
-                            (p.x < rootPos.x)) ||
-                            ((pos.x > rootPos.x) &&
-                                (p.x > rootPos.x)))) { // Move only on shown nodes + on the same side of the root
-                        if (p.y < pos.y) {
-                            if (level == l) {
-                                if (minDis) {
-                                    if (minDis > dis) {
-                                        minDis = dis;
-                                        waitNode = n;
-                                    }
-                                }
-                                else {
-                                    minDis = dis;
-                                    waitNode = n;
-                                }
-                            }
-                        }
-                    }
-                    break;
-                case "down":
-                    if ((n.isShow()) &&
-                        (((pos.x < rootPos.x) &&
-                            (p.x < rootPos.x)) ||
-                            ((pos.x > rootPos.x) &&
-                                (p.x > rootPos.x)))) { // Move only on shown nodes + on the same side of the root
-                        if (p.y > pos.y) {
-                            if (level == l) {
-                                if (minDis) {
-                                    if (minDis > dis) {
-                                        minDis = dis;
-                                        waitNode = n;
-                                    }
-                                }
-                                else {
-                                    minDis = dis;
-                                    waitNode = n;
-                                }
-                            }
-                        }
-                    }
-                    break;
-            }
-        });
-        if (waitNode) {
-            mind.clearSelectNode();
-            waitNode.select();
-        }
+        return _selectNode.call(this, node, direct);
     }
     appClickFn(evt) {
-        var _a;
-        var targetEl = evt.target;
-        if (targetEl) {
-            var internalLink = targetEl.closest('a.internal-link');
-            if (internalLink) {
-                evt.preventDefault();
-                evt.stopPropagation();
-                var href = internalLink.getAttribute("data-href") || internalLink.getAttribute("href");
-                if (href) {
-                    const openMode = this.view.plugin.settings.linkOpenMode;
-                    this.view.app.workspace.openLinkText(href, this.view.file.path, openMode === "current" ? false : openMode);
-                }
-                return;
-            }
-            if (targetEl.hasClass('mm-node-bar')) {
-                evt.preventDefault();
-                evt.stopPropagation();
-                var id = targetEl.closest('.mm-node').getAttribute('data-id');
-                var node = this.getNodeById(id);
-                if (node.isExpand) {
-                    node.mindmap.execute('collapseNode', {
-                        node
-                    });
-                }
-                else {
-                    node.mindmap.execute('expandNode', {
-                        node
-                    });
-                }
-                return;
-            }
-            if (targetEl.closest('.mm-node-menu')) {
-                if (targetEl.closest('.mm-icon-add-node')) {
-                    var selectNode = this.selectNode;
-                    if (selectNode) {
-                        selectNode.mindmap.execute("addChildNode", { parent: selectNode });
-                        this._menuDom.style.display = 'none';
-                    }
-                }
-                if (targetEl.closest('.mm-icon-delete-node')) {
-                    var selectNode = this.selectNode;
-                    if (selectNode && !selectNode.data.isRoot) {
-                        selectNode.mindmap.execute("deleteNodeAndChild", { node: selectNode });
-                        this._menuDom.style.display = 'none';
-                    }
-                }
-                if (targetEl.closest('.mm-icon-focus-node')) {
-                    var selectNode = this.selectNode;
-                    if (selectNode && !selectNode.data.isEdit) {
-                        if (this.focusedNode === selectNode) {
-                            this.exitFocusMode();
-                        }
-                        else {
-                            this.focusedNode = selectNode;
-                            this.refresh();
-                            this.centerOnNode(selectNode);
-                        }
-                        this._menuDom.style.display = 'none';
-                    }
-                }
-                return;
-            }
-            if (targetEl.closest('.mm-node')) {
-                var id = targetEl.closest('.mm-node').getAttribute('data-id');
-                var node = this.getNodeById(id);
-                if (!node.isSelect) {
-                    this.clearSelectNode();
-                    this.selectNode = node;
-                    (_a = this.selectNode) === null || _a === void 0 ? void 0 : _a.select();
-                }
-                this._menuDom.style.display = 'none';
-            }
-            else {
-                this.clearSelectNode();
-                this._menuDom.style.display = 'none';
-            }
-        }
+        return appClickFn.call(this, evt);
     }
     appContextMenu(evt) {
-        var _a;
-        if (!this.isFocused)
-            return;
-        let targetEl = evt.target;
-        if (targetEl.closest('.mm-node')) {
-            evt.preventDefault();
-            evt.stopPropagation();
-            var id = targetEl.closest('.mm-node').getAttribute('data-id');
-            var node = this.getNodeById(id);
-            this.clearSelectNode();
-            this.selectNode = node;
-            (_a = this.selectNode) === null || _a === void 0 ? void 0 : _a.select();
-            this._menuDom.style.display = 'flex';
-            // Calculate position
-            var box = this.selectNode.getBox();
-            var rootPos = this.root.getBox();
-            // If the node is on the left side of the root (or is root), we might position differently
-            // Usually we show it on the outer edge
-            if (box.x < rootPos.x) {
-                // Node is on the left side of root, place menu on the left of the node
-                this._menuDom.style.left = `${box.x - 40}px`;
-            }
-            else {
-                // Node is on the right side of root (or is root), place menu on the right
-                this._menuDom.style.left = `${box.x + box.width + 10}px`;
-            }
-            // Vertically center with the node
-            this._menuDom.style.top = `${box.y + box.height / 2 - 45}px`;
-        }
+        return appContextMenu.call(this, evt);
     }
     appDragstart(evt) {
-        evt.stopPropagation();
-        this.startX = evt.pageX;
-        this.startY = evt.pageY;
-        if (evt.target instanceof HTMLElement) {
-            if (evt.target.closest('.mm-node')) {
-                var id = evt.target.closest('.mm-node').getAttribute('data-id');
-                this._dragNode = this.getNodeById(id);
-                this.drag = true;
-            }
-        }
+        return appDragstart.call(this, evt);
     }
     appDragend(evt) {
-        this.drag = false;
-        this._indicateDom.style.display = 'none';
-        this._menuDom.style.display = 'none';
-        document.querySelectorAll('.mm-drag-over-child').forEach(el => el.classList.remove('mm-drag-over-child'));
+        return appDragend.call(this, evt);
     }
     appDragover(evt) {
-        evt.preventDefault();
-        evt.stopPropagation();
-        var target = evt.target;
-        var x = evt.pageX;
-        var y = evt.pageY;
-        if (this.drag) {
-            this.dx = x - this.startX;
-            this.dx = y - this.startY;
-        }
-        // Clear previous child highlights
-        document.querySelectorAll('.mm-drag-over-child').forEach(el => el.classList.remove('mm-drag-over-child'));
-        if (target.closest('.mm-node')) {
-            var nodeEl = target.closest('.mm-node');
-            var nodeId = nodeEl.getAttribute('data-id');
-            var node = this.getNodeById(nodeId);
-            var box = node.getBox();
-            this._dragType = this._getDragType(node, x, y);
-            if (this._dragType.startsWith('child-')) {
-                // Dragging as a child: highlight the node itself
-                nodeEl.classList.add('mm-drag-over-child');
-                this._indicateDom.style.display = 'none';
-            }
-            else {
-                // Dragging as a sibling: show indicator line
-                this._indicateDom.style.display = 'block';
-                this._indicateDom.className = 'mm-node-layout-indicate';
-                if (this._dragType === 'top' || this._dragType === 'down') {
-                    this._indicateDom.classList.add('mm-indicator-horizontal');
-                    this._indicateDom.style.left = box.x + 'px';
-                    this._indicateDom.style.top = (this._dragType === 'top' ? box.y - 4 : box.y + box.height + 2) + 'px';
-                    this._indicateDom.style.width = box.width + 'px';
-                }
-                else if (this._dragType === 'left' || this._dragType === 'right') {
-                    this._indicateDom.classList.add('mm-indicator-vertical');
-                    this._indicateDom.style.left = (this._dragType === 'left' ? box.x - 4 : box.x + box.width + 2) + 'px';
-                    this._indicateDom.style.top = box.y + 'px';
-                    this._indicateDom.style.height = box.height + 'px';
-                }
-            }
-        }
-        else {
-            this._indicateDom.style.display = 'none';
-        }
+        return appDragover.call(this, evt);
     }
     _getDragType(node, x, y) {
-        if (!node)
-            return;
-        var box = node.contentEl.getBoundingClientRect();
-        var direct = node.direct;
-        var topThreshold = box.y + box.height * 0.25;
-        var bottomThreshold = box.y + box.height * 0.75;
-        var leftThreshold = box.x + box.width * 0.25;
-        var rightThreshold = box.x + box.width * 0.75;
-        switch (direct) {
-            case 'right':
-                if (y < topThreshold)
-                    return 'top';
-                if (y > bottomThreshold)
-                    return 'down';
-                return 'child-right';
-            case 'left':
-                if (y < topThreshold)
-                    return 'top';
-                if (y > bottomThreshold)
-                    return 'down';
-                return 'child-left';
-            case 'top':
-            case 'up':
-                if (x < leftThreshold)
-                    return 'left';
-                if (x > rightThreshold)
-                    return 'right';
-                return 'child-top';
-            case 'down':
-            case 'bottom':
-                if (x < leftThreshold)
-                    return 'left';
-                if (x > rightThreshold)
-                    return 'right';
-                return 'child-down';
-            default:
-                if (y < topThreshold)
-                    return 'top';
-                if (y > bottomThreshold)
-                    return 'down';
-                return 'child';
-        }
+        return _getDragType.call(this, node, x, y);
     }
     appDrop(evt) {
-        if (evt.target instanceof HTMLElement) {
-            if (evt.target.closest('.mm-node')) {
-                evt.preventDefault();
-                var dropNodeId = evt.target.closest('.mm-node').getAttribute('data-id');
-                var dropNode = this.getNodeById(dropNodeId);
-                if (this._dragNode.data.isRoot) ;
-                else {
-                    if (evt.ctrlKey) { // Ctrl key pressed: copy the node
-                        let copiedNode = this.copyNode(this._dragNode);
-                        dropNode.select();
-                        this.pasteNode(copiedNode);
-                    }
-                    else { // Move the node
-                        this.moveNode(this._dragNode, dropNode, this._dragType);
-                    }
-                }
-            }
-        }
-        var files = evt.dataTransfer.files;
-        if (files.length) {
-            var f = files[0];
-            if (f.name.toLowerCase().endsWith('.xmind')) {
-                try {
-                    var me = this;
-                    var reader = new FileReader();
-                    reader.onload = () => {
-                        jszip_min.loadAsync(reader.result).then((e) => {
-                            var files = e.files;
-                            for (var k in files) {
-                                if (k == "content.json") {
-                                    files[k].async("text").then((res) => {
-                                        var mindData = JSON.parse(res);
-                                        var data = importXmind(mindData[0]);
-                                        me.clearNode();
-                                        me.data = data.basicData;
-                                        me.init();
-                                        setTimeout(() => {
-                                            me.center();
-                                            me.mindMapChange();
-                                        }, 100);
-                                    });
-                                }
-                            }
-                        });
-                    };
-                    reader.readAsArrayBuffer(f);
-                }
-                catch (err) {
-                    new obsidian.Notice('Parse xmind error');
-                }
-            }
-        }
-        this._indicateDom.style.display = 'none';
-        this._menuDom.style.display = 'none';
+        return appDrop.call(this, evt);
     }
     appMouseOverFn(evt) {
-        var _a, _b, _c;
-        if (!((_a = this.view) === null || _a === void 0 ? void 0 : _a.plugin.settings.enableLinkPreview)) {
-            return;
-        }
-        const targetEl = evt.target;
-        const linkEl = targetEl.closest("a.internal-link");
-        const sourcePath = (_c = (_b = this.view) === null || _b === void 0 ? void 0 : _b.file) === null || _c === void 0 ? void 0 : _c.path;
-        if (linkEl && sourcePath) {
-            const linktext = linkEl.getAttribute("data-href") || linkEl.getAttribute("href") || linkEl.innerText;
-            if (!linktext) {
-                return;
-            }
-            this.view.app.workspace.trigger("hover-link", {
-                event: evt,
-                source: mindmapHoverSource,
-                hoverParent: this.view,
-                targetEl: linkEl,
-                linktext,
-                sourcePath,
-            });
-        }
+        return appMouseOverFn.call(this, evt);
     }
     appMouseMove(evt) {
-        const targetEl = evt.target;
-        this.scalePointer = [];
-        this.scalePointer.push(evt.offsetX, evt.offsetY);
-        if (targetEl.closest('.mm-node')) {
-            var id = targetEl.closest('.mm-node').getAttribute('data-id');
-            var node = this.getNodeById(id);
-            if (node) {
-                var box = node.getBox();
-                this.scalePointer = [];
-                this.scalePointer.push(box.x + box.width / 2, box.y + box.height / 2);
-            }
-        }
-        else {
-            if (this.drag) {
-                this.containerEL.scrollLeft = this._left - (evt.pageX - this.startX);
-                this.containerEL.scrollTop = this._top - (evt.pageY - this.startY);
-            }
-        }
+        return appMouseMove.call(this, evt);
     }
     appMouseDown(evt) {
-        const targetEl = evt.target;
-        if (!targetEl.closest('.mm-node')) {
-            this.drag = true;
-            this.startX = evt.pageX;
-            this.startY = evt.pageY;
-            this._left = this.containerEL.scrollLeft;
-            this._top = this.containerEL.scrollTop;
-        }
+        return appMouseDown.call(this, evt);
     }
     appMouseUp(evt) {
-        this.drag = false;
+        return appMouseUp.call(this, evt);
     }
     appDblclickFn(evt) {
-        var _a;
-        if (evt.target instanceof HTMLElement) {
-            if (evt.target.hasClass('mm-node-bar')) {
-                evt.preventDefault();
-                evt.stopPropagation();
-                return;
-            }
-            if (evt.target.closest('.mm-node') instanceof HTMLElement) {
-                var id = evt.target.closest('.mm-node').getAttribute('data-id');
-                this.selectNode = this.getNodeById(id);
-                if (!this.editNode || (this.editNode && this.editNode != this.selectNode)) {
-                    (_a = this.selectNode) === null || _a === void 0 ? void 0 : _a.edit();
-                    this.editNode = this.selectNode;
-                    this._menuDom.style.display = 'none';
-                }
-            }
-        }
+        return appDblclickFn.call(this, evt);
     }
     appMousewheel(evt) {
-        // if(!evt) evt = window.event;
-        var ctrlKey = evt.ctrlKey || evt.metaKey;
-        var delta;
-        if (evt.wheelDelta) {
-            //IE、chrome  -120
-            delta = evt.wheelDelta / 120;
-        }
-        else if (evt.detail) {
-            //FF 3
-            delta = -evt.detail / 3;
-        }
-        if (delta) {
-            if (delta < 0) {
-                if (ctrlKey) {
-                    this.setScale("down");
-                }
-            }
-            else {
-                if (ctrlKey) {
-                    this.setScale("up");
-                }
-            }
-        }
+        return appMousewheel.call(this, evt);
     }
     clearNode() {
         var _a;
@@ -9749,11 +11385,17 @@ class MindMap {
         }
     }
     clear() {
-        var _a, _b;
+        var _a, _b, _c;
+        this.closeSearch(false);
+        (_a = this.controlPanel) === null || _a === void 0 ? void 0 : _a.remove();
+        this.controlPanel = undefined;
+        if (this.root) {
+            this.traverseBF((node) => node.releaseRenderComponent(), this.root);
+        }
         this.clearNode();
         this.removeEvent();
-        (_a = this.fileSuggest) === null || _a === void 0 ? void 0 : _a.destroy();
-        (_b = this.draw) === null || _b === void 0 ? void 0 : _b.clear();
+        (_b = this.fileSuggest) === null || _b === void 0 ? void 0 : _b.destroy();
+        (_c = this.draw) === null || _c === void 0 ? void 0 : _c.clear();
     }
     //get node list rect point
     getBoundingRect(list) {
@@ -9794,7 +11436,11 @@ class MindMap {
         return box;
     }
     moveNode(dragNode, dropNode, type, setInHistory = true) {
-        if (dragNode == dropNode || dragNode.data.isRoot) {
+        if (!dragNode || !dropNode || !type || dragNode == dropNode || dragNode.data.isRoot) {
+            return;
+        }
+        const isSiblingMove = type == 'top' || type == 'left' || type == 'down' || type == 'right';
+        if (isSiblingMove && !dropNode.parent) {
             return;
         }
         var flag = false;
@@ -9811,24 +11457,54 @@ class MindMap {
         }
         dropNode.clearCacheData();
         dragNode.clearCacheData();
-        if (type == 'right' || type == 'left') {
-            if (!dropNode.isExpand) {
-                dropNode.expand();
-            }
-        }
+        // A left/right drop opens a collapsed target; MoveNode records it for undo.
+        const expandTarget = type == 'right' || type == 'left' ? dropNode : undefined;
         if (type == 'top' || type == 'left' || type == 'down' || type == 'right') {
-            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type, inHistory: setInHistory });
+            this.execute('moveNode', { type: 'siblings', node: dragNode, oldParent: dragNode.parent, dropNode, direct: type, inHistory: setInHistory, expandTarget });
         }
         else if (type.indexOf('child') > -1) {
             var typeArr = type.split('-');
             if (typeArr[1]) {
-                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode, direct: typeArr[1] });
+                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode, direct: typeArr[1], inHistory: setInHistory });
             }
             else {
-                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode });
+                this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode, inHistory: setInHistory });
             }
         }
         // this.execute('moveNode', { type: 'child', node: dragNode, oldParent: dragNode.parent, parent: dropNode })
+    }
+    // Moves several nodes together: as children of dropNode, or as siblings
+    // placed one after another at the drop position. One undo step.
+    moveNodes(nodes, dropNode, type) {
+        if (nodes.length <= 1) {
+            this.moveNode(nodes[0], dropNode, type);
+            return;
+        }
+        const isSiblingMove = type == 'top' || type == 'left' || type == 'down' || type == 'right';
+        const movesOnto = (node) => {
+            for (let p = dropNode; p; p = p.parent) {
+                if (p === node) {
+                    return true;
+                }
+            }
+            return false;
+        };
+        if (!type || (isSiblingMove && !dropNode.parent) || nodes.some(movesOnto)) {
+            return;
+        }
+        const before = this.captureSelection();
+        this.batch(() => {
+            let previous;
+            nodes.forEach((node) => {
+                if (previous && isSiblingMove) {
+                    this.moveNode(node, previous, 'down');
+                }
+                else {
+                    this.moveNode(node, dropNode, type);
+                }
+                previous = node;
+            });
+        }, () => this.restoreSelection(before));
     }
     // Move all the current node's siblings as this node's children
     moveAllSiblingsAsChildren(node) {
@@ -9892,6 +11568,69 @@ class MindMap {
     execute(name, data) {
         return this.exec.execute(name, data);
     }
+    // One undo step, layout and save for the commands `run` executes.
+    batch(run, select) {
+        return this.exec.batch(this, run, select);
+    }
+    // Nodes an operation applies to: the selection, or the primary node.
+    actionNodes(topmost) {
+        if (!this.selectedNodes.size) {
+            return this.selectNode ? [this.selectNode] : [];
+        }
+        return topmost ? this.topmostSelected() : this.selectedList();
+    }
+    // Nodes copied or cut: the topmost selected nodes, or the root alone.
+    clipboardNodes() {
+        const nodes = this.actionNodes(true);
+        return nodes.length ? nodes : (this.selectNode ? [this.selectNode] : []);
+    }
+    // Deletes the selected nodes with their subtrees; returns whether any was.
+    deleteSelection() {
+        return this.deleteNodes(this.actionNodes(true));
+    }
+    deleteNodes(list) {
+        const nodes = list.filter((n) => !n.data.isRoot && !n.data.isEdit && this.isNodeInTree(n));
+        if (!nodes.length) {
+            return false;
+        }
+        if (nodes.length == 1) {
+            this.execute('deleteNodeAndChild', { node: nodes[0] });
+            return true;
+        }
+        const parent = nodes[0].parent;
+        return this.batch(() => nodes.forEach((node) => this.execute('deleteNodeAndChild', { node })), () => {
+            this.clearSelectNode();
+            if (parent && this.isNodeInTree(parent)) {
+                parent.select();
+            }
+        });
+    }
+    // Collapses (or expands, following the primary node) every selected node.
+    toggleExpandSelection() {
+        const primary = this.selectNode;
+        if (!primary || primary.data.isEdit) {
+            return;
+        }
+        const nodes = this.actionNodes(false);
+        if (nodes.length <= 1) {
+            this._toggleExpandNode(primary);
+            return;
+        }
+        const collapse = primary.isExpand;
+        const targets = nodes.filter((n) => n.children.length && n.isExpand === collapse);
+        const before = this.captureSelection();
+        this.batch(() => targets.forEach((node) => this.execute(collapse ? 'collapseNode' : 'expandNode', { node })), () => this.restoreSelection(before));
+    }
+    // Applies a whole-node format to every selected node.
+    formatSelection(format) {
+        const nodes = this.actionNodes(false);
+        if (nodes.length <= 1) {
+            nodes.forEach(format);
+            return;
+        }
+        const before = this.captureSelection();
+        this.batch(() => nodes.forEach(format), () => this.restoreSelection(before));
+    }
     undo() {
         this.exec.undo();
     }
@@ -9928,6 +11667,26 @@ class MindMap {
             return -1;
         }
     }
+    // Whether a node is the focused node or inside its subtree.
+    isNodeWithinFocus(node) {
+        for (let current = node; current; current = current.parent) {
+            if (current === this.focusedNode) {
+                return true;
+            }
+        }
+        return false;
+    }
+    isNodeInTree(node) {
+        // Removed nodes keep their parent pointer for undo, so check membership.
+        let current = node;
+        while (current.parent) {
+            if (!current.parent.children.includes(current)) {
+                return false;
+            }
+            current = current.parent;
+        }
+        return current === this.root;
+    }
     _removeChildDom(node) {
         this.traverseBF((n) => {
             if (this.contentEL.contains(n.containEl)) {
@@ -9940,8 +11699,15 @@ class MindMap {
         if (!this.root) {
             return;
         }
+        // A focused node removed by delete or undo leaves focus mode.
+        let lostFocusedNode = false;
+        if (this.focusedNode && !this.isNodeInTree(this.focusedNode)) {
+            this.focusedNode = undefined;
+            lostFocusedNode = true;
+        }
         var activeRoot = this.focusedNode || this.root;
-        // Restore each node's collapsed state before applying focus-mode styling.
+        this.updateEffectiveNodeVisibility();
+        // Restore each node's effective collapsed state before applying focus-mode styling.
         this.traverseBF((n) => {
             n.containEl.style.display = n.isShow() ? 'block' : 'none';
             n.containEl.classList.remove('mm-node-dimmed');
@@ -9950,7 +11716,12 @@ class MindMap {
         if (!this.mmLayout) {
             this.mmLayout = new Layout(this.root, this.setting.layoutDirect || 'mind map', this.colors, this);
             activeRoot.select();
-            this.centerOnNode(activeRoot);
+            if (activeRoot === this.root) {
+                this.fitOnOpen();
+            }
+            else {
+                this.centerOnNode(activeRoot);
+            }
         }
         else {
             this.mmLayout.layout(this.root, this.setting.layoutDirect || this.mmLayout.direct || 'mind map');
@@ -9974,8 +11745,9 @@ class MindMap {
                 }
             }, this.root);
             const overlayOpacity = Math.min(0.8, Math.max(0, Number(this.setting.focusOverlayOpacity) || 0));
+            const glowSize = Math.min(400, Math.max(0, Number(this.setting.focusGlowSize) || 0));
             this.appEl.style.backgroundColor = `rgba(0, 0, 0, ${overlayOpacity})`;
-            this.appEl.style.boxShadow = `inset 0 0 150px rgba(0, 0, 0, ${overlayOpacity})`;
+            this.appEl.style.boxShadow = `inset 0 0 ${glowSize}px rgba(0, 0, 0, ${overlayOpacity})`;
         }
         else {
             this.traverseBF((n) => {
@@ -9987,12 +11759,33 @@ class MindMap {
             this.appEl.style.backgroundColor = '';
             this.appEl.style.boxShadow = '';
         }
-        // Redraw SVG links so they can inherit the dimmed status of the nodes
+        // Draw once after focus and visibility classes are final.
         if (this.mmLayout && this.mmLayout.createLink) {
             this.mmLayout.createLink();
         }
+        // The selection was made while still dimmed, so it could not take keyboard focus.
+        // Wait until the un-dim visibility transition has started before focusing.
+        if (lostFocusedNode && this.selectNode) {
+            const node = this.selectNode;
+            const ownerWindow = this.containerEL.ownerDocument.defaultView;
+            const refocus = () => {
+                if (this.selectNode === node && !node.data.isEdit && node.containEl.isConnected) {
+                    node.containEl.focus({ preventScroll: true });
+                }
+            };
+            if (ownerWindow) {
+                ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(refocus));
+            }
+            else {
+                refocus();
+            }
+        }
     }
     refresh() {
+        // A lone selected node keeps its old behaviour even when hidden.
+        if (this.selectedNodes.size > 1) {
+            this.pruneSelection();
+        }
         this.layout();
     }
     exitFocusMode() {
@@ -10021,75 +11814,16 @@ class MindMap {
         }
     }
     center() {
-        //console.log("Center mindmap")
-        this._setMindScalePointer(this.root);
-        var oldScale = this.mindScale;
-        this.scale(100);
-        var w = this.containerEL.clientWidth;
-        var h = this.containerEL.clientHeight;
-        this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60;
-        this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30;
-        this.scale(oldScale);
+        return center.call(this);
     }
     centerOnNode(node) {
-        if (node == null) { //No node given as input argument
-            this.center();
-        }
-        else {
-            //console.log("Center mindmap on node "+node.getId())
-            this._setMindScalePointer(node);
-            var oldScale = this.mindScale;
-            this.scale(100);
-            var w = this.containerEL.clientWidth;
-            var h = this.containerEL.clientHeight;
-            let pos_x = node.getPosition().x;
-            let pos_y = node.getPosition().y;
-            let dim_x = node.getDimensions().x;
-            let dim_y = node.getDimensions().y;
-            //this.containerEL.scrollTop = this.setting.canvasSize / 2 - h / 2 - 60 ;
-            //this.containerEL.scrollLeft = this.setting.canvasSize / 2 - w / 2 + 30 ;
-            this.containerEL.scrollTop = pos_y - (h / 2 - dim_y / 2) + 90;
-            //this.containerEL.scrollLeft = pos_x - (w/2 - dim_x/2) + 40;
-            this.containerEL.scrollLeft = pos_x - (w / 2 - dim_x / 2) + 200;
-            this.scale(oldScale);
-        }
+        return centerOnNode.call(this, node);
     }
     fit() {
-        if (!this.root)
-            return;
-        var activeRoot = this.focusedNode || this.root;
-        var minX = Infinity;
-        var minY = Infinity;
-        var maxX = -Infinity;
-        var maxY = -Infinity;
-        this.traverseBF((n) => {
-            if (n.containEl.style.display === 'none')
-                return;
-            var pos = n.getPosition();
-            var dim = n.getDimensions();
-            if (pos.x < minX)
-                minX = pos.x;
-            if (pos.y < minY)
-                minY = pos.y;
-            if (pos.x + dim.x > maxX)
-                maxX = pos.x + dim.x;
-            if (pos.y + dim.y > maxY)
-                maxY = pos.y + dim.y;
-        }, activeRoot);
-        if (minX === Infinity)
-            return;
-        var w = this.containerEL.clientWidth;
-        var h = this.containerEL.clientHeight;
-        var contentW = maxX - minX + 200; // padding
-        var contentH = maxY - minY + 200; // padding
-        var scaleX = w / contentW;
-        var scaleY = h / contentH;
-        var newScale = Math.min(scaleX, scaleY, 1);
-        this.scale(newScale * 100);
-        var centerX = minX + (maxX - minX) / 2;
-        var centerY = minY + (maxY - minY) / 2;
-        this.containerEL.scrollLeft = centerX - w / 2;
-        this.containerEL.scrollTop = centerY - h / 2;
+        return fit.call(this);
+    }
+    fitOnOpen() {
+        return fitOnOpen.call(this);
     }
     _resetMaxDisplayedLevel() {
         this.dispLevel = 0;
@@ -10167,157 +11901,37 @@ class MindMap {
         return;
     }
     _setMindScalePointer(node) {
-        this.scalePointer = [];
-        // var root = this.root;
-        if (node) {
-            var rbox = node.getBox();
-            this.scalePointer.push(rbox.x + rbox.width / 2, rbox.y + rbox.height / 2);
-            if (!node.isSelect) {
-                this.clearSelectNode();
-                node.select();
-            }
-        }
+        return _setMindScalePointer.call(this, node);
     }
     getMarkdown() {
-        var md = '';
-        var configuredLevel = Number(this.setting.headLevel);
-        var level = Number.isFinite(configuredLevel)
-            ? Math.max(0, Math.min(6, Math.trunc(configuredLevel)))
-            : 1;
-        this.traverseDF((n) => {
-            var l = n.getLevel() + 1;
-            var hPrefix = '', space = '';
-            if (l > 1) {
-                hPrefix = '\n';
-            }
-            const ending = n.isExpand ? '' : ` ^${n.getId()}`;
-            let actualLevel = level;
-            if (n.getLevel() < actualLevel) {
-                for (let i = 0; i < l; i++) {
-                    hPrefix += '#';
-                }
-                md += (hPrefix + ' ');
-                let headingText = n.getData().text.trim().replace(/\n/g, '<br>');
-                md += headingText + ending + '\n';
-            }
-            else {
-                for (var i = 0; i < n.getLevel() - actualLevel; i++) {
-                    space += '    ';
-                }
-                var text = n.getData().text.trim();
-                if (text) {
-                    var textArr = text.split('\n');
-                    var lineLength = textArr.length;
-                    if (lineLength == 1) {
-                        md += `${space}- ${text}${ending}\n`;
-                    }
-                    else if (lineLength > 1) {
-                        //code
-                        if (text.startsWith('```')) {
-                            md += '\n';
-                            md += `${space}-\n`;
-                            textArr.forEach((t, i) => {
-                                md += `${space}  ${t.trim()}${i === textArr.length - 1 ? ending : ''}\n`;
-                            });
-                            md += '\n';
-                        }
-                        else {
-                            //text
-                            let singleLineText = text.replace(/\n/g, '<br>');
-                            md += `${space}- ${singleLineText}${ending}\n`;
-                        }
-                    }
-                }
-                else {
-                    md += `${space}-\n`;
-                }
-            }
-        }, this.root, true);
-        return md.trim();
+        return getMarkdown.call(this);
     }
     scale(num) {
-        if (num < 20) {
-            num = 20;
-        }
-        if (num > 300) {
-            num = 300;
-        }
-        this.mindScale = num;
-        if (this.scalePointer.length) {
-            this.appEl.style.transformOrigin = `${this.scalePointer[0]}px ${this.scalePointer[1]}px`;
-            this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
-        }
-        else {
-            this.appEl.style.transform = "scale(" + this.mindScale / 100 + ")";
-        }
+        return scale.call(this, num);
     }
     setScale(type) {
-        if (type == "up") {
-            var n = this.mindScale + 10;
-        }
-        else {
-            var n = this.mindScale - 10;
-        }
-        this.scale(n);
-        if (this.timeOut) {
-            clearTimeout(this.timeOut);
-        }
-        this.timeOut = setTimeout(() => {
-            new obsidian.Notice(`${n} %`);
-        }, 600);
+        return setScale.call(this, type);
     }
     copyNode(node) {
-        var n = node || this.selectNode;
-        if (n) {
-            var data = [];
-            function copyNode(n, pid) {
-                var d = n.getData();
-                d.id = uuid();
-                d.pid = pid;
-                data.push({
-                    id: d.id,
-                    text: d.text,
-                    pid: pid,
-                    isExpand: d.isExpand,
-                    note: d.note
-                });
-                n.children.forEach((c) => {
-                    copyNode(c, d.id);
-                });
-            }
-            copyNode(n, null);
-            var _data = {
-                type: 'copyNode',
-                text: data
-            };
-            return JSON.stringify(_data);
-        }
-        else {
-            return '';
-        }
+        return copyNode.call(this, node);
     }
     pasteNode(text) {
-        var node = this.selectNode;
-        if (text) {
-            try {
-                var json = JSON.parse(text);
-                if (json.type && json.type == 'copyNode') {
-                    var data = json.text;
-                    if (!node.isExpand) {
-                        node.expand();
-                        node.clearCacheData();
-                    }
-                    this.execute('pasteNode', {
-                        node: node,
-                        data: data
-                    });
-                    navigator.clipboard.writeText('');
-                }
-            }
-            catch (err) {
-                console.error(err);
-            }
+        return pasteNode.call(this, text);
+    }
+    commitActiveEdit() {
+        var _a;
+        if (!((_a = this.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit)) {
+            return false;
         }
+        const changed = this.editNode.commitEdit();
+        this.editNode = null;
+        return changed;
+    }
+    getCollapsedBlockIds() {
+        return getCollapsedBlockIds.call(this);
+    }
+    getNodeAtBodyLine(line) {
+        return getNodeAtBodyLine.call(this, line);
     }
 }
 
@@ -36998,6 +38612,387 @@ exports.fillTemplate = fillTemplate;
 })));
 });
 
+// Editor side of text/map selection sync: a CodeMirror extension that briefly
+const FLASH_MS = 1200;
+const setFlashLine = state.StateEffect.define();
+const flashLineField = state.StateField.define({
+    create() {
+        return view.Decoration.none;
+    },
+    update(decorations, tr) {
+        for (const effect of tr.effects) {
+            if (effect.is(setFlashLine)) {
+                if (effect.value === null || effect.value > tr.state.doc.lines) {
+                    return view.Decoration.none;
+                }
+                const line = tr.state.doc.line(effect.value);
+                return view.Decoration.set([
+                    view.Decoration.line({ class: 'mapdown-sync-line' }).range(line.from),
+                ]);
+            }
+        }
+        return decorations.map(tr.changes);
+    },
+    provide: (field) => view.EditorView.decorations.from(field),
+});
+const editorSyncExtension = [flashLineField];
+// Text -> map: report user cursor moves. Only a focused editor counts, so the
+// cursor moves made by map -> text sync (editor unfocused) never echo back.
+function createCursorListener(onCursor) {
+    return view.EditorView.updateListener.of((update) => {
+        if (update.selectionSet && update.view.hasFocus) {
+            onCursor(update.view);
+        }
+    });
+}
+function getEditorView(view$1) {
+    var _a;
+    const cm = (_a = view$1.editor) === null || _a === void 0 ? void 0 : _a.cm;
+    return cm instanceof view.EditorView ? cm : null;
+}
+const flashTimers = new WeakMap();
+function flashLine(cm, line) {
+    // CodeMirror lines are 1-based.
+    cm.dispatch({ effects: setFlashLine.of(line + 1) });
+    const ownerWindow = cm.dom.ownerDocument.defaultView || window;
+    const previous = flashTimers.get(cm);
+    if (previous !== undefined) {
+        ownerWindow.clearTimeout(previous);
+    }
+    flashTimers.set(cm, ownerWindow.setTimeout(() => {
+        flashTimers.delete(cm);
+        cm.dispatch({ effects: setFlashLine.of(null) });
+    }, FLASH_MS));
+}
+// Move a Markdown view to a 0-based file line without taking focus.
+function revealLineInMarkdown(view, line) {
+    if (view.getMode() === 'preview') {
+        view.setEphemeralState({ line });
+        return;
+    }
+    const editor = view.editor;
+    const target = Math.max(0, Math.min(line, editor.lineCount() - 1));
+    const pos = { line: target, ch: 0 };
+    editor.setCursor(pos);
+    editor.scrollIntoView({ from: pos, to: pos }, true);
+    const cm = getEditorView(view);
+    if (cm) {
+        flashLine(cm, target);
+    }
+}
+
+/*!
+
+JSZip v3.10.1 - A JavaScript class for generating and reading zip files
+<http://stuartk.com/jszip>
+
+(c) 2009-2016 Stuart Knightley <stuart [at] stuartk.com>
+Dual licenced under the MIT license or GPLv3. See https://raw.github.com/Stuk/jszip/main/LICENSE.markdown.
+
+JSZip uses the library pako released under the MIT license :
+https://github.com/nodeca/pako/blob/main/LICENSE
+*/
+
+var jszip_min = createCommonjsModule(function (module, exports) {
+!function(e){module.exports=e();}(function(){return function s(a,o,h){function u(r,e){if(!o[r]){if(!a[r]){var t="function"==typeof commonjsRequire&&commonjsRequire;if(!e&&t)return t(r,!0);if(l)return l(r,!0);var n=new Error("Cannot find module '"+r+"'");throw n.code="MODULE_NOT_FOUND",n}var i=o[r]={exports:{}};a[r][0].call(i.exports,function(e){var t=a[r][1][e];return u(t||e)},i,i.exports,s,a,o,h);}return o[r].exports}for(var l="function"==typeof commonjsRequire&&commonjsRequire,e=0;e<h.length;e++)u(h[e]);return u}({1:[function(e,t,r){var d=e("./utils"),c=e("./support"),p="ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";r.encode=function(e){for(var t,r,n,i,s,a,o,h=[],u=0,l=e.length,f=l,c="string"!==d.getTypeOf(e);u<e.length;)f=l-u,n=c?(t=e[u++],r=u<l?e[u++]:0,u<l?e[u++]:0):(t=e.charCodeAt(u++),r=u<l?e.charCodeAt(u++):0,u<l?e.charCodeAt(u++):0),i=t>>2,s=(3&t)<<4|r>>4,a=1<f?(15&r)<<2|n>>6:64,o=2<f?63&n:64,h.push(p.charAt(i)+p.charAt(s)+p.charAt(a)+p.charAt(o));return h.join("")},r.decode=function(e){var t,r,n,i,s,a,o=0,h=0,u="data:";if(e.substr(0,u.length)===u)throw new Error("Invalid base64 input, it looks like a data url.");var l,f=3*(e=e.replace(/[^A-Za-z0-9+/=]/g,"")).length/4;if(e.charAt(e.length-1)===p.charAt(64)&&f--,e.charAt(e.length-2)===p.charAt(64)&&f--,f%1!=0)throw new Error("Invalid base64 input, bad content length.");for(l=c.uint8array?new Uint8Array(0|f):new Array(0|f);o<e.length;)t=p.indexOf(e.charAt(o++))<<2|(i=p.indexOf(e.charAt(o++)))>>4,r=(15&i)<<4|(s=p.indexOf(e.charAt(o++)))>>2,n=(3&s)<<6|(a=p.indexOf(e.charAt(o++))),l[h++]=t,64!==s&&(l[h++]=r),64!==a&&(l[h++]=n);return l};},{"./support":30,"./utils":32}],2:[function(e,t,r){var n=e("./external"),i=e("./stream/DataWorker"),s=e("./stream/Crc32Probe"),a=e("./stream/DataLengthProbe");function o(e,t,r,n,i){this.compressedSize=e,this.uncompressedSize=t,this.crc32=r,this.compression=n,this.compressedContent=i;}o.prototype={getContentWorker:function(){var e=new i(n.Promise.resolve(this.compressedContent)).pipe(this.compression.uncompressWorker()).pipe(new a("data_length")),t=this;return e.on("end",function(){if(this.streamInfo.data_length!==t.uncompressedSize)throw new Error("Bug : uncompressed data size mismatch")}),e},getCompressedWorker:function(){return new i(n.Promise.resolve(this.compressedContent)).withStreamInfo("compressedSize",this.compressedSize).withStreamInfo("uncompressedSize",this.uncompressedSize).withStreamInfo("crc32",this.crc32).withStreamInfo("compression",this.compression)}},o.createWorkerFrom=function(e,t,r){return e.pipe(new s).pipe(new a("uncompressedSize")).pipe(t.compressWorker(r)).pipe(new a("compressedSize")).withStreamInfo("compression",t)},t.exports=o;},{"./external":6,"./stream/Crc32Probe":25,"./stream/DataLengthProbe":26,"./stream/DataWorker":27}],3:[function(e,t,r){var n=e("./stream/GenericWorker");r.STORE={magic:"\0\0",compressWorker:function(){return new n("STORE compression")},uncompressWorker:function(){return new n("STORE decompression")}},r.DEFLATE=e("./flate");},{"./flate":7,"./stream/GenericWorker":28}],4:[function(e,t,r){var n=e("./utils");var o=function(){for(var e,t=[],r=0;r<256;r++){e=r;for(var n=0;n<8;n++)e=1&e?3988292384^e>>>1:e>>>1;t[r]=e;}return t}();t.exports=function(e,t){return void 0!==e&&e.length?"string"!==n.getTypeOf(e)?function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t[a])];return -1^e}(0|t,e,e.length,0):function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t.charCodeAt(a))];return -1^e}(0|t,e,e.length,0):0};},{"./utils":32}],5:[function(e,t,r){r.base64=!1,r.binary=!1,r.dir=!1,r.createFolders=!0,r.date=null,r.compression=null,r.compressionOptions=null,r.comment=null,r.unixPermissions=null,r.dosPermissions=null;},{}],6:[function(e,t,r){var n=null;n="undefined"!=typeof Promise?Promise:e("lie"),t.exports={Promise:n};},{lie:37}],7:[function(e,t,r){var n="undefined"!=typeof Uint8Array&&"undefined"!=typeof Uint16Array&&"undefined"!=typeof Uint32Array,i=e("pako"),s=e("./utils"),a=e("./stream/GenericWorker"),o=n?"uint8array":"array";function h(e,t){a.call(this,"FlateWorker/"+e),this._pako=null,this._pakoAction=e,this._pakoOptions=t,this.meta={};}r.magic="\b\0",s.inherits(h,a),h.prototype.processChunk=function(e){this.meta=e.meta,null===this._pako&&this._createPako(),this._pako.push(s.transformTo(o,e.data),!1);},h.prototype.flush=function(){a.prototype.flush.call(this),null===this._pako&&this._createPako(),this._pako.push([],!0);},h.prototype.cleanUp=function(){a.prototype.cleanUp.call(this),this._pako=null;},h.prototype._createPako=function(){this._pako=new i[this._pakoAction]({raw:!0,level:this._pakoOptions.level||-1});var t=this;this._pako.onData=function(e){t.push({data:e,meta:t.meta});};},r.compressWorker=function(e){return new h("Deflate",e)},r.uncompressWorker=function(){return new h("Inflate",{})};},{"./stream/GenericWorker":28,"./utils":32,pako:38}],8:[function(e,t,r){function A(e,t){var r,n="";for(r=0;r<t;r++)n+=String.fromCharCode(255&e),e>>>=8;return n}function n(e,t,r,n,i,s){var a,o,h=e.file,u=e.compression,l=s!==O.utf8encode,f=I.transformTo("string",s(h.name)),c=I.transformTo("string",O.utf8encode(h.name)),d=h.comment,p=I.transformTo("string",s(d)),m=I.transformTo("string",O.utf8encode(d)),_=c.length!==h.name.length,g=m.length!==d.length,b="",v="",y="",w=h.dir,k=h.date,x={crc32:0,compressedSize:0,uncompressedSize:0};t&&!r||(x.crc32=e.crc32,x.compressedSize=e.compressedSize,x.uncompressedSize=e.uncompressedSize);var S=0;t&&(S|=8),l||!_&&!g||(S|=2048);var z=0,C=0;w&&(z|=16),"UNIX"===i?(C=798,z|=function(e,t){var r=e;return e||(r=t?16893:33204),(65535&r)<<16}(h.unixPermissions,w)):(C=20,z|=function(e){return 63&(e||0)}(h.dosPermissions)),a=k.getUTCHours(),a<<=6,a|=k.getUTCMinutes(),a<<=5,a|=k.getUTCSeconds()/2,o=k.getUTCFullYear()-1980,o<<=4,o|=k.getUTCMonth()+1,o<<=5,o|=k.getUTCDate(),_&&(v=A(1,1)+A(B(f),4)+c,b+="up"+A(v.length,2)+v),g&&(y=A(1,1)+A(B(p),4)+m,b+="uc"+A(y.length,2)+y);var E="";return E+="\n\0",E+=A(S,2),E+=u.magic,E+=A(a,2),E+=A(o,2),E+=A(x.crc32,4),E+=A(x.compressedSize,4),E+=A(x.uncompressedSize,4),E+=A(f.length,2),E+=A(b.length,2),{fileRecord:R.LOCAL_FILE_HEADER+E+f+b,dirRecord:R.CENTRAL_FILE_HEADER+A(C,2)+E+A(p.length,2)+"\0\0\0\0"+A(z,4)+A(n,4)+f+b+p}}var I=e("../utils"),i=e("../stream/GenericWorker"),O=e("../utf8"),B=e("../crc32"),R=e("../signature");function s(e,t,r,n){i.call(this,"ZipFileWorker"),this.bytesWritten=0,this.zipComment=t,this.zipPlatform=r,this.encodeFileName=n,this.streamFiles=e,this.accumulate=!1,this.contentBuffer=[],this.dirRecords=[],this.currentSourceOffset=0,this.entriesCount=0,this.currentFile=null,this._sources=[];}I.inherits(s,i),s.prototype.push=function(e){var t=e.meta.percent||0,r=this.entriesCount,n=this._sources.length;this.accumulate?this.contentBuffer.push(e):(this.bytesWritten+=e.data.length,i.prototype.push.call(this,{data:e.data,meta:{currentFile:this.currentFile,percent:r?(t+100*(r-n-1))/r:100}}));},s.prototype.openedSource=function(e){this.currentSourceOffset=this.bytesWritten,this.currentFile=e.file.name;var t=this.streamFiles&&!e.file.dir;if(t){var r=n(e,t,!1,this.currentSourceOffset,this.zipPlatform,this.encodeFileName);this.push({data:r.fileRecord,meta:{percent:0}});}else this.accumulate=!0;},s.prototype.closedSource=function(e){this.accumulate=!1;var t=this.streamFiles&&!e.file.dir,r=n(e,t,!0,this.currentSourceOffset,this.zipPlatform,this.encodeFileName);if(this.dirRecords.push(r.dirRecord),t)this.push({data:function(e){return R.DATA_DESCRIPTOR+A(e.crc32,4)+A(e.compressedSize,4)+A(e.uncompressedSize,4)}(e),meta:{percent:100}});else for(this.push({data:r.fileRecord,meta:{percent:0}});this.contentBuffer.length;)this.push(this.contentBuffer.shift());this.currentFile=null;},s.prototype.flush=function(){for(var e=this.bytesWritten,t=0;t<this.dirRecords.length;t++)this.push({data:this.dirRecords[t],meta:{percent:100}});var r=this.bytesWritten-e,n=function(e,t,r,n,i){var s=I.transformTo("string",i(n));return R.CENTRAL_DIRECTORY_END+"\0\0\0\0"+A(e,2)+A(e,2)+A(t,4)+A(r,4)+A(s.length,2)+s}(this.dirRecords.length,r,e,this.zipComment,this.encodeFileName);this.push({data:n,meta:{percent:100}});},s.prototype.prepareNextSource=function(){this.previous=this._sources.shift(),this.openedSource(this.previous.streamInfo),this.isPaused?this.previous.pause():this.previous.resume();},s.prototype.registerPrevious=function(e){this._sources.push(e);var t=this;return e.on("data",function(e){t.processChunk(e);}),e.on("end",function(){t.closedSource(t.previous.streamInfo),t._sources.length?t.prepareNextSource():t.end();}),e.on("error",function(e){t.error(e);}),this},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(!this.previous&&this._sources.length?(this.prepareNextSource(),!0):this.previous||this._sources.length||this.generatedError?void 0:(this.end(),!0))},s.prototype.error=function(e){var t=this._sources;if(!i.prototype.error.call(this,e))return !1;for(var r=0;r<t.length;r++)try{t[r].error(e);}catch(e){}return !0},s.prototype.lock=function(){i.prototype.lock.call(this);for(var e=this._sources,t=0;t<e.length;t++)e[t].lock();},t.exports=s;},{"../crc32":4,"../signature":23,"../stream/GenericWorker":28,"../utf8":31,"../utils":32}],9:[function(e,t,r){var u=e("../compressions"),n=e("./ZipFileWorker");r.generateWorker=function(e,a,t){var o=new n(a.streamFiles,t,a.platform,a.encodeFileName),h=0;try{e.forEach(function(e,t){h++;var r=function(e,t){var r=e||t,n=u[r];if(!n)throw new Error(r+" is not a valid compression method !");return n}(t.options.compression,a.compression),n=t.options.compressionOptions||a.compressionOptions||{},i=t.dir,s=t.date;t._compressWorker(r,n).withStreamInfo("file",{name:e,dir:i,date:s,comment:t.comment||"",unixPermissions:t.unixPermissions,dosPermissions:t.dosPermissions}).pipe(o);}),o.entriesCount=h;}catch(e){o.error(e);}return o};},{"../compressions":3,"./ZipFileWorker":8}],10:[function(e,t,r){function n(){if(!(this instanceof n))return new n;if(arguments.length)throw new Error("The constructor with parameters has been removed in JSZip 3.0, please check the upgrade guide.");this.files=Object.create(null),this.comment=null,this.root="",this.clone=function(){var e=new n;for(var t in this)"function"!=typeof this[t]&&(e[t]=this[t]);return e};}(n.prototype=e("./object")).loadAsync=e("./load"),n.support=e("./support"),n.defaults=e("./defaults"),n.version="3.10.1",n.loadAsync=function(e,t){return (new n).loadAsync(e,t)},n.external=e("./external"),t.exports=n;},{"./defaults":5,"./external":6,"./load":11,"./object":15,"./support":30}],11:[function(e,t,r){var u=e("./utils"),i=e("./external"),n=e("./utf8"),s=e("./zipEntries"),a=e("./stream/Crc32Probe"),l=e("./nodejsUtils");function f(n){return new i.Promise(function(e,t){var r=n.decompressed.getContentWorker().pipe(new a);r.on("error",function(e){t(e);}).on("end",function(){r.streamInfo.crc32!==n.decompressed.crc32?t(new Error("Corrupted zip : CRC32 mismatch")):e();}).resume();})}t.exports=function(e,o){var h=this;return o=u.extend(o||{},{base64:!1,checkCRC32:!1,optimizedBinaryString:!1,createFolders:!1,decodeFileName:n.utf8decode}),l.isNode&&l.isStream(e)?i.Promise.reject(new Error("JSZip can't accept a stream when loading a zip file.")):u.prepareContent("the loaded zip file",e,!0,o.optimizedBinaryString,o.base64).then(function(e){var t=new s(o);return t.load(e),t}).then(function(e){var t=[i.Promise.resolve(e)],r=e.files;if(o.checkCRC32)for(var n=0;n<r.length;n++)t.push(f(r[n]));return i.Promise.all(t)}).then(function(e){for(var t=e.shift(),r=t.files,n=0;n<r.length;n++){var i=r[n],s=i.fileNameStr,a=u.resolve(i.fileNameStr);h.file(a,i.decompressed,{binary:!0,optimizedBinaryString:!0,date:i.date,dir:i.dir,comment:i.fileCommentStr.length?i.fileCommentStr:null,unixPermissions:i.unixPermissions,dosPermissions:i.dosPermissions,createFolders:o.createFolders}),i.dir||(h.file(a).unsafeOriginalName=s);}return t.zipComment.length&&(h.comment=t.zipComment),h})};},{"./external":6,"./nodejsUtils":14,"./stream/Crc32Probe":25,"./utf8":31,"./utils":32,"./zipEntries":33}],12:[function(e,t,r){var n=e("../utils"),i=e("../stream/GenericWorker");function s(e,t){i.call(this,"Nodejs stream input adapter for "+e),this._upstreamEnded=!1,this._bindStream(t);}n.inherits(s,i),s.prototype._bindStream=function(e){var t=this;(this._stream=e).pause(),e.on("data",function(e){t.push({data:e,meta:{percent:0}});}).on("error",function(e){t.isPaused?this.generatedError=e:t.error(e);}).on("end",function(){t.isPaused?t._upstreamEnded=!0:t.end();});},s.prototype.pause=function(){return !!i.prototype.pause.call(this)&&(this._stream.pause(),!0)},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(this._upstreamEnded?this.end():this._stream.resume(),!0)},t.exports=s;},{"../stream/GenericWorker":28,"../utils":32}],13:[function(e,t,r){var i=e("readable-stream").Readable;function n(e,t,r){i.call(this,t),this._helper=e;var n=this;e.on("data",function(e,t){n.push(e)||n._helper.pause(),r&&r(t);}).on("error",function(e){n.emit("error",e);}).on("end",function(){n.push(null);});}e("../utils").inherits(n,i),n.prototype._read=function(){this._helper.resume();},t.exports=n;},{"../utils":32,"readable-stream":16}],14:[function(e,t,r){t.exports={isNode:"undefined"!=typeof Buffer,newBufferFrom:function(e,t){if(Buffer.from&&Buffer.from!==Uint8Array.from)return Buffer.from(e,t);if("number"==typeof e)throw new Error('The "data" argument must not be a number');return new Buffer(e,t)},allocBuffer:function(e){if(Buffer.alloc)return Buffer.alloc(e);var t=new Buffer(e);return t.fill(0),t},isBuffer:function(e){return Buffer.isBuffer(e)},isStream:function(e){return e&&"function"==typeof e.on&&"function"==typeof e.pause&&"function"==typeof e.resume}};},{}],15:[function(e,t,r){function s(e,t,r){var n,i=u.getTypeOf(t),s=u.extend(r||{},f);s.date=s.date||new Date,null!==s.compression&&(s.compression=s.compression.toUpperCase()),"string"==typeof s.unixPermissions&&(s.unixPermissions=parseInt(s.unixPermissions,8)),s.unixPermissions&&16384&s.unixPermissions&&(s.dir=!0),s.dosPermissions&&16&s.dosPermissions&&(s.dir=!0),s.dir&&(e=g(e)),s.createFolders&&(n=_(e))&&b.call(this,n,!0);var a="string"===i&&!1===s.binary&&!1===s.base64;r&&void 0!==r.binary||(s.binary=!a),(t instanceof c&&0===t.uncompressedSize||s.dir||!t||0===t.length)&&(s.base64=!1,s.binary=!0,t="",s.compression="STORE",i="string");var o=null;o=t instanceof c||t instanceof l?t:p.isNode&&p.isStream(t)?new m(e,t):u.prepareContent(e,t,s.binary,s.optimizedBinaryString,s.base64);var h=new d(e,o,s);this.files[e]=h;}var i=e("./utf8"),u=e("./utils"),l=e("./stream/GenericWorker"),a=e("./stream/StreamHelper"),f=e("./defaults"),c=e("./compressedObject"),d=e("./zipObject"),o=e("./generate"),p=e("./nodejsUtils"),m=e("./nodejs/NodejsStreamInputAdapter"),_=function(e){"/"===e.slice(-1)&&(e=e.substring(0,e.length-1));var t=e.lastIndexOf("/");return 0<t?e.substring(0,t):""},g=function(e){return "/"!==e.slice(-1)&&(e+="/"),e},b=function(e,t){return t=void 0!==t?t:f.createFolders,e=g(e),this.files[e]||s.call(this,e,null,{dir:!0,createFolders:t}),this.files[e]};function h(e){return "[object RegExp]"===Object.prototype.toString.call(e)}var n={load:function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},forEach:function(e){var t,r,n;for(t in this.files)n=this.files[t],(r=t.slice(this.root.length,t.length))&&t.slice(0,this.root.length)===this.root&&e(r,n);},filter:function(r){var n=[];return this.forEach(function(e,t){r(e,t)&&n.push(t);}),n},file:function(e,t,r){if(1!==arguments.length)return e=this.root+e,s.call(this,e,t,r),this;if(h(e)){var n=e;return this.filter(function(e,t){return !t.dir&&n.test(e)})}var i=this.files[this.root+e];return i&&!i.dir?i:null},folder:function(r){if(!r)return this;if(h(r))return this.filter(function(e,t){return t.dir&&r.test(e)});var e=this.root+r,t=b.call(this,e),n=this.clone();return n.root=t.name,n},remove:function(r){r=this.root+r;var e=this.files[r];if(e||("/"!==r.slice(-1)&&(r+="/"),e=this.files[r]),e&&!e.dir)delete this.files[r];else for(var t=this.filter(function(e,t){return t.name.slice(0,r.length)===r}),n=0;n<t.length;n++)delete this.files[t[n].name];return this},generate:function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},generateInternalStream:function(e){var t,r={};try{if((r=u.extend(e||{},{streamFiles:!1,compression:"STORE",compressionOptions:null,type:"",platform:"DOS",comment:null,mimeType:"application/zip",encodeFileName:i.utf8encode})).type=r.type.toLowerCase(),r.compression=r.compression.toUpperCase(),"binarystring"===r.type&&(r.type="string"),!r.type)throw new Error("No output type specified.");u.checkSupport(r.type),"darwin"!==r.platform&&"freebsd"!==r.platform&&"linux"!==r.platform&&"sunos"!==r.platform||(r.platform="UNIX"),"win32"===r.platform&&(r.platform="DOS");var n=r.comment||this.comment||"";t=o.generateWorker(this,r,n);}catch(e){(t=new l("error")).error(e);}return new a(t,r.type||"string",r.mimeType)},generateAsync:function(e,t){return this.generateInternalStream(e).accumulate(t)},generateNodeStream:function(e,t){return (e=e||{}).type||(e.type="nodebuffer"),this.generateInternalStream(e).toNodejsStream(t)}};t.exports=n;},{"./compressedObject":2,"./defaults":5,"./generate":9,"./nodejs/NodejsStreamInputAdapter":12,"./nodejsUtils":14,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31,"./utils":32,"./zipObject":35}],16:[function(e,t,r){t.exports=e("stream");},{stream:void 0}],17:[function(e,t,r){var n=e("./DataReader");function i(e){n.call(this,e);for(var t=0;t<this.data.length;t++)e[t]=255&e[t];}e("../utils").inherits(i,n),i.prototype.byteAt=function(e){return this.data[this.zero+e]},i.prototype.lastIndexOfSignature=function(e){for(var t=e.charCodeAt(0),r=e.charCodeAt(1),n=e.charCodeAt(2),i=e.charCodeAt(3),s=this.length-4;0<=s;--s)if(this.data[s]===t&&this.data[s+1]===r&&this.data[s+2]===n&&this.data[s+3]===i)return s-this.zero;return -1},i.prototype.readAndCheckSignature=function(e){var t=e.charCodeAt(0),r=e.charCodeAt(1),n=e.charCodeAt(2),i=e.charCodeAt(3),s=this.readData(4);return t===s[0]&&r===s[1]&&n===s[2]&&i===s[3]},i.prototype.readData=function(e){if(this.checkOffset(e),0===e)return [];var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./DataReader":18}],18:[function(e,t,r){var n=e("../utils");function i(e){this.data=e,this.length=e.length,this.index=0,this.zero=0;}i.prototype={checkOffset:function(e){this.checkIndex(this.index+e);},checkIndex:function(e){if(this.length<this.zero+e||e<0)throw new Error("End of data reached (data length = "+this.length+", asked index = "+e+"). Corrupted zip ?")},setIndex:function(e){this.checkIndex(e),this.index=e;},skip:function(e){this.setIndex(this.index+e);},byteAt:function(){},readInt:function(e){var t,r=0;for(this.checkOffset(e),t=this.index+e-1;t>=this.index;t--)r=(r<<8)+this.byteAt(t);return this.index+=e,r},readString:function(e){return n.transformTo("string",this.readData(e))},readData:function(){},lastIndexOfSignature:function(){},readAndCheckSignature:function(){},readDate:function(){var e=this.readInt(4);return new Date(Date.UTC(1980+(e>>25&127),(e>>21&15)-1,e>>16&31,e>>11&31,e>>5&63,(31&e)<<1))}},t.exports=i;},{"../utils":32}],19:[function(e,t,r){var n=e("./Uint8ArrayReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.readData=function(e){this.checkOffset(e);var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./Uint8ArrayReader":21}],20:[function(e,t,r){var n=e("./DataReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.byteAt=function(e){return this.data.charCodeAt(this.zero+e)},i.prototype.lastIndexOfSignature=function(e){return this.data.lastIndexOf(e)-this.zero},i.prototype.readAndCheckSignature=function(e){return e===this.readData(4)},i.prototype.readData=function(e){this.checkOffset(e);var t=this.data.slice(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./DataReader":18}],21:[function(e,t,r){var n=e("./ArrayReader");function i(e){n.call(this,e);}e("../utils").inherits(i,n),i.prototype.readData=function(e){if(this.checkOffset(e),0===e)return new Uint8Array(0);var t=this.data.subarray(this.zero+this.index,this.zero+this.index+e);return this.index+=e,t},t.exports=i;},{"../utils":32,"./ArrayReader":17}],22:[function(e,t,r){var n=e("../utils"),i=e("../support"),s=e("./ArrayReader"),a=e("./StringReader"),o=e("./NodeBufferReader"),h=e("./Uint8ArrayReader");t.exports=function(e){var t=n.getTypeOf(e);return n.checkSupport(t),"string"!==t||i.uint8array?"nodebuffer"===t?new o(e):i.uint8array?new h(n.transformTo("uint8array",e)):new s(n.transformTo("array",e)):new a(e)};},{"../support":30,"../utils":32,"./ArrayReader":17,"./NodeBufferReader":19,"./StringReader":20,"./Uint8ArrayReader":21}],23:[function(e,t,r){r.LOCAL_FILE_HEADER="PK",r.CENTRAL_FILE_HEADER="PK",r.CENTRAL_DIRECTORY_END="PK",r.ZIP64_CENTRAL_DIRECTORY_LOCATOR="PK",r.ZIP64_CENTRAL_DIRECTORY_END="PK",r.DATA_DESCRIPTOR="PK\b";},{}],24:[function(e,t,r){var n=e("./GenericWorker"),i=e("../utils");function s(e){n.call(this,"ConvertWorker to "+e),this.destType=e;}i.inherits(s,n),s.prototype.processChunk=function(e){this.push({data:i.transformTo(this.destType,e.data),meta:e.meta});},t.exports=s;},{"../utils":32,"./GenericWorker":28}],25:[function(e,t,r){var n=e("./GenericWorker"),i=e("../crc32");function s(){n.call(this,"Crc32Probe"),this.withStreamInfo("crc32",0);}e("../utils").inherits(s,n),s.prototype.processChunk=function(e){this.streamInfo.crc32=i(e.data,this.streamInfo.crc32||0),this.push(e);},t.exports=s;},{"../crc32":4,"../utils":32,"./GenericWorker":28}],26:[function(e,t,r){var n=e("../utils"),i=e("./GenericWorker");function s(e){i.call(this,"DataLengthProbe for "+e),this.propName=e,this.withStreamInfo(e,0);}n.inherits(s,i),s.prototype.processChunk=function(e){if(e){var t=this.streamInfo[this.propName]||0;this.streamInfo[this.propName]=t+e.data.length;}i.prototype.processChunk.call(this,e);},t.exports=s;},{"../utils":32,"./GenericWorker":28}],27:[function(e,t,r){var n=e("../utils"),i=e("./GenericWorker");function s(e){i.call(this,"DataWorker");var t=this;this.dataIsReady=!1,this.index=0,this.max=0,this.data=null,this.type="",this._tickScheduled=!1,e.then(function(e){t.dataIsReady=!0,t.data=e,t.max=e&&e.length||0,t.type=n.getTypeOf(e),t.isPaused||t._tickAndRepeat();},function(e){t.error(e);});}n.inherits(s,i),s.prototype.cleanUp=function(){i.prototype.cleanUp.call(this),this.data=null;},s.prototype.resume=function(){return !!i.prototype.resume.call(this)&&(!this._tickScheduled&&this.dataIsReady&&(this._tickScheduled=!0,n.delay(this._tickAndRepeat,[],this)),!0)},s.prototype._tickAndRepeat=function(){this._tickScheduled=!1,this.isPaused||this.isFinished||(this._tick(),this.isFinished||(n.delay(this._tickAndRepeat,[],this),this._tickScheduled=!0));},s.prototype._tick=function(){if(this.isPaused||this.isFinished)return !1;var e=null,t=Math.min(this.max,this.index+16384);if(this.index>=this.max)return this.end();switch(this.type){case"string":e=this.data.substring(this.index,t);break;case"uint8array":e=this.data.subarray(this.index,t);break;case"array":case"nodebuffer":e=this.data.slice(this.index,t);}return this.index=t,this.push({data:e,meta:{percent:this.max?this.index/this.max*100:0}})},t.exports=s;},{"../utils":32,"./GenericWorker":28}],28:[function(e,t,r){function n(e){this.name=e||"default",this.streamInfo={},this.generatedError=null,this.extraStreamInfo={},this.isPaused=!0,this.isFinished=!1,this.isLocked=!1,this._listeners={data:[],end:[],error:[]},this.previous=null;}n.prototype={push:function(e){this.emit("data",e);},end:function(){if(this.isFinished)return !1;this.flush();try{this.emit("end"),this.cleanUp(),this.isFinished=!0;}catch(e){this.emit("error",e);}return !0},error:function(e){return !this.isFinished&&(this.isPaused?this.generatedError=e:(this.isFinished=!0,this.emit("error",e),this.previous&&this.previous.error(e),this.cleanUp()),!0)},on:function(e,t){return this._listeners[e].push(t),this},cleanUp:function(){this.streamInfo=this.generatedError=this.extraStreamInfo=null,this._listeners=[];},emit:function(e,t){if(this._listeners[e])for(var r=0;r<this._listeners[e].length;r++)this._listeners[e][r].call(this,t);},pipe:function(e){return e.registerPrevious(this)},registerPrevious:function(e){if(this.isLocked)throw new Error("The stream '"+this+"' has already been used.");this.streamInfo=e.streamInfo,this.mergeStreamInfo(),this.previous=e;var t=this;return e.on("data",function(e){t.processChunk(e);}),e.on("end",function(){t.end();}),e.on("error",function(e){t.error(e);}),this},pause:function(){return !this.isPaused&&!this.isFinished&&(this.isPaused=!0,this.previous&&this.previous.pause(),!0)},resume:function(){if(!this.isPaused||this.isFinished)return !1;var e=this.isPaused=!1;return this.generatedError&&(this.error(this.generatedError),e=!0),this.previous&&this.previous.resume(),!e},flush:function(){},processChunk:function(e){this.push(e);},withStreamInfo:function(e,t){return this.extraStreamInfo[e]=t,this.mergeStreamInfo(),this},mergeStreamInfo:function(){for(var e in this.extraStreamInfo)Object.prototype.hasOwnProperty.call(this.extraStreamInfo,e)&&(this.streamInfo[e]=this.extraStreamInfo[e]);},lock:function(){if(this.isLocked)throw new Error("The stream '"+this+"' has already been used.");this.isLocked=!0,this.previous&&this.previous.lock();},toString:function(){var e="Worker "+this.name;return this.previous?this.previous+" -> "+e:e}},t.exports=n;},{}],29:[function(e,t,r){var h=e("../utils"),i=e("./ConvertWorker"),s=e("./GenericWorker"),u=e("../base64"),n=e("../support"),a=e("../external"),o=null;if(n.nodestream)try{o=e("../nodejs/NodejsStreamOutputAdapter");}catch(e){}function l(e,o){return new a.Promise(function(t,r){var n=[],i=e._internalType,s=e._outputType,a=e._mimeType;e.on("data",function(e,t){n.push(e),o&&o(t);}).on("error",function(e){n=[],r(e);}).on("end",function(){try{var e=function(e,t,r){switch(e){case"blob":return h.newBlob(h.transformTo("arraybuffer",t),r);case"base64":return u.encode(t);default:return h.transformTo(e,t)}}(s,function(e,t){var r,n=0,i=null,s=0;for(r=0;r<t.length;r++)s+=t[r].length;switch(e){case"string":return t.join("");case"array":return Array.prototype.concat.apply([],t);case"uint8array":for(i=new Uint8Array(s),r=0;r<t.length;r++)i.set(t[r],n),n+=t[r].length;return i;case"nodebuffer":return Buffer.concat(t);default:throw new Error("concat : unsupported type '"+e+"'")}}(i,n),a);t(e);}catch(e){r(e);}n=[];}).resume();})}function f(e,t,r){var n=t;switch(t){case"blob":case"arraybuffer":n="uint8array";break;case"base64":n="string";}try{this._internalType=n,this._outputType=t,this._mimeType=r,h.checkSupport(n),this._worker=e.pipe(new i(n)),e.lock();}catch(e){this._worker=new s("error"),this._worker.error(e);}}f.prototype={accumulate:function(e){return l(this,e)},on:function(e,t){var r=this;return "data"===e?this._worker.on(e,function(e){t.call(r,e.data,e.meta);}):this._worker.on(e,function(){h.delay(t,arguments,r);}),this},resume:function(){return h.delay(this._worker.resume,[],this._worker),this},pause:function(){return this._worker.pause(),this},toNodejsStream:function(e){if(h.checkSupport("nodestream"),"nodebuffer"!==this._outputType)throw new Error(this._outputType+" is not supported by this method");return new o(this,{objectMode:"nodebuffer"!==this._outputType},e)}},t.exports=f;},{"../base64":1,"../external":6,"../nodejs/NodejsStreamOutputAdapter":13,"../support":30,"../utils":32,"./ConvertWorker":24,"./GenericWorker":28}],30:[function(e,t,r){if(r.base64=!0,r.array=!0,r.string=!0,r.arraybuffer="undefined"!=typeof ArrayBuffer&&"undefined"!=typeof Uint8Array,r.nodebuffer="undefined"!=typeof Buffer,r.uint8array="undefined"!=typeof Uint8Array,"undefined"==typeof ArrayBuffer)r.blob=!1;else {var n=new ArrayBuffer(0);try{r.blob=0===new Blob([n],{type:"application/zip"}).size;}catch(e){try{var i=new(self.BlobBuilder||self.WebKitBlobBuilder||self.MozBlobBuilder||self.MSBlobBuilder);i.append(n),r.blob=0===i.getBlob("application/zip").size;}catch(e){r.blob=!1;}}}try{r.nodestream=!!e("readable-stream").Readable;}catch(e){r.nodestream=!1;}},{"readable-stream":16}],31:[function(e,t,s){for(var o=e("./utils"),h=e("./support"),r=e("./nodejsUtils"),n=e("./stream/GenericWorker"),u=new Array(256),i=0;i<256;i++)u[i]=252<=i?6:248<=i?5:240<=i?4:224<=i?3:192<=i?2:1;u[254]=u[254]=1;function a(){n.call(this,"utf-8 decode"),this.leftOver=null;}function l(){n.call(this,"utf-8 encode");}s.utf8encode=function(e){return h.nodebuffer?r.newBufferFrom(e,"utf-8"):function(e){var t,r,n,i,s,a=e.length,o=0;for(i=0;i<a;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),o+=r<128?1:r<2048?2:r<65536?3:4;for(t=h.uint8array?new Uint8Array(o):new Array(o),i=s=0;s<o;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),r<128?t[s++]=r:(r<2048?t[s++]=192|r>>>6:(r<65536?t[s++]=224|r>>>12:(t[s++]=240|r>>>18,t[s++]=128|r>>>12&63),t[s++]=128|r>>>6&63),t[s++]=128|63&r);return t}(e)},s.utf8decode=function(e){return h.nodebuffer?o.transformTo("nodebuffer",e).toString("utf-8"):function(e){var t,r,n,i,s=e.length,a=new Array(2*s);for(t=r=0;t<s;)if((n=e[t++])<128)a[r++]=n;else if(4<(i=u[n]))a[r++]=65533,t+=i-1;else {for(n&=2===i?31:3===i?15:7;1<i&&t<s;)n=n<<6|63&e[t++],i--;1<i?a[r++]=65533:n<65536?a[r++]=n:(n-=65536,a[r++]=55296|n>>10&1023,a[r++]=56320|1023&n);}return a.length!==r&&(a.subarray?a=a.subarray(0,r):a.length=r),o.applyFromCharCode(a)}(e=o.transformTo(h.uint8array?"uint8array":"array",e))},o.inherits(a,n),a.prototype.processChunk=function(e){var t=o.transformTo(h.uint8array?"uint8array":"array",e.data);if(this.leftOver&&this.leftOver.length){if(h.uint8array){var r=t;(t=new Uint8Array(r.length+this.leftOver.length)).set(this.leftOver,0),t.set(r,this.leftOver.length);}else t=this.leftOver.concat(t);this.leftOver=null;}var n=function(e,t){var r;for((t=t||e.length)>e.length&&(t=e.length),r=t-1;0<=r&&128==(192&e[r]);)r--;return r<0?t:0===r?t:r+u[e[r]]>t?r:t}(t),i=t;n!==t.length&&(h.uint8array?(i=t.subarray(0,n),this.leftOver=t.subarray(n,t.length)):(i=t.slice(0,n),this.leftOver=t.slice(n,t.length))),this.push({data:s.utf8decode(i),meta:e.meta});},a.prototype.flush=function(){this.leftOver&&this.leftOver.length&&(this.push({data:s.utf8decode(this.leftOver),meta:{}}),this.leftOver=null);},s.Utf8DecodeWorker=a,o.inherits(l,n),l.prototype.processChunk=function(e){this.push({data:s.utf8encode(e.data),meta:e.meta});},s.Utf8EncodeWorker=l;},{"./nodejsUtils":14,"./stream/GenericWorker":28,"./support":30,"./utils":32}],32:[function(e,t,a){var o=e("./support"),h=e("./base64"),r=e("./nodejsUtils"),u=e("./external");function n(e){return e}function l(e,t){for(var r=0;r<e.length;++r)t[r]=255&e.charCodeAt(r);return t}e("setimmediate"),a.newBlob=function(t,r){a.checkSupport("blob");try{return new Blob([t],{type:r})}catch(e){try{var n=new(self.BlobBuilder||self.WebKitBlobBuilder||self.MozBlobBuilder||self.MSBlobBuilder);return n.append(t),n.getBlob(r)}catch(e){throw new Error("Bug : can't construct the Blob.")}}};var i={stringifyByChunk:function(e,t,r){var n=[],i=0,s=e.length;if(s<=r)return String.fromCharCode.apply(null,e);for(;i<s;)"array"===t||"nodebuffer"===t?n.push(String.fromCharCode.apply(null,e.slice(i,Math.min(i+r,s)))):n.push(String.fromCharCode.apply(null,e.subarray(i,Math.min(i+r,s)))),i+=r;return n.join("")},stringifyByChar:function(e){for(var t="",r=0;r<e.length;r++)t+=String.fromCharCode(e[r]);return t},applyCanBeUsed:{uint8array:function(){try{return o.uint8array&&1===String.fromCharCode.apply(null,new Uint8Array(1)).length}catch(e){return !1}}(),nodebuffer:function(){try{return o.nodebuffer&&1===String.fromCharCode.apply(null,r.allocBuffer(1)).length}catch(e){return !1}}()}};function s(e){var t=65536,r=a.getTypeOf(e),n=!0;if("uint8array"===r?n=i.applyCanBeUsed.uint8array:"nodebuffer"===r&&(n=i.applyCanBeUsed.nodebuffer),n)for(;1<t;)try{return i.stringifyByChunk(e,r,t)}catch(e){t=Math.floor(t/2);}return i.stringifyByChar(e)}function f(e,t){for(var r=0;r<e.length;r++)t[r]=e[r];return t}a.applyFromCharCode=s;var c={};c.string={string:n,array:function(e){return l(e,new Array(e.length))},arraybuffer:function(e){return c.string.uint8array(e).buffer},uint8array:function(e){return l(e,new Uint8Array(e.length))},nodebuffer:function(e){return l(e,r.allocBuffer(e.length))}},c.array={string:s,array:n,arraybuffer:function(e){return new Uint8Array(e).buffer},uint8array:function(e){return new Uint8Array(e)},nodebuffer:function(e){return r.newBufferFrom(e)}},c.arraybuffer={string:function(e){return s(new Uint8Array(e))},array:function(e){return f(new Uint8Array(e),new Array(e.byteLength))},arraybuffer:n,uint8array:function(e){return new Uint8Array(e)},nodebuffer:function(e){return r.newBufferFrom(new Uint8Array(e))}},c.uint8array={string:s,array:function(e){return f(e,new Array(e.length))},arraybuffer:function(e){return e.buffer},uint8array:n,nodebuffer:function(e){return r.newBufferFrom(e)}},c.nodebuffer={string:s,array:function(e){return f(e,new Array(e.length))},arraybuffer:function(e){return c.nodebuffer.uint8array(e).buffer},uint8array:function(e){return f(e,new Uint8Array(e.length))},nodebuffer:n},a.transformTo=function(e,t){if(t=t||"",!e)return t;a.checkSupport(e);var r=a.getTypeOf(t);return c[r][e](t)},a.resolve=function(e){for(var t=e.split("/"),r=[],n=0;n<t.length;n++){var i=t[n];"."===i||""===i&&0!==n&&n!==t.length-1||(".."===i?r.pop():r.push(i));}return r.join("/")},a.getTypeOf=function(e){return "string"==typeof e?"string":"[object Array]"===Object.prototype.toString.call(e)?"array":o.nodebuffer&&r.isBuffer(e)?"nodebuffer":o.uint8array&&e instanceof Uint8Array?"uint8array":o.arraybuffer&&e instanceof ArrayBuffer?"arraybuffer":void 0},a.checkSupport=function(e){if(!o[e.toLowerCase()])throw new Error(e+" is not supported by this platform")},a.MAX_VALUE_16BITS=65535,a.MAX_VALUE_32BITS=-1,a.pretty=function(e){var t,r,n="";for(r=0;r<(e||"").length;r++)n+="\\x"+((t=e.charCodeAt(r))<16?"0":"")+t.toString(16).toUpperCase();return n},a.delay=function(e,t,r){setImmediate(function(){e.apply(r||null,t||[]);});},a.inherits=function(e,t){function r(){}r.prototype=t.prototype,e.prototype=new r;},a.extend=function(){var e,t,r={};for(e=0;e<arguments.length;e++)for(t in arguments[e])Object.prototype.hasOwnProperty.call(arguments[e],t)&&void 0===r[t]&&(r[t]=arguments[e][t]);return r},a.prepareContent=function(r,e,n,i,s){return u.Promise.resolve(e).then(function(n){return o.blob&&(n instanceof Blob||-1!==["[object File]","[object Blob]"].indexOf(Object.prototype.toString.call(n)))&&"undefined"!=typeof FileReader?new u.Promise(function(t,r){var e=new FileReader;e.onload=function(e){t(e.target.result);},e.onerror=function(e){r(e.target.error);},e.readAsArrayBuffer(n);}):n}).then(function(e){var t=a.getTypeOf(e);return t?("arraybuffer"===t?e=a.transformTo("uint8array",e):"string"===t&&(s?e=h.decode(e):n&&!0!==i&&(e=function(e){return l(e,o.uint8array?new Uint8Array(e.length):new Array(e.length))}(e))),e):u.Promise.reject(new Error("Can't read the data of '"+r+"'. Is it in a supported JavaScript type (String, Blob, ArrayBuffer, etc) ?"))})};},{"./base64":1,"./external":6,"./nodejsUtils":14,"./support":30,setimmediate:54}],33:[function(e,t,r){var n=e("./reader/readerFor"),i=e("./utils"),s=e("./signature"),a=e("./zipEntry"),o=e("./support");function h(e){this.files=[],this.loadOptions=e;}h.prototype={checkSignature:function(e){if(!this.reader.readAndCheckSignature(e)){this.reader.index-=4;var t=this.reader.readString(4);throw new Error("Corrupted zip or bug: unexpected signature ("+i.pretty(t)+", expected "+i.pretty(e)+")")}},isSignature:function(e,t){var r=this.reader.index;this.reader.setIndex(e);var n=this.reader.readString(4)===t;return this.reader.setIndex(r),n},readBlockEndOfCentral:function(){this.diskNumber=this.reader.readInt(2),this.diskWithCentralDirStart=this.reader.readInt(2),this.centralDirRecordsOnThisDisk=this.reader.readInt(2),this.centralDirRecords=this.reader.readInt(2),this.centralDirSize=this.reader.readInt(4),this.centralDirOffset=this.reader.readInt(4),this.zipCommentLength=this.reader.readInt(2);var e=this.reader.readData(this.zipCommentLength),t=o.uint8array?"uint8array":"array",r=i.transformTo(t,e);this.zipComment=this.loadOptions.decodeFileName(r);},readBlockZip64EndOfCentral:function(){this.zip64EndOfCentralSize=this.reader.readInt(8),this.reader.skip(4),this.diskNumber=this.reader.readInt(4),this.diskWithCentralDirStart=this.reader.readInt(4),this.centralDirRecordsOnThisDisk=this.reader.readInt(8),this.centralDirRecords=this.reader.readInt(8),this.centralDirSize=this.reader.readInt(8),this.centralDirOffset=this.reader.readInt(8),this.zip64ExtensibleData={};for(var e,t,r,n=this.zip64EndOfCentralSize-44;0<n;)e=this.reader.readInt(2),t=this.reader.readInt(4),r=this.reader.readData(t),this.zip64ExtensibleData[e]={id:e,length:t,value:r};},readBlockZip64EndOfCentralLocator:function(){if(this.diskWithZip64CentralDirStart=this.reader.readInt(4),this.relativeOffsetEndOfZip64CentralDir=this.reader.readInt(8),this.disksCount=this.reader.readInt(4),1<this.disksCount)throw new Error("Multi-volumes zip are not supported")},readLocalFiles:function(){var e,t;for(e=0;e<this.files.length;e++)t=this.files[e],this.reader.setIndex(t.localHeaderOffset),this.checkSignature(s.LOCAL_FILE_HEADER),t.readLocalPart(this.reader),t.handleUTF8(),t.processAttributes();},readCentralDir:function(){var e;for(this.reader.setIndex(this.centralDirOffset);this.reader.readAndCheckSignature(s.CENTRAL_FILE_HEADER);)(e=new a({zip64:this.zip64},this.loadOptions)).readCentralPart(this.reader),this.files.push(e);if(this.centralDirRecords!==this.files.length&&0!==this.centralDirRecords&&0===this.files.length)throw new Error("Corrupted zip or bug: expected "+this.centralDirRecords+" records in central dir, got "+this.files.length)},readEndOfCentral:function(){var e=this.reader.lastIndexOfSignature(s.CENTRAL_DIRECTORY_END);if(e<0)throw !this.isSignature(0,s.LOCAL_FILE_HEADER)?new Error("Can't find end of central directory : is this a zip file ? If it is, see https://stuk.github.io/jszip/documentation/howto/read_zip.html"):new Error("Corrupted zip: can't find end of central directory");this.reader.setIndex(e);var t=e;if(this.checkSignature(s.CENTRAL_DIRECTORY_END),this.readBlockEndOfCentral(),this.diskNumber===i.MAX_VALUE_16BITS||this.diskWithCentralDirStart===i.MAX_VALUE_16BITS||this.centralDirRecordsOnThisDisk===i.MAX_VALUE_16BITS||this.centralDirRecords===i.MAX_VALUE_16BITS||this.centralDirSize===i.MAX_VALUE_32BITS||this.centralDirOffset===i.MAX_VALUE_32BITS){if(this.zip64=!0,(e=this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR))<0)throw new Error("Corrupted zip: can't find the ZIP64 end of central directory locator");if(this.reader.setIndex(e),this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_LOCATOR),this.readBlockZip64EndOfCentralLocator(),!this.isSignature(this.relativeOffsetEndOfZip64CentralDir,s.ZIP64_CENTRAL_DIRECTORY_END)&&(this.relativeOffsetEndOfZip64CentralDir=this.reader.lastIndexOfSignature(s.ZIP64_CENTRAL_DIRECTORY_END),this.relativeOffsetEndOfZip64CentralDir<0))throw new Error("Corrupted zip: can't find the ZIP64 end of central directory");this.reader.setIndex(this.relativeOffsetEndOfZip64CentralDir),this.checkSignature(s.ZIP64_CENTRAL_DIRECTORY_END),this.readBlockZip64EndOfCentral();}var r=this.centralDirOffset+this.centralDirSize;this.zip64&&(r+=20,r+=12+this.zip64EndOfCentralSize);var n=t-r;if(0<n)this.isSignature(t,s.CENTRAL_FILE_HEADER)||(this.reader.zero=n);else if(n<0)throw new Error("Corrupted zip: missing "+Math.abs(n)+" bytes.")},prepareReader:function(e){this.reader=n(e);},load:function(e){this.prepareReader(e),this.readEndOfCentral(),this.readCentralDir(),this.readLocalFiles();}},t.exports=h;},{"./reader/readerFor":22,"./signature":23,"./support":30,"./utils":32,"./zipEntry":34}],34:[function(e,t,r){var n=e("./reader/readerFor"),s=e("./utils"),i=e("./compressedObject"),a=e("./crc32"),o=e("./utf8"),h=e("./compressions"),u=e("./support");function l(e,t){this.options=e,this.loadOptions=t;}l.prototype={isEncrypted:function(){return 1==(1&this.bitFlag)},useUTF8:function(){return 2048==(2048&this.bitFlag)},readLocalPart:function(e){var t,r;if(e.skip(22),this.fileNameLength=e.readInt(2),r=e.readInt(2),this.fileName=e.readData(this.fileNameLength),e.skip(r),-1===this.compressedSize||-1===this.uncompressedSize)throw new Error("Bug or corrupted zip : didn't get enough information from the central directory (compressedSize === -1 || uncompressedSize === -1)");if(null===(t=function(e){for(var t in h)if(Object.prototype.hasOwnProperty.call(h,t)&&h[t].magic===e)return h[t];return null}(this.compressionMethod)))throw new Error("Corrupted zip : compression "+s.pretty(this.compressionMethod)+" unknown (inner file : "+s.transformTo("string",this.fileName)+")");this.decompressed=new i(this.compressedSize,this.uncompressedSize,this.crc32,t,e.readData(this.compressedSize));},readCentralPart:function(e){this.versionMadeBy=e.readInt(2),e.skip(2),this.bitFlag=e.readInt(2),this.compressionMethod=e.readString(2),this.date=e.readDate(),this.crc32=e.readInt(4),this.compressedSize=e.readInt(4),this.uncompressedSize=e.readInt(4);var t=e.readInt(2);if(this.extraFieldsLength=e.readInt(2),this.fileCommentLength=e.readInt(2),this.diskNumberStart=e.readInt(2),this.internalFileAttributes=e.readInt(2),this.externalFileAttributes=e.readInt(4),this.localHeaderOffset=e.readInt(4),this.isEncrypted())throw new Error("Encrypted zip are not supported");e.skip(t),this.readExtraFields(e),this.parseZIP64ExtraField(e),this.fileComment=e.readData(this.fileCommentLength);},processAttributes:function(){this.unixPermissions=null,this.dosPermissions=null;var e=this.versionMadeBy>>8;this.dir=!!(16&this.externalFileAttributes),0==e&&(this.dosPermissions=63&this.externalFileAttributes),3==e&&(this.unixPermissions=this.externalFileAttributes>>16&65535),this.dir||"/"!==this.fileNameStr.slice(-1)||(this.dir=!0);},parseZIP64ExtraField:function(){if(this.extraFields[1]){var e=n(this.extraFields[1].value);this.uncompressedSize===s.MAX_VALUE_32BITS&&(this.uncompressedSize=e.readInt(8)),this.compressedSize===s.MAX_VALUE_32BITS&&(this.compressedSize=e.readInt(8)),this.localHeaderOffset===s.MAX_VALUE_32BITS&&(this.localHeaderOffset=e.readInt(8)),this.diskNumberStart===s.MAX_VALUE_32BITS&&(this.diskNumberStart=e.readInt(4));}},readExtraFields:function(e){var t,r,n,i=e.index+this.extraFieldsLength;for(this.extraFields||(this.extraFields={});e.index+4<i;)t=e.readInt(2),r=e.readInt(2),n=e.readData(r),this.extraFields[t]={id:t,length:r,value:n};e.setIndex(i);},handleUTF8:function(){var e=u.uint8array?"uint8array":"array";if(this.useUTF8())this.fileNameStr=o.utf8decode(this.fileName),this.fileCommentStr=o.utf8decode(this.fileComment);else {var t=this.findExtraFieldUnicodePath();if(null!==t)this.fileNameStr=t;else {var r=s.transformTo(e,this.fileName);this.fileNameStr=this.loadOptions.decodeFileName(r);}var n=this.findExtraFieldUnicodeComment();if(null!==n)this.fileCommentStr=n;else {var i=s.transformTo(e,this.fileComment);this.fileCommentStr=this.loadOptions.decodeFileName(i);}}},findExtraFieldUnicodePath:function(){var e=this.extraFields[28789];if(e){var t=n(e.value);return 1!==t.readInt(1)?null:a(this.fileName)!==t.readInt(4)?null:o.utf8decode(t.readData(e.length-5))}return null},findExtraFieldUnicodeComment:function(){var e=this.extraFields[25461];if(e){var t=n(e.value);return 1!==t.readInt(1)?null:a(this.fileComment)!==t.readInt(4)?null:o.utf8decode(t.readData(e.length-5))}return null}},t.exports=l;},{"./compressedObject":2,"./compressions":3,"./crc32":4,"./reader/readerFor":22,"./support":30,"./utf8":31,"./utils":32}],35:[function(e,t,r){function n(e,t,r){this.name=e,this.dir=r.dir,this.date=r.date,this.comment=r.comment,this.unixPermissions=r.unixPermissions,this.dosPermissions=r.dosPermissions,this._data=t,this._dataBinary=r.binary,this.options={compression:r.compression,compressionOptions:r.compressionOptions};}var s=e("./stream/StreamHelper"),i=e("./stream/DataWorker"),a=e("./utf8"),o=e("./compressedObject"),h=e("./stream/GenericWorker");n.prototype={internalStream:function(e){var t=null,r="string";try{if(!e)throw new Error("No output type specified.");var n="string"===(r=e.toLowerCase())||"text"===r;"binarystring"!==r&&"text"!==r||(r="string"),t=this._decompressWorker();var i=!this._dataBinary;i&&!n&&(t=t.pipe(new a.Utf8EncodeWorker)),!i&&n&&(t=t.pipe(new a.Utf8DecodeWorker));}catch(e){(t=new h("error")).error(e);}return new s(t,r,"")},async:function(e,t){return this.internalStream(e).accumulate(t)},nodeStream:function(e,t){return this.internalStream(e||"nodebuffer").toNodejsStream(t)},_compressWorker:function(e,t){if(this._data instanceof o&&this._data.compression.magic===e.magic)return this._data.getCompressedWorker();var r=this._decompressWorker();return this._dataBinary||(r=r.pipe(new a.Utf8EncodeWorker)),o.createWorkerFrom(r,e,t)},_decompressWorker:function(){return this._data instanceof o?this._data.getContentWorker():this._data instanceof h?this._data:new i(this._data)}};for(var u=["asText","asBinary","asNodeBuffer","asUint8Array","asArrayBuffer"],l=function(){throw new Error("This method has been removed in JSZip 3.0, please check the upgrade guide.")},f=0;f<u.length;f++)n.prototype[u[f]]=l;t.exports=n;},{"./compressedObject":2,"./stream/DataWorker":27,"./stream/GenericWorker":28,"./stream/StreamHelper":29,"./utf8":31}],36:[function(e,l,t){(function(t){var r,n,e=t.MutationObserver||t.WebKitMutationObserver;if(e){var i=0,s=new e(u),a=t.document.createTextNode("");s.observe(a,{characterData:!0}),r=function(){a.data=i=++i%2;};}else if(t.setImmediate||void 0===t.MessageChannel)r="document"in t&&"onreadystatechange"in t.document.createElement("script")?function(){var e=t.document.createElement("script");e.onreadystatechange=function(){u(),e.onreadystatechange=null,e.parentNode.removeChild(e),e=null;},t.document.documentElement.appendChild(e);}:function(){setTimeout(u,0);};else {var o=new t.MessageChannel;o.port1.onmessage=u,r=function(){o.port2.postMessage(0);};}var h=[];function u(){var e,t;n=!0;for(var r=h.length;r;){for(t=h,h=[],e=-1;++e<r;)t[e]();r=h.length;}n=!1;}l.exports=function(e){1!==h.push(e)||n||r();};}).call(this,"undefined"!=typeof commonjsGlobal?commonjsGlobal:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{});},{}],37:[function(e,t,r){var i=e("immediate");function u(){}var l={},s=["REJECTED"],a=["FULFILLED"],n=["PENDING"];function o(e){if("function"!=typeof e)throw new TypeError("resolver must be a function");this.state=n,this.queue=[],this.outcome=void 0,e!==u&&d(this,e);}function h(e,t,r){this.promise=e,"function"==typeof t&&(this.onFulfilled=t,this.callFulfilled=this.otherCallFulfilled),"function"==typeof r&&(this.onRejected=r,this.callRejected=this.otherCallRejected);}function f(t,r,n){i(function(){var e;try{e=r(n);}catch(e){return l.reject(t,e)}e===t?l.reject(t,new TypeError("Cannot resolve promise with itself")):l.resolve(t,e);});}function c(e){var t=e&&e.then;if(e&&("object"==typeof e||"function"==typeof e)&&"function"==typeof t)return function(){t.apply(e,arguments);}}function d(t,e){var r=!1;function n(e){r||(r=!0,l.reject(t,e));}function i(e){r||(r=!0,l.resolve(t,e));}var s=p(function(){e(i,n);});"error"===s.status&&n(s.value);}function p(e,t){var r={};try{r.value=e(t),r.status="success";}catch(e){r.status="error",r.value=e;}return r}(t.exports=o).prototype.finally=function(t){if("function"!=typeof t)return this;var r=this.constructor;return this.then(function(e){return r.resolve(t()).then(function(){return e})},function(e){return r.resolve(t()).then(function(){throw e})})},o.prototype.catch=function(e){return this.then(null,e)},o.prototype.then=function(e,t){if("function"!=typeof e&&this.state===a||"function"!=typeof t&&this.state===s)return this;var r=new this.constructor(u);this.state!==n?f(r,this.state===a?e:t,this.outcome):this.queue.push(new h(r,e,t));return r},h.prototype.callFulfilled=function(e){l.resolve(this.promise,e);},h.prototype.otherCallFulfilled=function(e){f(this.promise,this.onFulfilled,e);},h.prototype.callRejected=function(e){l.reject(this.promise,e);},h.prototype.otherCallRejected=function(e){f(this.promise,this.onRejected,e);},l.resolve=function(e,t){var r=p(c,t);if("error"===r.status)return l.reject(e,r.value);var n=r.value;if(n)d(e,n);else {e.state=a,e.outcome=t;for(var i=-1,s=e.queue.length;++i<s;)e.queue[i].callFulfilled(t);}return e},l.reject=function(e,t){e.state=s,e.outcome=t;for(var r=-1,n=e.queue.length;++r<n;)e.queue[r].callRejected(t);return e},o.resolve=function(e){if(e instanceof this)return e;return l.resolve(new this(u),e)},o.reject=function(e){var t=new this(u);return l.reject(t,e)},o.all=function(e){var r=this;if("[object Array]"!==Object.prototype.toString.call(e))return this.reject(new TypeError("must be an array"));var n=e.length,i=!1;if(!n)return this.resolve([]);var s=new Array(n),a=0,t=-1,o=new this(u);for(;++t<n;)h(e[t],t);return o;function h(e,t){r.resolve(e).then(function(e){s[t]=e,++a!==n||i||(i=!0,l.resolve(o,s));},function(e){i||(i=!0,l.reject(o,e));});}},o.race=function(e){var t=this;if("[object Array]"!==Object.prototype.toString.call(e))return this.reject(new TypeError("must be an array"));var r=e.length,n=!1;if(!r)return this.resolve([]);var i=-1,s=new this(u);for(;++i<r;)a=e[i],t.resolve(a).then(function(e){n||(n=!0,l.resolve(s,e));},function(e){n||(n=!0,l.reject(s,e));});var a;return s};},{immediate:36}],38:[function(e,t,r){var n={};(0, e("./lib/utils/common").assign)(n,e("./lib/deflate"),e("./lib/inflate"),e("./lib/zlib/constants")),t.exports=n;},{"./lib/deflate":39,"./lib/inflate":40,"./lib/utils/common":41,"./lib/zlib/constants":44}],39:[function(e,t,r){var a=e("./zlib/deflate"),o=e("./utils/common"),h=e("./utils/strings"),i=e("./zlib/messages"),s=e("./zlib/zstream"),u=Object.prototype.toString,l=0,f=-1,c=0,d=8;function p(e){if(!(this instanceof p))return new p(e);this.options=o.assign({level:f,method:d,chunkSize:16384,windowBits:15,memLevel:8,strategy:c,to:""},e||{});var t=this.options;t.raw&&0<t.windowBits?t.windowBits=-t.windowBits:t.gzip&&0<t.windowBits&&t.windowBits<16&&(t.windowBits+=16),this.err=0,this.msg="",this.ended=!1,this.chunks=[],this.strm=new s,this.strm.avail_out=0;var r=a.deflateInit2(this.strm,t.level,t.method,t.windowBits,t.memLevel,t.strategy);if(r!==l)throw new Error(i[r]);if(t.header&&a.deflateSetHeader(this.strm,t.header),t.dictionary){var n;if(n="string"==typeof t.dictionary?h.string2buf(t.dictionary):"[object ArrayBuffer]"===u.call(t.dictionary)?new Uint8Array(t.dictionary):t.dictionary,(r=a.deflateSetDictionary(this.strm,n))!==l)throw new Error(i[r]);this._dict_set=!0;}}function n(e,t){var r=new p(t);if(r.push(e,!0),r.err)throw r.msg||i[r.err];return r.result}p.prototype.push=function(e,t){var r,n,i=this.strm,s=this.options.chunkSize;if(this.ended)return !1;n=t===~~t?t:!0===t?4:0,"string"==typeof e?i.input=h.string2buf(e):"[object ArrayBuffer]"===u.call(e)?i.input=new Uint8Array(e):i.input=e,i.next_in=0,i.avail_in=i.input.length;do{if(0===i.avail_out&&(i.output=new o.Buf8(s),i.next_out=0,i.avail_out=s),1!==(r=a.deflate(i,n))&&r!==l)return this.onEnd(r),!(this.ended=!0);0!==i.avail_out&&(0!==i.avail_in||4!==n&&2!==n)||("string"===this.options.to?this.onData(h.buf2binstring(o.shrinkBuf(i.output,i.next_out))):this.onData(o.shrinkBuf(i.output,i.next_out)));}while((0<i.avail_in||0===i.avail_out)&&1!==r);return 4===n?(r=a.deflateEnd(this.strm),this.onEnd(r),this.ended=!0,r===l):2!==n||(this.onEnd(l),!(i.avail_out=0))},p.prototype.onData=function(e){this.chunks.push(e);},p.prototype.onEnd=function(e){e===l&&("string"===this.options.to?this.result=this.chunks.join(""):this.result=o.flattenChunks(this.chunks)),this.chunks=[],this.err=e,this.msg=this.strm.msg;},r.Deflate=p,r.deflate=n,r.deflateRaw=function(e,t){return (t=t||{}).raw=!0,n(e,t)},r.gzip=function(e,t){return (t=t||{}).gzip=!0,n(e,t)};},{"./utils/common":41,"./utils/strings":42,"./zlib/deflate":46,"./zlib/messages":51,"./zlib/zstream":53}],40:[function(e,t,r){var c=e("./zlib/inflate"),d=e("./utils/common"),p=e("./utils/strings"),m=e("./zlib/constants"),n=e("./zlib/messages"),i=e("./zlib/zstream"),s=e("./zlib/gzheader"),_=Object.prototype.toString;function a(e){if(!(this instanceof a))return new a(e);this.options=d.assign({chunkSize:16384,windowBits:0,to:""},e||{});var t=this.options;t.raw&&0<=t.windowBits&&t.windowBits<16&&(t.windowBits=-t.windowBits,0===t.windowBits&&(t.windowBits=-15)),!(0<=t.windowBits&&t.windowBits<16)||e&&e.windowBits||(t.windowBits+=32),15<t.windowBits&&t.windowBits<48&&0==(15&t.windowBits)&&(t.windowBits|=15),this.err=0,this.msg="",this.ended=!1,this.chunks=[],this.strm=new i,this.strm.avail_out=0;var r=c.inflateInit2(this.strm,t.windowBits);if(r!==m.Z_OK)throw new Error(n[r]);this.header=new s,c.inflateGetHeader(this.strm,this.header);}function o(e,t){var r=new a(t);if(r.push(e,!0),r.err)throw r.msg||n[r.err];return r.result}a.prototype.push=function(e,t){var r,n,i,s,a,o,h=this.strm,u=this.options.chunkSize,l=this.options.dictionary,f=!1;if(this.ended)return !1;n=t===~~t?t:!0===t?m.Z_FINISH:m.Z_NO_FLUSH,"string"==typeof e?h.input=p.binstring2buf(e):"[object ArrayBuffer]"===_.call(e)?h.input=new Uint8Array(e):h.input=e,h.next_in=0,h.avail_in=h.input.length;do{if(0===h.avail_out&&(h.output=new d.Buf8(u),h.next_out=0,h.avail_out=u),(r=c.inflate(h,m.Z_NO_FLUSH))===m.Z_NEED_DICT&&l&&(o="string"==typeof l?p.string2buf(l):"[object ArrayBuffer]"===_.call(l)?new Uint8Array(l):l,r=c.inflateSetDictionary(this.strm,o)),r===m.Z_BUF_ERROR&&!0===f&&(r=m.Z_OK,f=!1),r!==m.Z_STREAM_END&&r!==m.Z_OK)return this.onEnd(r),!(this.ended=!0);h.next_out&&(0!==h.avail_out&&r!==m.Z_STREAM_END&&(0!==h.avail_in||n!==m.Z_FINISH&&n!==m.Z_SYNC_FLUSH)||("string"===this.options.to?(i=p.utf8border(h.output,h.next_out),s=h.next_out-i,a=p.buf2string(h.output,i),h.next_out=s,h.avail_out=u-s,s&&d.arraySet(h.output,h.output,i,s,0),this.onData(a)):this.onData(d.shrinkBuf(h.output,h.next_out)))),0===h.avail_in&&0===h.avail_out&&(f=!0);}while((0<h.avail_in||0===h.avail_out)&&r!==m.Z_STREAM_END);return r===m.Z_STREAM_END&&(n=m.Z_FINISH),n===m.Z_FINISH?(r=c.inflateEnd(this.strm),this.onEnd(r),this.ended=!0,r===m.Z_OK):n!==m.Z_SYNC_FLUSH||(this.onEnd(m.Z_OK),!(h.avail_out=0))},a.prototype.onData=function(e){this.chunks.push(e);},a.prototype.onEnd=function(e){e===m.Z_OK&&("string"===this.options.to?this.result=this.chunks.join(""):this.result=d.flattenChunks(this.chunks)),this.chunks=[],this.err=e,this.msg=this.strm.msg;},r.Inflate=a,r.inflate=o,r.inflateRaw=function(e,t){return (t=t||{}).raw=!0,o(e,t)},r.ungzip=o;},{"./utils/common":41,"./utils/strings":42,"./zlib/constants":44,"./zlib/gzheader":47,"./zlib/inflate":49,"./zlib/messages":51,"./zlib/zstream":53}],41:[function(e,t,r){var n="undefined"!=typeof Uint8Array&&"undefined"!=typeof Uint16Array&&"undefined"!=typeof Int32Array;r.assign=function(e){for(var t=Array.prototype.slice.call(arguments,1);t.length;){var r=t.shift();if(r){if("object"!=typeof r)throw new TypeError(r+"must be non-object");for(var n in r)r.hasOwnProperty(n)&&(e[n]=r[n]);}}return e},r.shrinkBuf=function(e,t){return e.length===t?e:e.subarray?e.subarray(0,t):(e.length=t,e)};var i={arraySet:function(e,t,r,n,i){if(t.subarray&&e.subarray)e.set(t.subarray(r,r+n),i);else for(var s=0;s<n;s++)e[i+s]=t[r+s];},flattenChunks:function(e){var t,r,n,i,s,a;for(t=n=0,r=e.length;t<r;t++)n+=e[t].length;for(a=new Uint8Array(n),t=i=0,r=e.length;t<r;t++)s=e[t],a.set(s,i),i+=s.length;return a}},s={arraySet:function(e,t,r,n,i){for(var s=0;s<n;s++)e[i+s]=t[r+s];},flattenChunks:function(e){return [].concat.apply([],e)}};r.setTyped=function(e){e?(r.Buf8=Uint8Array,r.Buf16=Uint16Array,r.Buf32=Int32Array,r.assign(r,i)):(r.Buf8=Array,r.Buf16=Array,r.Buf32=Array,r.assign(r,s));},r.setTyped(n);},{}],42:[function(e,t,r){var h=e("./common"),i=!0,s=!0;try{String.fromCharCode.apply(null,[0]);}catch(e){i=!1;}try{String.fromCharCode.apply(null,new Uint8Array(1));}catch(e){s=!1;}for(var u=new h.Buf8(256),n=0;n<256;n++)u[n]=252<=n?6:248<=n?5:240<=n?4:224<=n?3:192<=n?2:1;function l(e,t){if(t<65537&&(e.subarray&&s||!e.subarray&&i))return String.fromCharCode.apply(null,h.shrinkBuf(e,t));for(var r="",n=0;n<t;n++)r+=String.fromCharCode(e[n]);return r}u[254]=u[254]=1,r.string2buf=function(e){var t,r,n,i,s,a=e.length,o=0;for(i=0;i<a;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),o+=r<128?1:r<2048?2:r<65536?3:4;for(t=new h.Buf8(o),i=s=0;s<o;i++)55296==(64512&(r=e.charCodeAt(i)))&&i+1<a&&56320==(64512&(n=e.charCodeAt(i+1)))&&(r=65536+(r-55296<<10)+(n-56320),i++),r<128?t[s++]=r:(r<2048?t[s++]=192|r>>>6:(r<65536?t[s++]=224|r>>>12:(t[s++]=240|r>>>18,t[s++]=128|r>>>12&63),t[s++]=128|r>>>6&63),t[s++]=128|63&r);return t},r.buf2binstring=function(e){return l(e,e.length)},r.binstring2buf=function(e){for(var t=new h.Buf8(e.length),r=0,n=t.length;r<n;r++)t[r]=e.charCodeAt(r);return t},r.buf2string=function(e,t){var r,n,i,s,a=t||e.length,o=new Array(2*a);for(r=n=0;r<a;)if((i=e[r++])<128)o[n++]=i;else if(4<(s=u[i]))o[n++]=65533,r+=s-1;else {for(i&=2===s?31:3===s?15:7;1<s&&r<a;)i=i<<6|63&e[r++],s--;1<s?o[n++]=65533:i<65536?o[n++]=i:(i-=65536,o[n++]=55296|i>>10&1023,o[n++]=56320|1023&i);}return l(o,n)},r.utf8border=function(e,t){var r;for((t=t||e.length)>e.length&&(t=e.length),r=t-1;0<=r&&128==(192&e[r]);)r--;return r<0?t:0===r?t:r+u[e[r]]>t?r:t};},{"./common":41}],43:[function(e,t,r){t.exports=function(e,t,r,n){for(var i=65535&e|0,s=e>>>16&65535|0,a=0;0!==r;){for(r-=a=2e3<r?2e3:r;s=s+(i=i+t[n++]|0)|0,--a;);i%=65521,s%=65521;}return i|s<<16|0};},{}],44:[function(e,t,r){t.exports={Z_NO_FLUSH:0,Z_PARTIAL_FLUSH:1,Z_SYNC_FLUSH:2,Z_FULL_FLUSH:3,Z_FINISH:4,Z_BLOCK:5,Z_TREES:6,Z_OK:0,Z_STREAM_END:1,Z_NEED_DICT:2,Z_ERRNO:-1,Z_STREAM_ERROR:-2,Z_DATA_ERROR:-3,Z_BUF_ERROR:-5,Z_NO_COMPRESSION:0,Z_BEST_SPEED:1,Z_BEST_COMPRESSION:9,Z_DEFAULT_COMPRESSION:-1,Z_FILTERED:1,Z_HUFFMAN_ONLY:2,Z_RLE:3,Z_FIXED:4,Z_DEFAULT_STRATEGY:0,Z_BINARY:0,Z_TEXT:1,Z_UNKNOWN:2,Z_DEFLATED:8};},{}],45:[function(e,t,r){var o=function(){for(var e,t=[],r=0;r<256;r++){e=r;for(var n=0;n<8;n++)e=1&e?3988292384^e>>>1:e>>>1;t[r]=e;}return t}();t.exports=function(e,t,r,n){var i=o,s=n+r;e^=-1;for(var a=n;a<s;a++)e=e>>>8^i[255&(e^t[a])];return -1^e};},{}],46:[function(e,t,r){var h,c=e("../utils/common"),u=e("./trees"),d=e("./adler32"),p=e("./crc32"),n=e("./messages"),l=0,f=4,m=0,_=-2,g=-1,b=4,i=2,v=8,y=9,s=286,a=30,o=19,w=2*s+1,k=15,x=3,S=258,z=S+x+1,C=42,E=113,A=1,I=2,O=3,B=4;function R(e,t){return e.msg=n[t],t}function T(e){return (e<<1)-(4<e?9:0)}function D(e){for(var t=e.length;0<=--t;)e[t]=0;}function F(e){var t=e.state,r=t.pending;r>e.avail_out&&(r=e.avail_out),0!==r&&(c.arraySet(e.output,t.pending_buf,t.pending_out,r,e.next_out),e.next_out+=r,t.pending_out+=r,e.total_out+=r,e.avail_out-=r,t.pending-=r,0===t.pending&&(t.pending_out=0));}function N(e,t){u._tr_flush_block(e,0<=e.block_start?e.block_start:-1,e.strstart-e.block_start,t),e.block_start=e.strstart,F(e.strm);}function U(e,t){e.pending_buf[e.pending++]=t;}function P(e,t){e.pending_buf[e.pending++]=t>>>8&255,e.pending_buf[e.pending++]=255&t;}function L(e,t){var r,n,i=e.max_chain_length,s=e.strstart,a=e.prev_length,o=e.nice_match,h=e.strstart>e.w_size-z?e.strstart-(e.w_size-z):0,u=e.window,l=e.w_mask,f=e.prev,c=e.strstart+S,d=u[s+a-1],p=u[s+a];e.prev_length>=e.good_match&&(i>>=2),o>e.lookahead&&(o=e.lookahead);do{if(u[(r=t)+a]===p&&u[r+a-1]===d&&u[r]===u[s]&&u[++r]===u[s+1]){s+=2,r++;do{}while(u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&u[++s]===u[++r]&&s<c);if(n=S-(c-s),s=c-S,a<n){if(e.match_start=t,o<=(a=n))break;d=u[s+a-1],p=u[s+a];}}}while((t=f[t&l])>h&&0!=--i);return a<=e.lookahead?a:e.lookahead}function j(e){var t,r,n,i,s,a,o,h,u,l,f=e.w_size;do{if(i=e.window_size-e.lookahead-e.strstart,e.strstart>=f+(f-z)){for(c.arraySet(e.window,e.window,f,f,0),e.match_start-=f,e.strstart-=f,e.block_start-=f,t=r=e.hash_size;n=e.head[--t],e.head[t]=f<=n?n-f:0,--r;);for(t=r=f;n=e.prev[--t],e.prev[t]=f<=n?n-f:0,--r;);i+=f;}if(0===e.strm.avail_in)break;if(a=e.strm,o=e.window,h=e.strstart+e.lookahead,u=i,l=void 0,l=a.avail_in,u<l&&(l=u),r=0===l?0:(a.avail_in-=l,c.arraySet(o,a.input,a.next_in,l,h),1===a.state.wrap?a.adler=d(a.adler,o,l,h):2===a.state.wrap&&(a.adler=p(a.adler,o,l,h)),a.next_in+=l,a.total_in+=l,l),e.lookahead+=r,e.lookahead+e.insert>=x)for(s=e.strstart-e.insert,e.ins_h=e.window[s],e.ins_h=(e.ins_h<<e.hash_shift^e.window[s+1])&e.hash_mask;e.insert&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[s+x-1])&e.hash_mask,e.prev[s&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=s,s++,e.insert--,!(e.lookahead+e.insert<x)););}while(e.lookahead<z&&0!==e.strm.avail_in)}function Z(e,t){for(var r,n;;){if(e.lookahead<z){if(j(e),e.lookahead<z&&t===l)return A;if(0===e.lookahead)break}if(r=0,e.lookahead>=x&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),0!==r&&e.strstart-r<=e.w_size-z&&(e.match_length=L(e,r)),e.match_length>=x)if(n=u._tr_tally(e,e.strstart-e.match_start,e.match_length-x),e.lookahead-=e.match_length,e.match_length<=e.max_lazy_match&&e.lookahead>=x){for(e.match_length--;e.strstart++,e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart,0!=--e.match_length;);e.strstart++;}else e.strstart+=e.match_length,e.match_length=0,e.ins_h=e.window[e.strstart],e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+1])&e.hash_mask;else n=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++;if(n&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=e.strstart<x-1?e.strstart:x-1,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}function W(e,t){for(var r,n,i;;){if(e.lookahead<z){if(j(e),e.lookahead<z&&t===l)return A;if(0===e.lookahead)break}if(r=0,e.lookahead>=x&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),e.prev_length=e.match_length,e.prev_match=e.match_start,e.match_length=x-1,0!==r&&e.prev_length<e.max_lazy_match&&e.strstart-r<=e.w_size-z&&(e.match_length=L(e,r),e.match_length<=5&&(1===e.strategy||e.match_length===x&&4096<e.strstart-e.match_start)&&(e.match_length=x-1)),e.prev_length>=x&&e.match_length<=e.prev_length){for(i=e.strstart+e.lookahead-x,n=u._tr_tally(e,e.strstart-1-e.prev_match,e.prev_length-x),e.lookahead-=e.prev_length-1,e.prev_length-=2;++e.strstart<=i&&(e.ins_h=(e.ins_h<<e.hash_shift^e.window[e.strstart+x-1])&e.hash_mask,r=e.prev[e.strstart&e.w_mask]=e.head[e.ins_h],e.head[e.ins_h]=e.strstart),0!=--e.prev_length;);if(e.match_available=0,e.match_length=x-1,e.strstart++,n&&(N(e,!1),0===e.strm.avail_out))return A}else if(e.match_available){if((n=u._tr_tally(e,0,e.window[e.strstart-1]))&&N(e,!1),e.strstart++,e.lookahead--,0===e.strm.avail_out)return A}else e.match_available=1,e.strstart++,e.lookahead--;}return e.match_available&&(n=u._tr_tally(e,0,e.window[e.strstart-1]),e.match_available=0),e.insert=e.strstart<x-1?e.strstart:x-1,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}function M(e,t,r,n,i){this.good_length=e,this.max_lazy=t,this.nice_length=r,this.max_chain=n,this.func=i;}function H(){this.strm=null,this.status=0,this.pending_buf=null,this.pending_buf_size=0,this.pending_out=0,this.pending=0,this.wrap=0,this.gzhead=null,this.gzindex=0,this.method=v,this.last_flush=-1,this.w_size=0,this.w_bits=0,this.w_mask=0,this.window=null,this.window_size=0,this.prev=null,this.head=null,this.ins_h=0,this.hash_size=0,this.hash_bits=0,this.hash_mask=0,this.hash_shift=0,this.block_start=0,this.match_length=0,this.prev_match=0,this.match_available=0,this.strstart=0,this.match_start=0,this.lookahead=0,this.prev_length=0,this.max_chain_length=0,this.max_lazy_match=0,this.level=0,this.strategy=0,this.good_match=0,this.nice_match=0,this.dyn_ltree=new c.Buf16(2*w),this.dyn_dtree=new c.Buf16(2*(2*a+1)),this.bl_tree=new c.Buf16(2*(2*o+1)),D(this.dyn_ltree),D(this.dyn_dtree),D(this.bl_tree),this.l_desc=null,this.d_desc=null,this.bl_desc=null,this.bl_count=new c.Buf16(k+1),this.heap=new c.Buf16(2*s+1),D(this.heap),this.heap_len=0,this.heap_max=0,this.depth=new c.Buf16(2*s+1),D(this.depth),this.l_buf=0,this.lit_bufsize=0,this.last_lit=0,this.d_buf=0,this.opt_len=0,this.static_len=0,this.matches=0,this.insert=0,this.bi_buf=0,this.bi_valid=0;}function G(e){var t;return e&&e.state?(e.total_in=e.total_out=0,e.data_type=i,(t=e.state).pending=0,t.pending_out=0,t.wrap<0&&(t.wrap=-t.wrap),t.status=t.wrap?C:E,e.adler=2===t.wrap?0:1,t.last_flush=l,u._tr_init(t),m):R(e,_)}function K(e){var t=G(e);return t===m&&function(e){e.window_size=2*e.w_size,D(e.head),e.max_lazy_match=h[e.level].max_lazy,e.good_match=h[e.level].good_length,e.nice_match=h[e.level].nice_length,e.max_chain_length=h[e.level].max_chain,e.strstart=0,e.block_start=0,e.lookahead=0,e.insert=0,e.match_length=e.prev_length=x-1,e.match_available=0,e.ins_h=0;}(e.state),t}function Y(e,t,r,n,i,s){if(!e)return _;var a=1;if(t===g&&(t=6),n<0?(a=0,n=-n):15<n&&(a=2,n-=16),i<1||y<i||r!==v||n<8||15<n||t<0||9<t||s<0||b<s)return R(e,_);8===n&&(n=9);var o=new H;return (e.state=o).strm=e,o.wrap=a,o.gzhead=null,o.w_bits=n,o.w_size=1<<o.w_bits,o.w_mask=o.w_size-1,o.hash_bits=i+7,o.hash_size=1<<o.hash_bits,o.hash_mask=o.hash_size-1,o.hash_shift=~~((o.hash_bits+x-1)/x),o.window=new c.Buf8(2*o.w_size),o.head=new c.Buf16(o.hash_size),o.prev=new c.Buf16(o.w_size),o.lit_bufsize=1<<i+6,o.pending_buf_size=4*o.lit_bufsize,o.pending_buf=new c.Buf8(o.pending_buf_size),o.d_buf=1*o.lit_bufsize,o.l_buf=3*o.lit_bufsize,o.level=t,o.strategy=s,o.method=r,K(e)}h=[new M(0,0,0,0,function(e,t){var r=65535;for(r>e.pending_buf_size-5&&(r=e.pending_buf_size-5);;){if(e.lookahead<=1){if(j(e),0===e.lookahead&&t===l)return A;if(0===e.lookahead)break}e.strstart+=e.lookahead,e.lookahead=0;var n=e.block_start+r;if((0===e.strstart||e.strstart>=n)&&(e.lookahead=e.strstart-n,e.strstart=n,N(e,!1),0===e.strm.avail_out))return A;if(e.strstart-e.block_start>=e.w_size-z&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):(e.strstart>e.block_start&&(N(e,!1),e.strm.avail_out),A)}),new M(4,4,8,4,Z),new M(4,5,16,8,Z),new M(4,6,32,32,Z),new M(4,4,16,16,W),new M(8,16,32,32,W),new M(8,16,128,128,W),new M(8,32,128,256,W),new M(32,128,258,1024,W),new M(32,258,258,4096,W)],r.deflateInit=function(e,t){return Y(e,t,v,15,8,0)},r.deflateInit2=Y,r.deflateReset=K,r.deflateResetKeep=G,r.deflateSetHeader=function(e,t){return e&&e.state?2!==e.state.wrap?_:(e.state.gzhead=t,m):_},r.deflate=function(e,t){var r,n,i,s;if(!e||!e.state||5<t||t<0)return e?R(e,_):_;if(n=e.state,!e.output||!e.input&&0!==e.avail_in||666===n.status&&t!==f)return R(e,0===e.avail_out?-5:_);if(n.strm=e,r=n.last_flush,n.last_flush=t,n.status===C)if(2===n.wrap)e.adler=0,U(n,31),U(n,139),U(n,8),n.gzhead?(U(n,(n.gzhead.text?1:0)+(n.gzhead.hcrc?2:0)+(n.gzhead.extra?4:0)+(n.gzhead.name?8:0)+(n.gzhead.comment?16:0)),U(n,255&n.gzhead.time),U(n,n.gzhead.time>>8&255),U(n,n.gzhead.time>>16&255),U(n,n.gzhead.time>>24&255),U(n,9===n.level?2:2<=n.strategy||n.level<2?4:0),U(n,255&n.gzhead.os),n.gzhead.extra&&n.gzhead.extra.length&&(U(n,255&n.gzhead.extra.length),U(n,n.gzhead.extra.length>>8&255)),n.gzhead.hcrc&&(e.adler=p(e.adler,n.pending_buf,n.pending,0)),n.gzindex=0,n.status=69):(U(n,0),U(n,0),U(n,0),U(n,0),U(n,0),U(n,9===n.level?2:2<=n.strategy||n.level<2?4:0),U(n,3),n.status=E);else {var a=v+(n.w_bits-8<<4)<<8;a|=(2<=n.strategy||n.level<2?0:n.level<6?1:6===n.level?2:3)<<6,0!==n.strstart&&(a|=32),a+=31-a%31,n.status=E,P(n,a),0!==n.strstart&&(P(n,e.adler>>>16),P(n,65535&e.adler)),e.adler=1;}if(69===n.status)if(n.gzhead.extra){for(i=n.pending;n.gzindex<(65535&n.gzhead.extra.length)&&(n.pending!==n.pending_buf_size||(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending!==n.pending_buf_size));)U(n,255&n.gzhead.extra[n.gzindex]),n.gzindex++;n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),n.gzindex===n.gzhead.extra.length&&(n.gzindex=0,n.status=73);}else n.status=73;if(73===n.status)if(n.gzhead.name){i=n.pending;do{if(n.pending===n.pending_buf_size&&(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending===n.pending_buf_size)){s=1;break}s=n.gzindex<n.gzhead.name.length?255&n.gzhead.name.charCodeAt(n.gzindex++):0,U(n,s);}while(0!==s);n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),0===s&&(n.gzindex=0,n.status=91);}else n.status=91;if(91===n.status)if(n.gzhead.comment){i=n.pending;do{if(n.pending===n.pending_buf_size&&(n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),F(e),i=n.pending,n.pending===n.pending_buf_size)){s=1;break}s=n.gzindex<n.gzhead.comment.length?255&n.gzhead.comment.charCodeAt(n.gzindex++):0,U(n,s);}while(0!==s);n.gzhead.hcrc&&n.pending>i&&(e.adler=p(e.adler,n.pending_buf,n.pending-i,i)),0===s&&(n.status=103);}else n.status=103;if(103===n.status&&(n.gzhead.hcrc?(n.pending+2>n.pending_buf_size&&F(e),n.pending+2<=n.pending_buf_size&&(U(n,255&e.adler),U(n,e.adler>>8&255),e.adler=0,n.status=E)):n.status=E),0!==n.pending){if(F(e),0===e.avail_out)return n.last_flush=-1,m}else if(0===e.avail_in&&T(t)<=T(r)&&t!==f)return R(e,-5);if(666===n.status&&0!==e.avail_in)return R(e,-5);if(0!==e.avail_in||0!==n.lookahead||t!==l&&666!==n.status){var o=2===n.strategy?function(e,t){for(var r;;){if(0===e.lookahead&&(j(e),0===e.lookahead)){if(t===l)return A;break}if(e.match_length=0,r=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++,r&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}(n,t):3===n.strategy?function(e,t){for(var r,n,i,s,a=e.window;;){if(e.lookahead<=S){if(j(e),e.lookahead<=S&&t===l)return A;if(0===e.lookahead)break}if(e.match_length=0,e.lookahead>=x&&0<e.strstart&&(n=a[i=e.strstart-1])===a[++i]&&n===a[++i]&&n===a[++i]){s=e.strstart+S;do{}while(n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&n===a[++i]&&i<s);e.match_length=S-(s-i),e.match_length>e.lookahead&&(e.match_length=e.lookahead);}if(e.match_length>=x?(r=u._tr_tally(e,1,e.match_length-x),e.lookahead-=e.match_length,e.strstart+=e.match_length,e.match_length=0):(r=u._tr_tally(e,0,e.window[e.strstart]),e.lookahead--,e.strstart++),r&&(N(e,!1),0===e.strm.avail_out))return A}return e.insert=0,t===f?(N(e,!0),0===e.strm.avail_out?O:B):e.last_lit&&(N(e,!1),0===e.strm.avail_out)?A:I}(n,t):h[n.level].func(n,t);if(o!==O&&o!==B||(n.status=666),o===A||o===O)return 0===e.avail_out&&(n.last_flush=-1),m;if(o===I&&(1===t?u._tr_align(n):5!==t&&(u._tr_stored_block(n,0,0,!1),3===t&&(D(n.head),0===n.lookahead&&(n.strstart=0,n.block_start=0,n.insert=0))),F(e),0===e.avail_out))return n.last_flush=-1,m}return t!==f?m:n.wrap<=0?1:(2===n.wrap?(U(n,255&e.adler),U(n,e.adler>>8&255),U(n,e.adler>>16&255),U(n,e.adler>>24&255),U(n,255&e.total_in),U(n,e.total_in>>8&255),U(n,e.total_in>>16&255),U(n,e.total_in>>24&255)):(P(n,e.adler>>>16),P(n,65535&e.adler)),F(e),0<n.wrap&&(n.wrap=-n.wrap),0!==n.pending?m:1)},r.deflateEnd=function(e){var t;return e&&e.state?(t=e.state.status)!==C&&69!==t&&73!==t&&91!==t&&103!==t&&t!==E&&666!==t?R(e,_):(e.state=null,t===E?R(e,-3):m):_},r.deflateSetDictionary=function(e,t){var r,n,i,s,a,o,h,u,l=t.length;if(!e||!e.state)return _;if(2===(s=(r=e.state).wrap)||1===s&&r.status!==C||r.lookahead)return _;for(1===s&&(e.adler=d(e.adler,t,l,0)),r.wrap=0,l>=r.w_size&&(0===s&&(D(r.head),r.strstart=0,r.block_start=0,r.insert=0),u=new c.Buf8(r.w_size),c.arraySet(u,t,l-r.w_size,r.w_size,0),t=u,l=r.w_size),a=e.avail_in,o=e.next_in,h=e.input,e.avail_in=l,e.next_in=0,e.input=t,j(r);r.lookahead>=x;){for(n=r.strstart,i=r.lookahead-(x-1);r.ins_h=(r.ins_h<<r.hash_shift^r.window[n+x-1])&r.hash_mask,r.prev[n&r.w_mask]=r.head[r.ins_h],r.head[r.ins_h]=n,n++,--i;);r.strstart=n,r.lookahead=x-1,j(r);}return r.strstart+=r.lookahead,r.block_start=r.strstart,r.insert=r.lookahead,r.lookahead=0,r.match_length=r.prev_length=x-1,r.match_available=0,e.next_in=o,e.input=h,e.avail_in=a,r.wrap=s,m},r.deflateInfo="pako deflate (from Nodeca project)";},{"../utils/common":41,"./adler32":43,"./crc32":45,"./messages":51,"./trees":52}],47:[function(e,t,r){t.exports=function(){this.text=0,this.time=0,this.xflags=0,this.os=0,this.extra=null,this.extra_len=0,this.name="",this.comment="",this.hcrc=0,this.done=!1;};},{}],48:[function(e,t,r){t.exports=function(e,t){var r,n,i,s,a,o,h,u,l,f,c,d,p,m,_,g,b,v,y,w,k,x,S,z,C;r=e.state,n=e.next_in,z=e.input,i=n+(e.avail_in-5),s=e.next_out,C=e.output,a=s-(t-e.avail_out),o=s+(e.avail_out-257),h=r.dmax,u=r.wsize,l=r.whave,f=r.wnext,c=r.window,d=r.hold,p=r.bits,m=r.lencode,_=r.distcode,g=(1<<r.lenbits)-1,b=(1<<r.distbits)-1;e:do{p<15&&(d+=z[n++]<<p,p+=8,d+=z[n++]<<p,p+=8),v=m[d&g];t:for(;;){if(d>>>=y=v>>>24,p-=y,0===(y=v>>>16&255))C[s++]=65535&v;else {if(!(16&y)){if(0==(64&y)){v=m[(65535&v)+(d&(1<<y)-1)];continue t}if(32&y){r.mode=12;break e}e.msg="invalid literal/length code",r.mode=30;break e}w=65535&v,(y&=15)&&(p<y&&(d+=z[n++]<<p,p+=8),w+=d&(1<<y)-1,d>>>=y,p-=y),p<15&&(d+=z[n++]<<p,p+=8,d+=z[n++]<<p,p+=8),v=_[d&b];r:for(;;){if(d>>>=y=v>>>24,p-=y,!(16&(y=v>>>16&255))){if(0==(64&y)){v=_[(65535&v)+(d&(1<<y)-1)];continue r}e.msg="invalid distance code",r.mode=30;break e}if(k=65535&v,p<(y&=15)&&(d+=z[n++]<<p,(p+=8)<y&&(d+=z[n++]<<p,p+=8)),h<(k+=d&(1<<y)-1)){e.msg="invalid distance too far back",r.mode=30;break e}if(d>>>=y,p-=y,(y=s-a)<k){if(l<(y=k-y)&&r.sane){e.msg="invalid distance too far back",r.mode=30;break e}if(S=c,(x=0)===f){if(x+=u-y,y<w){for(w-=y;C[s++]=c[x++],--y;);x=s-k,S=C;}}else if(f<y){if(x+=u+f-y,(y-=f)<w){for(w-=y;C[s++]=c[x++],--y;);if(x=0,f<w){for(w-=y=f;C[s++]=c[x++],--y;);x=s-k,S=C;}}}else if(x+=f-y,y<w){for(w-=y;C[s++]=c[x++],--y;);x=s-k,S=C;}for(;2<w;)C[s++]=S[x++],C[s++]=S[x++],C[s++]=S[x++],w-=3;w&&(C[s++]=S[x++],1<w&&(C[s++]=S[x++]));}else {for(x=s-k;C[s++]=C[x++],C[s++]=C[x++],C[s++]=C[x++],2<(w-=3););w&&(C[s++]=C[x++],1<w&&(C[s++]=C[x++]));}break}}break}}while(n<i&&s<o);n-=w=p>>3,d&=(1<<(p-=w<<3))-1,e.next_in=n,e.next_out=s,e.avail_in=n<i?i-n+5:5-(n-i),e.avail_out=s<o?o-s+257:257-(s-o),r.hold=d,r.bits=p;};},{}],49:[function(e,t,r){var I=e("../utils/common"),O=e("./adler32"),B=e("./crc32"),R=e("./inffast"),T=e("./inftrees"),D=1,F=2,N=0,U=-2,P=1,n=852,i=592;function L(e){return (e>>>24&255)+(e>>>8&65280)+((65280&e)<<8)+((255&e)<<24)}function s(){this.mode=0,this.last=!1,this.wrap=0,this.havedict=!1,this.flags=0,this.dmax=0,this.check=0,this.total=0,this.head=null,this.wbits=0,this.wsize=0,this.whave=0,this.wnext=0,this.window=null,this.hold=0,this.bits=0,this.length=0,this.offset=0,this.extra=0,this.lencode=null,this.distcode=null,this.lenbits=0,this.distbits=0,this.ncode=0,this.nlen=0,this.ndist=0,this.have=0,this.next=null,this.lens=new I.Buf16(320),this.work=new I.Buf16(288),this.lendyn=null,this.distdyn=null,this.sane=0,this.back=0,this.was=0;}function a(e){var t;return e&&e.state?(t=e.state,e.total_in=e.total_out=t.total=0,e.msg="",t.wrap&&(e.adler=1&t.wrap),t.mode=P,t.last=0,t.havedict=0,t.dmax=32768,t.head=null,t.hold=0,t.bits=0,t.lencode=t.lendyn=new I.Buf32(n),t.distcode=t.distdyn=new I.Buf32(i),t.sane=1,t.back=-1,N):U}function o(e){var t;return e&&e.state?((t=e.state).wsize=0,t.whave=0,t.wnext=0,a(e)):U}function h(e,t){var r,n;return e&&e.state?(n=e.state,t<0?(r=0,t=-t):(r=1+(t>>4),t<48&&(t&=15)),t&&(t<8||15<t)?U:(null!==n.window&&n.wbits!==t&&(n.window=null),n.wrap=r,n.wbits=t,o(e))):U}function u(e,t){var r,n;return e?(n=new s,(e.state=n).window=null,(r=h(e,t))!==N&&(e.state=null),r):U}var l,f,c=!0;function j(e){if(c){var t;for(l=new I.Buf32(512),f=new I.Buf32(32),t=0;t<144;)e.lens[t++]=8;for(;t<256;)e.lens[t++]=9;for(;t<280;)e.lens[t++]=7;for(;t<288;)e.lens[t++]=8;for(T(D,e.lens,0,288,l,0,e.work,{bits:9}),t=0;t<32;)e.lens[t++]=5;T(F,e.lens,0,32,f,0,e.work,{bits:5}),c=!1;}e.lencode=l,e.lenbits=9,e.distcode=f,e.distbits=5;}function Z(e,t,r,n){var i,s=e.state;return null===s.window&&(s.wsize=1<<s.wbits,s.wnext=0,s.whave=0,s.window=new I.Buf8(s.wsize)),n>=s.wsize?(I.arraySet(s.window,t,r-s.wsize,s.wsize,0),s.wnext=0,s.whave=s.wsize):(n<(i=s.wsize-s.wnext)&&(i=n),I.arraySet(s.window,t,r-n,i,s.wnext),(n-=i)?(I.arraySet(s.window,t,r-n,n,0),s.wnext=n,s.whave=s.wsize):(s.wnext+=i,s.wnext===s.wsize&&(s.wnext=0),s.whave<s.wsize&&(s.whave+=i))),0}r.inflateReset=o,r.inflateReset2=h,r.inflateResetKeep=a,r.inflateInit=function(e){return u(e,15)},r.inflateInit2=u,r.inflate=function(e,t){var r,n,i,s,a,o,h,u,l,f,c,d,p,m,_,g,b,v,y,w,k,x,S,z,C=0,E=new I.Buf8(4),A=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15];if(!e||!e.state||!e.output||!e.input&&0!==e.avail_in)return U;12===(r=e.state).mode&&(r.mode=13),a=e.next_out,i=e.output,h=e.avail_out,s=e.next_in,n=e.input,o=e.avail_in,u=r.hold,l=r.bits,f=o,c=h,x=N;e:for(;;)switch(r.mode){case P:if(0===r.wrap){r.mode=13;break}for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(2&r.wrap&&35615===u){E[r.check=0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0),l=u=0,r.mode=2;break}if(r.flags=0,r.head&&(r.head.done=!1),!(1&r.wrap)||(((255&u)<<8)+(u>>8))%31){e.msg="incorrect header check",r.mode=30;break}if(8!=(15&u)){e.msg="unknown compression method",r.mode=30;break}if(l-=4,k=8+(15&(u>>>=4)),0===r.wbits)r.wbits=k;else if(k>r.wbits){e.msg="invalid window size",r.mode=30;break}r.dmax=1<<k,e.adler=r.check=1,r.mode=512&u?10:12,l=u=0;break;case 2:for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(r.flags=u,8!=(255&r.flags)){e.msg="unknown compression method",r.mode=30;break}if(57344&r.flags){e.msg="unknown header flags set",r.mode=30;break}r.head&&(r.head.text=u>>8&1),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0,r.mode=3;case 3:for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.head&&(r.head.time=u),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,E[2]=u>>>16&255,E[3]=u>>>24&255,r.check=B(r.check,E,4,0)),l=u=0,r.mode=4;case 4:for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.head&&(r.head.xflags=255&u,r.head.os=u>>8),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0,r.mode=5;case 5:if(1024&r.flags){for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.length=u,r.head&&(r.head.extra_len=u),512&r.flags&&(E[0]=255&u,E[1]=u>>>8&255,r.check=B(r.check,E,2,0)),l=u=0;}else r.head&&(r.head.extra=null);r.mode=6;case 6:if(1024&r.flags&&(o<(d=r.length)&&(d=o),d&&(r.head&&(k=r.head.extra_len-r.length,r.head.extra||(r.head.extra=new Array(r.head.extra_len)),I.arraySet(r.head.extra,n,s,d,k)),512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,r.length-=d),r.length))break e;r.length=0,r.mode=7;case 7:if(2048&r.flags){if(0===o)break e;for(d=0;k=n[s+d++],r.head&&k&&r.length<65536&&(r.head.name+=String.fromCharCode(k)),k&&d<o;);if(512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,k)break e}else r.head&&(r.head.name=null);r.length=0,r.mode=8;case 8:if(4096&r.flags){if(0===o)break e;for(d=0;k=n[s+d++],r.head&&k&&r.length<65536&&(r.head.comment+=String.fromCharCode(k)),k&&d<o;);if(512&r.flags&&(r.check=B(r.check,n,d,s)),o-=d,s+=d,k)break e}else r.head&&(r.head.comment=null);r.mode=9;case 9:if(512&r.flags){for(;l<16;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u!==(65535&r.check)){e.msg="header crc mismatch",r.mode=30;break}l=u=0;}r.head&&(r.head.hcrc=r.flags>>9&1,r.head.done=!0),e.adler=r.check=0,r.mode=12;break;case 10:for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}e.adler=r.check=L(u),l=u=0,r.mode=11;case 11:if(0===r.havedict)return e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,2;e.adler=r.check=1,r.mode=12;case 12:if(5===t||6===t)break e;case 13:if(r.last){u>>>=7&l,l-=7&l,r.mode=27;break}for(;l<3;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}switch(r.last=1&u,l-=1,3&(u>>>=1)){case 0:r.mode=14;break;case 1:if(j(r),r.mode=20,6!==t)break;u>>>=2,l-=2;break e;case 2:r.mode=17;break;case 3:e.msg="invalid block type",r.mode=30;}u>>>=2,l-=2;break;case 14:for(u>>>=7&l,l-=7&l;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if((65535&u)!=(u>>>16^65535)){e.msg="invalid stored block lengths",r.mode=30;break}if(r.length=65535&u,l=u=0,r.mode=15,6===t)break e;case 15:r.mode=16;case 16:if(d=r.length){if(o<d&&(d=o),h<d&&(d=h),0===d)break e;I.arraySet(i,n,s,d,a),o-=d,s+=d,h-=d,a+=d,r.length-=d;break}r.mode=12;break;case 17:for(;l<14;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(r.nlen=257+(31&u),u>>>=5,l-=5,r.ndist=1+(31&u),u>>>=5,l-=5,r.ncode=4+(15&u),u>>>=4,l-=4,286<r.nlen||30<r.ndist){e.msg="too many length or distance symbols",r.mode=30;break}r.have=0,r.mode=18;case 18:for(;r.have<r.ncode;){for(;l<3;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.lens[A[r.have++]]=7&u,u>>>=3,l-=3;}for(;r.have<19;)r.lens[A[r.have++]]=0;if(r.lencode=r.lendyn,r.lenbits=7,S={bits:r.lenbits},x=T(0,r.lens,0,19,r.lencode,0,r.work,S),r.lenbits=S.bits,x){e.msg="invalid code lengths set",r.mode=30;break}r.have=0,r.mode=19;case 19:for(;r.have<r.nlen+r.ndist;){for(;g=(C=r.lencode[u&(1<<r.lenbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(b<16)u>>>=_,l-=_,r.lens[r.have++]=b;else {if(16===b){for(z=_+2;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u>>>=_,l-=_,0===r.have){e.msg="invalid bit length repeat",r.mode=30;break}k=r.lens[r.have-1],d=3+(3&u),u>>>=2,l-=2;}else if(17===b){for(z=_+3;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}l-=_,k=0,d=3+(7&(u>>>=_)),u>>>=3,l-=3;}else {for(z=_+7;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}l-=_,k=0,d=11+(127&(u>>>=_)),u>>>=7,l-=7;}if(r.have+d>r.nlen+r.ndist){e.msg="invalid bit length repeat",r.mode=30;break}for(;d--;)r.lens[r.have++]=k;}}if(30===r.mode)break;if(0===r.lens[256]){e.msg="invalid code -- missing end-of-block",r.mode=30;break}if(r.lenbits=9,S={bits:r.lenbits},x=T(D,r.lens,0,r.nlen,r.lencode,0,r.work,S),r.lenbits=S.bits,x){e.msg="invalid literal/lengths set",r.mode=30;break}if(r.distbits=6,r.distcode=r.distdyn,S={bits:r.distbits},x=T(F,r.lens,r.nlen,r.ndist,r.distcode,0,r.work,S),r.distbits=S.bits,x){e.msg="invalid distances set",r.mode=30;break}if(r.mode=20,6===t)break e;case 20:r.mode=21;case 21:if(6<=o&&258<=h){e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,R(e,c),a=e.next_out,i=e.output,h=e.avail_out,s=e.next_in,n=e.input,o=e.avail_in,u=r.hold,l=r.bits,12===r.mode&&(r.back=-1);break}for(r.back=0;g=(C=r.lencode[u&(1<<r.lenbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(g&&0==(240&g)){for(v=_,y=g,w=b;g=(C=r.lencode[w+((u&(1<<v+y)-1)>>v)])>>>16&255,b=65535&C,!(v+(_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}u>>>=v,l-=v,r.back+=v;}if(u>>>=_,l-=_,r.back+=_,r.length=b,0===g){r.mode=26;break}if(32&g){r.back=-1,r.mode=12;break}if(64&g){e.msg="invalid literal/length code",r.mode=30;break}r.extra=15&g,r.mode=22;case 22:if(r.extra){for(z=r.extra;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.length+=u&(1<<r.extra)-1,u>>>=r.extra,l-=r.extra,r.back+=r.extra;}r.was=r.length,r.mode=23;case 23:for(;g=(C=r.distcode[u&(1<<r.distbits)-1])>>>16&255,b=65535&C,!((_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(0==(240&g)){for(v=_,y=g,w=b;g=(C=r.distcode[w+((u&(1<<v+y)-1)>>v)])>>>16&255,b=65535&C,!(v+(_=C>>>24)<=l);){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}u>>>=v,l-=v,r.back+=v;}if(u>>>=_,l-=_,r.back+=_,64&g){e.msg="invalid distance code",r.mode=30;break}r.offset=b,r.extra=15&g,r.mode=24;case 24:if(r.extra){for(z=r.extra;l<z;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}r.offset+=u&(1<<r.extra)-1,u>>>=r.extra,l-=r.extra,r.back+=r.extra;}if(r.offset>r.dmax){e.msg="invalid distance too far back",r.mode=30;break}r.mode=25;case 25:if(0===h)break e;if(d=c-h,r.offset>d){if((d=r.offset-d)>r.whave&&r.sane){e.msg="invalid distance too far back",r.mode=30;break}p=d>r.wnext?(d-=r.wnext,r.wsize-d):r.wnext-d,d>r.length&&(d=r.length),m=r.window;}else m=i,p=a-r.offset,d=r.length;for(h<d&&(d=h),h-=d,r.length-=d;i[a++]=m[p++],--d;);0===r.length&&(r.mode=21);break;case 26:if(0===h)break e;i[a++]=r.length,h--,r.mode=21;break;case 27:if(r.wrap){for(;l<32;){if(0===o)break e;o--,u|=n[s++]<<l,l+=8;}if(c-=h,e.total_out+=c,r.total+=c,c&&(e.adler=r.check=r.flags?B(r.check,i,c,a-c):O(r.check,i,c,a-c)),c=h,(r.flags?u:L(u))!==r.check){e.msg="incorrect data check",r.mode=30;break}l=u=0;}r.mode=28;case 28:if(r.wrap&&r.flags){for(;l<32;){if(0===o)break e;o--,u+=n[s++]<<l,l+=8;}if(u!==(4294967295&r.total)){e.msg="incorrect length check",r.mode=30;break}l=u=0;}r.mode=29;case 29:x=1;break e;case 30:x=-3;break e;case 31:return -4;case 32:default:return U}return e.next_out=a,e.avail_out=h,e.next_in=s,e.avail_in=o,r.hold=u,r.bits=l,(r.wsize||c!==e.avail_out&&r.mode<30&&(r.mode<27||4!==t))&&Z(e,e.output,e.next_out,c-e.avail_out)?(r.mode=31,-4):(f-=e.avail_in,c-=e.avail_out,e.total_in+=f,e.total_out+=c,r.total+=c,r.wrap&&c&&(e.adler=r.check=r.flags?B(r.check,i,c,e.next_out-c):O(r.check,i,c,e.next_out-c)),e.data_type=r.bits+(r.last?64:0)+(12===r.mode?128:0)+(20===r.mode||15===r.mode?256:0),(0==f&&0===c||4===t)&&x===N&&(x=-5),x)},r.inflateEnd=function(e){if(!e||!e.state)return U;var t=e.state;return t.window&&(t.window=null),e.state=null,N},r.inflateGetHeader=function(e,t){var r;return e&&e.state?0==(2&(r=e.state).wrap)?U:((r.head=t).done=!1,N):U},r.inflateSetDictionary=function(e,t){var r,n=t.length;return e&&e.state?0!==(r=e.state).wrap&&11!==r.mode?U:11===r.mode&&O(1,t,n,0)!==r.check?-3:Z(e,t,n,n)?(r.mode=31,-4):(r.havedict=1,N):U},r.inflateInfo="pako inflate (from Nodeca project)";},{"../utils/common":41,"./adler32":43,"./crc32":45,"./inffast":48,"./inftrees":50}],50:[function(e,t,r){var D=e("../utils/common"),F=[3,4,5,6,7,8,9,10,11,13,15,17,19,23,27,31,35,43,51,59,67,83,99,115,131,163,195,227,258,0,0],N=[16,16,16,16,16,16,16,16,17,17,17,17,18,18,18,18,19,19,19,19,20,20,20,20,21,21,21,21,16,72,78],U=[1,2,3,4,5,7,9,13,17,25,33,49,65,97,129,193,257,385,513,769,1025,1537,2049,3073,4097,6145,8193,12289,16385,24577,0,0],P=[16,16,16,16,17,17,18,18,19,19,20,20,21,21,22,22,23,23,24,24,25,25,26,26,27,27,28,28,29,29,64,64];t.exports=function(e,t,r,n,i,s,a,o){var h,u,l,f,c,d,p,m,_,g=o.bits,b=0,v=0,y=0,w=0,k=0,x=0,S=0,z=0,C=0,E=0,A=null,I=0,O=new D.Buf16(16),B=new D.Buf16(16),R=null,T=0;for(b=0;b<=15;b++)O[b]=0;for(v=0;v<n;v++)O[t[r+v]]++;for(k=g,w=15;1<=w&&0===O[w];w--);if(w<k&&(k=w),0===w)return i[s++]=20971520,i[s++]=20971520,o.bits=1,0;for(y=1;y<w&&0===O[y];y++);for(k<y&&(k=y),b=z=1;b<=15;b++)if(z<<=1,(z-=O[b])<0)return -1;if(0<z&&(0===e||1!==w))return -1;for(B[1]=0,b=1;b<15;b++)B[b+1]=B[b]+O[b];for(v=0;v<n;v++)0!==t[r+v]&&(a[B[t[r+v]]++]=v);if(d=0===e?(A=R=a,19):1===e?(A=F,I-=257,R=N,T-=257,256):(A=U,R=P,-1),b=y,c=s,S=v=E=0,l=-1,f=(C=1<<(x=k))-1,1===e&&852<C||2===e&&592<C)return 1;for(;;){for(p=b-S,_=a[v]<d?(m=0,a[v]):a[v]>d?(m=R[T+a[v]],A[I+a[v]]):(m=96,0),h=1<<b-S,y=u=1<<x;i[c+(E>>S)+(u-=h)]=p<<24|m<<16|_|0,0!==u;);for(h=1<<b-1;E&h;)h>>=1;if(0!==h?(E&=h-1,E+=h):E=0,v++,0==--O[b]){if(b===w)break;b=t[r+a[v]];}if(k<b&&(E&f)!==l){for(0===S&&(S=k),c+=y,z=1<<(x=b-S);x+S<w&&!((z-=O[x+S])<=0);)x++,z<<=1;if(C+=1<<x,1===e&&852<C||2===e&&592<C)return 1;i[l=E&f]=k<<24|x<<16|c-s|0;}}return 0!==E&&(i[c+E]=b-S<<24|64<<16|0),o.bits=k,0};},{"../utils/common":41}],51:[function(e,t,r){t.exports={2:"need dictionary",1:"stream end",0:"","-1":"file error","-2":"stream error","-3":"data error","-4":"insufficient memory","-5":"buffer error","-6":"incompatible version"};},{}],52:[function(e,t,r){var i=e("../utils/common"),o=0,h=1;function n(e){for(var t=e.length;0<=--t;)e[t]=0;}var s=0,a=29,u=256,l=u+1+a,f=30,c=19,_=2*l+1,g=15,d=16,p=7,m=256,b=16,v=17,y=18,w=[0,0,0,0,0,0,0,0,1,1,1,1,2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,0],k=[0,0,0,0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10,11,11,12,12,13,13],x=[0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,3,7],S=[16,17,18,0,8,7,9,6,10,5,11,4,12,3,13,2,14,1,15],z=new Array(2*(l+2));n(z);var C=new Array(2*f);n(C);var E=new Array(512);n(E);var A=new Array(256);n(A);var I=new Array(a);n(I);var O,B,R,T=new Array(f);function D(e,t,r,n,i){this.static_tree=e,this.extra_bits=t,this.extra_base=r,this.elems=n,this.max_length=i,this.has_stree=e&&e.length;}function F(e,t){this.dyn_tree=e,this.max_code=0,this.stat_desc=t;}function N(e){return e<256?E[e]:E[256+(e>>>7)]}function U(e,t){e.pending_buf[e.pending++]=255&t,e.pending_buf[e.pending++]=t>>>8&255;}function P(e,t,r){e.bi_valid>d-r?(e.bi_buf|=t<<e.bi_valid&65535,U(e,e.bi_buf),e.bi_buf=t>>d-e.bi_valid,e.bi_valid+=r-d):(e.bi_buf|=t<<e.bi_valid&65535,e.bi_valid+=r);}function L(e,t,r){P(e,r[2*t],r[2*t+1]);}function j(e,t){for(var r=0;r|=1&e,e>>>=1,r<<=1,0<--t;);return r>>>1}function Z(e,t,r){var n,i,s=new Array(g+1),a=0;for(n=1;n<=g;n++)s[n]=a=a+r[n-1]<<1;for(i=0;i<=t;i++){var o=e[2*i+1];0!==o&&(e[2*i]=j(s[o]++,o));}}function W(e){var t;for(t=0;t<l;t++)e.dyn_ltree[2*t]=0;for(t=0;t<f;t++)e.dyn_dtree[2*t]=0;for(t=0;t<c;t++)e.bl_tree[2*t]=0;e.dyn_ltree[2*m]=1,e.opt_len=e.static_len=0,e.last_lit=e.matches=0;}function M(e){8<e.bi_valid?U(e,e.bi_buf):0<e.bi_valid&&(e.pending_buf[e.pending++]=e.bi_buf),e.bi_buf=0,e.bi_valid=0;}function H(e,t,r,n){var i=2*t,s=2*r;return e[i]<e[s]||e[i]===e[s]&&n[t]<=n[r]}function G(e,t,r){for(var n=e.heap[r],i=r<<1;i<=e.heap_len&&(i<e.heap_len&&H(t,e.heap[i+1],e.heap[i],e.depth)&&i++,!H(t,n,e.heap[i],e.depth));)e.heap[r]=e.heap[i],r=i,i<<=1;e.heap[r]=n;}function K(e,t,r){var n,i,s,a,o=0;if(0!==e.last_lit)for(;n=e.pending_buf[e.d_buf+2*o]<<8|e.pending_buf[e.d_buf+2*o+1],i=e.pending_buf[e.l_buf+o],o++,0===n?L(e,i,t):(L(e,(s=A[i])+u+1,t),0!==(a=w[s])&&P(e,i-=I[s],a),L(e,s=N(--n),r),0!==(a=k[s])&&P(e,n-=T[s],a)),o<e.last_lit;);L(e,m,t);}function Y(e,t){var r,n,i,s=t.dyn_tree,a=t.stat_desc.static_tree,o=t.stat_desc.has_stree,h=t.stat_desc.elems,u=-1;for(e.heap_len=0,e.heap_max=_,r=0;r<h;r++)0!==s[2*r]?(e.heap[++e.heap_len]=u=r,e.depth[r]=0):s[2*r+1]=0;for(;e.heap_len<2;)s[2*(i=e.heap[++e.heap_len]=u<2?++u:0)]=1,e.depth[i]=0,e.opt_len--,o&&(e.static_len-=a[2*i+1]);for(t.max_code=u,r=e.heap_len>>1;1<=r;r--)G(e,s,r);for(i=h;r=e.heap[1],e.heap[1]=e.heap[e.heap_len--],G(e,s,1),n=e.heap[1],e.heap[--e.heap_max]=r,e.heap[--e.heap_max]=n,s[2*i]=s[2*r]+s[2*n],e.depth[i]=(e.depth[r]>=e.depth[n]?e.depth[r]:e.depth[n])+1,s[2*r+1]=s[2*n+1]=i,e.heap[1]=i++,G(e,s,1),2<=e.heap_len;);e.heap[--e.heap_max]=e.heap[1],function(e,t){var r,n,i,s,a,o,h=t.dyn_tree,u=t.max_code,l=t.stat_desc.static_tree,f=t.stat_desc.has_stree,c=t.stat_desc.extra_bits,d=t.stat_desc.extra_base,p=t.stat_desc.max_length,m=0;for(s=0;s<=g;s++)e.bl_count[s]=0;for(h[2*e.heap[e.heap_max]+1]=0,r=e.heap_max+1;r<_;r++)p<(s=h[2*h[2*(n=e.heap[r])+1]+1]+1)&&(s=p,m++),h[2*n+1]=s,u<n||(e.bl_count[s]++,a=0,d<=n&&(a=c[n-d]),o=h[2*n],e.opt_len+=o*(s+a),f&&(e.static_len+=o*(l[2*n+1]+a)));if(0!==m){do{for(s=p-1;0===e.bl_count[s];)s--;e.bl_count[s]--,e.bl_count[s+1]+=2,e.bl_count[p]--,m-=2;}while(0<m);for(s=p;0!==s;s--)for(n=e.bl_count[s];0!==n;)u<(i=e.heap[--r])||(h[2*i+1]!==s&&(e.opt_len+=(s-h[2*i+1])*h[2*i],h[2*i+1]=s),n--);}}(e,t),Z(s,u,e.bl_count);}function X(e,t,r){var n,i,s=-1,a=t[1],o=0,h=7,u=4;for(0===a&&(h=138,u=3),t[2*(r+1)+1]=65535,n=0;n<=r;n++)i=a,a=t[2*(n+1)+1],++o<h&&i===a||(o<u?e.bl_tree[2*i]+=o:0!==i?(i!==s&&e.bl_tree[2*i]++,e.bl_tree[2*b]++):o<=10?e.bl_tree[2*v]++:e.bl_tree[2*y]++,s=i,u=(o=0)===a?(h=138,3):i===a?(h=6,3):(h=7,4));}function V(e,t,r){var n,i,s=-1,a=t[1],o=0,h=7,u=4;for(0===a&&(h=138,u=3),n=0;n<=r;n++)if(i=a,a=t[2*(n+1)+1],!(++o<h&&i===a)){if(o<u)for(;L(e,i,e.bl_tree),0!=--o;);else 0!==i?(i!==s&&(L(e,i,e.bl_tree),o--),L(e,b,e.bl_tree),P(e,o-3,2)):o<=10?(L(e,v,e.bl_tree),P(e,o-3,3)):(L(e,y,e.bl_tree),P(e,o-11,7));s=i,u=(o=0)===a?(h=138,3):i===a?(h=6,3):(h=7,4);}}n(T);var q=!1;function J(e,t,r,n){P(e,(s<<1)+(n?1:0),3),function(e,t,r,n){M(e),n&&(U(e,r),U(e,~r)),i.arraySet(e.pending_buf,e.window,t,r,e.pending),e.pending+=r;}(e,t,r,!0);}r._tr_init=function(e){q||(function(){var e,t,r,n,i,s=new Array(g+1);for(n=r=0;n<a-1;n++)for(I[n]=r,e=0;e<1<<w[n];e++)A[r++]=n;for(A[r-1]=n,n=i=0;n<16;n++)for(T[n]=i,e=0;e<1<<k[n];e++)E[i++]=n;for(i>>=7;n<f;n++)for(T[n]=i<<7,e=0;e<1<<k[n]-7;e++)E[256+i++]=n;for(t=0;t<=g;t++)s[t]=0;for(e=0;e<=143;)z[2*e+1]=8,e++,s[8]++;for(;e<=255;)z[2*e+1]=9,e++,s[9]++;for(;e<=279;)z[2*e+1]=7,e++,s[7]++;for(;e<=287;)z[2*e+1]=8,e++,s[8]++;for(Z(z,l+1,s),e=0;e<f;e++)C[2*e+1]=5,C[2*e]=j(e,5);O=new D(z,w,u+1,l,g),B=new D(C,k,0,f,g),R=new D(new Array(0),x,0,c,p);}(),q=!0),e.l_desc=new F(e.dyn_ltree,O),e.d_desc=new F(e.dyn_dtree,B),e.bl_desc=new F(e.bl_tree,R),e.bi_buf=0,e.bi_valid=0,W(e);},r._tr_stored_block=J,r._tr_flush_block=function(e,t,r,n){var i,s,a=0;0<e.level?(2===e.strm.data_type&&(e.strm.data_type=function(e){var t,r=4093624447;for(t=0;t<=31;t++,r>>>=1)if(1&r&&0!==e.dyn_ltree[2*t])return o;if(0!==e.dyn_ltree[18]||0!==e.dyn_ltree[20]||0!==e.dyn_ltree[26])return h;for(t=32;t<u;t++)if(0!==e.dyn_ltree[2*t])return h;return o}(e)),Y(e,e.l_desc),Y(e,e.d_desc),a=function(e){var t;for(X(e,e.dyn_ltree,e.l_desc.max_code),X(e,e.dyn_dtree,e.d_desc.max_code),Y(e,e.bl_desc),t=c-1;3<=t&&0===e.bl_tree[2*S[t]+1];t--);return e.opt_len+=3*(t+1)+5+5+4,t}(e),i=e.opt_len+3+7>>>3,(s=e.static_len+3+7>>>3)<=i&&(i=s)):i=s=r+5,r+4<=i&&-1!==t?J(e,t,r,n):4===e.strategy||s===i?(P(e,2+(n?1:0),3),K(e,z,C)):(P(e,4+(n?1:0),3),function(e,t,r,n){var i;for(P(e,t-257,5),P(e,r-1,5),P(e,n-4,4),i=0;i<n;i++)P(e,e.bl_tree[2*S[i]+1],3);V(e,e.dyn_ltree,t-1),V(e,e.dyn_dtree,r-1);}(e,e.l_desc.max_code+1,e.d_desc.max_code+1,a+1),K(e,e.dyn_ltree,e.dyn_dtree)),W(e),n&&M(e);},r._tr_tally=function(e,t,r){return e.pending_buf[e.d_buf+2*e.last_lit]=t>>>8&255,e.pending_buf[e.d_buf+2*e.last_lit+1]=255&t,e.pending_buf[e.l_buf+e.last_lit]=255&r,e.last_lit++,0===t?e.dyn_ltree[2*r]++:(e.matches++,t--,e.dyn_ltree[2*(A[r]+u+1)]++,e.dyn_dtree[2*N(t)]++),e.last_lit===e.lit_bufsize-1},r._tr_align=function(e){P(e,2,3),L(e,m,z),function(e){16===e.bi_valid?(U(e,e.bi_buf),e.bi_buf=0,e.bi_valid=0):8<=e.bi_valid&&(e.pending_buf[e.pending++]=255&e.bi_buf,e.bi_buf>>=8,e.bi_valid-=8);}(e);};},{"../utils/common":41}],53:[function(e,t,r){t.exports=function(){this.input=null,this.next_in=0,this.avail_in=0,this.total_in=0,this.output=null,this.next_out=0,this.avail_out=0,this.total_out=0,this.msg="",this.state=null,this.data_type=2,this.adler=0;};},{}],54:[function(e,t,r){(function(e){!function(r,n){if(!r.setImmediate){var i,s,t,a,o=1,h={},u=!1,l=r.document,e=Object.getPrototypeOf&&Object.getPrototypeOf(r);e=e&&e.setTimeout?e:r,i="[object process]"==={}.toString.call(r.process)?function(e){process.nextTick(function(){c(e);});}:function(){if(r.postMessage&&!r.importScripts){var e=!0,t=r.onmessage;return r.onmessage=function(){e=!1;},r.postMessage("","*"),r.onmessage=t,e}}()?(a="setImmediate$"+Math.random()+"$",r.addEventListener?r.addEventListener("message",d,!1):r.attachEvent("onmessage",d),function(e){r.postMessage(a+e,"*");}):r.MessageChannel?((t=new MessageChannel).port1.onmessage=function(e){c(e.data);},function(e){t.port2.postMessage(e);}):l&&"onreadystatechange"in l.createElement("script")?(s=l.documentElement,function(e){var t=l.createElement("script");t.onreadystatechange=function(){c(e),t.onreadystatechange=null,s.removeChild(t),t=null;},s.appendChild(t);}):function(e){setTimeout(c,0,e);},e.setImmediate=function(e){"function"!=typeof e&&(e=new Function(""+e));for(var t=new Array(arguments.length-1),r=0;r<t.length;r++)t[r]=arguments[r+1];var n={callback:e,args:t};return h[o]=n,i(o),o++},e.clearImmediate=f;}function f(e){delete h[e];}function c(e){if(u)setTimeout(c,0,e);else {var t=h[e];if(t){u=!0;try{!function(e){var t=e.callback,r=e.args;switch(r.length){case 0:t();break;case 1:t(r[0]);break;case 2:t(r[0],r[1]);break;case 3:t(r[0],r[1],r[2]);break;default:t.apply(n,r);}}(t);}finally{f(e),u=!1;}}}}function d(e){e.source===r&&"string"==typeof e.data&&0===e.data.indexOf(a)&&c(+e.data.slice(a.length));}}("undefined"==typeof self?void 0===e?this:e:self);}).call(this,"undefined"!=typeof commonjsGlobal?commonjsGlobal:"undefined"!=typeof self?self:"undefined"!=typeof window?window:{});},{}]},{},[10])(10)});
+});
+
+class XmindImportError extends Error {
+    constructor(code, message) {
+        super(message);
+        this.code = code;
+    }
+}
+const NOTE_PREFIX = '📝 ';
+const TASK_DONE = '✅';
+function readXmind(data, parseXml = (text) => new DOMParser().parseFromString(text, 'application/xml')) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let zip;
+        try {
+            zip = yield jszip_min.loadAsync(data);
+        }
+        catch (err) {
+            throw new XmindImportError('parse', `Not an XMind archive: ${err}`);
+        }
+        let raw;
+        const json = zip.file('content.json');
+        const xml = zip.file('content.xml');
+        if (json) {
+            raw = parseZenContent(yield json.async('text'));
+        }
+        else if (xml) {
+            raw = parseLegacyContent(yield xml.async('text'), parseXml);
+        }
+        else {
+            throw new XmindImportError('unrecognized', 'The archive has no content.json or content.xml');
+        }
+        if (!raw.length || raw.some((s) => !s.root)) {
+            throw new XmindImportError('parse', 'A sheet has no central topic');
+        }
+        const doc = {
+            sheets: [],
+            topicCount: 0,
+            skipped: { summary: 0, boundary: 0, relationship: 0, callout: 0, image: 0 },
+        };
+        raw.forEach((sheet, i) => {
+            doc.skipped.relationship += sheet.relationships;
+            const root = convertTopic(sheet.root, doc);
+            // Floating topics hang under the central topic, after its branches.
+            sheet.root.detached.forEach((t) => root.children.push(convertTopic(t, doc)));
+            doc.sheets.push({ title: sheet.title.trim() || `Sheet ${i + 1}`, root });
+        });
+        return doc;
+    });
+}
+function convertTopic(raw, doc) {
+    doc.topicCount++;
+    Object.keys(raw.skipped).forEach((k) => {
+        doc.skipped[k] += raw.skipped[k] || 0;
+    });
+    const node = {
+        text: topicText(raw),
+        collapsed: raw.folded && (raw.attached.length > 0 || !!raw.notes),
+        children: [],
+    };
+    if (raw.notes) {
+        node.children.push({ text: NOTE_PREFIX + raw.notes, collapsed: false, children: [] });
+    }
+    raw.attached.forEach((t) => node.children.push(convertTopic(t, doc)));
+    return node;
+}
+function topicText(raw) {
+    let title = raw.title;
+    const href = raw.href.trim();
+    if (/^(https?:|mailto:)/i.test(href)) {
+        const label = (title || href).replace(/\n/g, ' ').replace(/[[\]]/g, '\\$&');
+        title = `[${label}](${href.replace(/[()\s]/g, encodeURIComponent)})`;
+    }
+    const prefix = [];
+    const priority = raw.markers.map((m) => /^priority-(\d+)$/.exec(m)).find(Boolean);
+    if (priority) {
+        prefix.push(`(P${priority[1]})`);
+    }
+    if (raw.markers.includes('task-done')) {
+        prefix.push(TASK_DONE);
+    }
+    const labels = raw.labels.map((l) => l.trim()).filter(Boolean).map((l) => `\`${l.replace(/`/g, '')}\``);
+    return [...prefix, title, ...labels].filter(Boolean).join(' ');
+}
+function normalizeText(value) {
+    return typeof value === 'string' ? value.replace(/\r\n?/g, '\n').trim() : '';
+}
+function parseZenContent(text) {
+    let sheets;
+    try {
+        sheets = JSON.parse(text);
+    }
+    catch (err) {
+        throw new XmindImportError('parse', `Invalid content.json: ${err}`);
+    }
+    if (!Array.isArray(sheets)) {
+        throw new XmindImportError('parse', 'content.json is not a list of sheets');
+    }
+    return sheets.map((sheet) => ({
+        title: normalizeText(sheet === null || sheet === void 0 ? void 0 : sheet.title),
+        root: (sheet === null || sheet === void 0 ? void 0 : sheet.rootTopic) ? zenTopic(sheet.rootTopic) : null,
+        relationships: Array.isArray(sheet === null || sheet === void 0 ? void 0 : sheet.relationships) ? sheet.relationships.length : 0,
+    }));
+}
+function zenTopic(topic) {
+    var _a, _b;
+    const list = (value) => (Array.isArray(value) ? value : []);
+    const children = topic.children || {};
+    return {
+        title: normalizeText(topic.title),
+        href: typeof topic.href === 'string' ? topic.href : '',
+        notes: normalizeText((_b = (_a = topic.notes) === null || _a === void 0 ? void 0 : _a.plain) === null || _b === void 0 ? void 0 : _b.content),
+        labels: list(topic.labels).filter((l) => typeof l === 'string'),
+        markers: list(topic.markers).map((m) => String((m === null || m === void 0 ? void 0 : m.markerId) || '')),
+        folded: topic.branch === 'folded',
+        attached: list(children.attached).map(zenTopic),
+        detached: list(children.detached).map(zenTopic),
+        skipped: {
+            summary: list(topic.summaries).length,
+            boundary: list(topic.boundaries).length,
+            callout: list(children.callout).length,
+            image: topic.image ? 1 : 0,
+        },
+    };
+}
+function elements(parent, name) {
+    return Array.from(parent.children).filter((el) => el.localName === name);
+}
+function parseLegacyContent(text, parseXml) {
+    const xml = parseXml(text);
+    const root = xml === null || xml === void 0 ? void 0 : xml.documentElement;
+    if (!root || root.localName !== 'xmap-content' || xml.getElementsByTagName('parsererror').length) {
+        throw new XmindImportError('parse', 'Invalid content.xml');
+    }
+    return elements(root, 'sheet').map((sheet) => {
+        var _a;
+        const topic = elements(sheet, 'topic')[0];
+        const relationships = elements(sheet, 'relationships')[0];
+        return {
+            title: normalizeText((_a = elements(sheet, 'title')[0]) === null || _a === void 0 ? void 0 : _a.textContent),
+            root: topic ? legacyTopic(topic) : null,
+            relationships: relationships ? elements(relationships, 'relationship').length : 0,
+        };
+    });
+}
+function legacyTopic(topic) {
+    var _a, _b;
+    const childTopics = (type) => {
+        const children = elements(topic, 'children')[0];
+        if (!children) {
+            return [];
+        }
+        return elements(children, 'topics')
+            .filter((g) => g.getAttribute('type') === type)
+            .reduce((all, g) => all.concat(elements(g, 'topic')), []);
+    };
+    const grouped = (group, item) => {
+        const el = elements(topic, group)[0];
+        return el ? elements(el, item) : [];
+    };
+    const notes = elements(topic, 'notes')[0];
+    return {
+        title: normalizeText((_a = elements(topic, 'title')[0]) === null || _a === void 0 ? void 0 : _a.textContent),
+        href: topic.getAttribute('xlink:href') || '',
+        notes: normalizeText(notes ? (_b = elements(notes, 'plain')[0]) === null || _b === void 0 ? void 0 : _b.textContent : ''),
+        labels: grouped('labels', 'label').map((l) => l.textContent || ''),
+        markers: grouped('marker-refs', 'marker-ref').map((m) => m.getAttribute('marker-id') || ''),
+        folded: topic.getAttribute('branch') === 'folded',
+        attached: childTopics('attached').map(legacyTopic),
+        detached: childTopics('detached').map(legacyTopic),
+        skipped: {
+            summary: grouped('summaries', 'summary').length,
+            boundary: grouped('boundaries', 'boundary').length,
+            callout: childTopics('callout').length,
+            image: elements(topic, 'img').length,
+        },
+    };
+}
+const topicSource = {
+    children: (n) => n.children,
+    text: (n) => n.text,
+    blockId: (n) => n.blockId || '',
+};
+// The full note for one sheet, in the form the map itself saves.
+function sheetToNote(sheet, headLevel) {
+    const visit = (n) => {
+        if (n.collapsed && !n.blockId) {
+            n.blockId = uuid();
+        }
+        n.children.forEach(visit);
+    };
+    visit(sheet.root);
+    const collapsed = collapsedIdsBreadthFirst(sheet.root, topicSource, (n) => n.collapsed);
+    const state = `mindmark-state: ${JSON.stringify({ version: 2, collapsed })}`;
+    const frontMatter = basicFrontmatter.replace(/\n---\n\n$/, `\n${state}\n---\n\n`);
+    return frontMatter + writeOutline(sheet.root, headLevel, topicSource);
+}
+function sanitizeNoteName(name) {
+    return name.replace(/[\\/:*?"<>|#^[\]\n\r]+/g, ' ').replace(/\s+/g, ' ').trim();
+}
+// One sheet keeps the file name; several get `<file> - <sheet>`.
+function sheetNoteNames(baseName, sheets) {
+    const base = sanitizeNoteName(baseName) || 'XMind';
+    if (sheets.length === 1) {
+        return [base];
+    }
+    return sheets.map((s, i) => `${base} - ${sanitizeNoteName(s.title) || `Sheet ${i + 1}`}`);
+}
+
+// Writes a map as an XMind Zen / 2020+ file: the reverse of the import rules
+const STRUCTURES = {
+    right: 'org.xmind.ui.logic.right',
+    left: 'org.xmind.ui.logic.left',
+    clockwise: 'org.xmind.ui.map.clockwise',
+};
+const LINK = /\[((?:\\.|[^\]\\])*)\]\(([^)\s]+)\)/g;
+// Splits node text into an XMind title, link, labels and markers.
+function parseTitle(text) {
+    let title = text.replace(/<br\s*\/?>/gi, '\n').trim();
+    const markers = [];
+    for (let changed = true; changed;) {
+        changed = false;
+        const priority = /^\(P([1-9])\)\s*/.exec(title);
+        if (priority && !markers.some((m) => m.startsWith('priority-'))) {
+            markers.unshift(`priority-${priority[1]}`);
+            title = title.slice(priority[0].length);
+            changed = true;
+        }
+        if (title.startsWith(TASK_DONE) && !markers.includes('task-done')) {
+            markers.push('task-done');
+            title = title.slice(TASK_DONE.length).trimStart();
+            changed = true;
+        }
+    }
+    const labels = [];
+    for (let m = /\s+`([^`\n]+)`$/.exec(title); m && title.length > m[0].length; m = /\s+`([^`\n]+)`$/.exec(title)) {
+        labels.unshift(m[1]);
+        title = title.slice(0, -m[0].length);
+    }
+    let href = '';
+    title = title.replace(LINK, (match, label, url) => {
+        if (!/^(https?:|mailto:)/i.test(url)) {
+            return match;
+        }
+        href = href || url;
+        return label.replace(/\\([[\]])/g, '$1');
+    });
+    title = title
+        .replace(/(^|[^!])\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_m, before, target, alias) => before + (alias || target))
+        .replace(/\*\*([^*\n]+)\*\*/g, '$1')
+        .replace(/__([^_\n]+)__/g, '$1')
+        .replace(/==([^=\n]+)==/g, '$1')
+        .replace(/~~([^~\n]+)~~/g, '$1')
+        .replace(/(^|[^*])\*([^*\s][^*\n]*)\*(?!\*)/g, '$1$2');
+    return { title: title.trim(), href, labels, markers };
+}
+function toTopic(node) {
+    let children = node.children;
+    let notes = '';
+    const first = children[0];
+    if (first && !first.children.length && first.text.startsWith(NOTE_PREFIX)) {
+        notes = first.text.slice(NOTE_PREFIX.length).replace(/<br\s*\/?>/gi, '\n').trim();
+        children = children.slice(1);
+    }
+    const parts = parseTitle(node.text);
+    const topic = { id: uuid(), class: 'topic', title: parts.title };
+    if (parts.href) {
+        topic.href = parts.href;
+    }
+    if (parts.labels.length) {
+        topic.labels = parts.labels;
+    }
+    if (parts.markers.length) {
+        topic.markers = parts.markers.map((markerId) => ({ markerId }));
+    }
+    if (notes) {
+        topic.notes = { plain: { content: notes } };
+    }
+    if (node.collapsed && (children.length || notes)) {
+        topic.branch = 'folded';
+    }
+    if (children.length) {
+        topic.children = { attached: children.map(toTopic) };
+    }
+    return topic;
+}
+function mapToXmindSheet(root, title, layoutDirect) {
+    const rootTopic = toTopic(root);
+    rootTopic.structureClass = STRUCTURES[layoutDirect || ''] || 'org.xmind.ui.map.unbalanced';
+    return { id: uuid(), class: 'sheet', title, rootTopic };
+}
+function buildXmindArchive(sheet, version = '') {
+    const zip = new jszip_min();
+    zip.file('content.json', JSON.stringify([sheet]));
+    zip.file('metadata.json', JSON.stringify({ creator: { name: 'Mapdown', version } }));
+    zip.file('manifest.json', JSON.stringify({ 'file-entries': { 'content.json': {}, 'metadata.json': {} } }));
+    return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE' });
+}
+
 var domToImageMore = createCommonjsModule(function (module, exports) {
 (function (global) {
 
@@ -38531,6 +40526,21 @@ var domToImageMore = createCommonjsModule(function (module, exports) {
 });
 
 const transformer = new browser.Transformer();
+const MAX_EXPORT_PIXELS = 64000000;
+const MAX_EXPORT_SIDE = 32767;
+const EXPORT_RESOURCE_TIMEOUT_MS = 5000;
+const EXPORT_RENDER_TIMEOUT_MS = 20000;
+const MAX_QUEUED_EXPORTS = 3;
+const exportQueues = new WeakMap();
+// The view closed (or reloaded) while an export was waiting or rendering.
+class ExportCancelledError extends Error {
+}
+class DiskConflictError extends Error {
+    constructor(externalData) {
+        super('The mindmap changed on disk while it was being saved');
+        this.externalData = externalData;
+    }
+}
 const mindmapViewType = "mindmapViewUpgraded";
 const mindmapIcon = "blocks";
 class MindMapView extends obsidian.TextFileView {
@@ -38559,47 +40569,58 @@ class MindMapView extends obsidian.TextFileView {
         // We no longer add 50 random colors. Layout.ts now uses CSS variable defined theme palettes.
     }
     exportToHtml() {
-        var _a;
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.mindmap) {
                 return;
             }
             let exportEl = null;
             try {
-                const snapshot = this.createExportSnapshot(this.canUseElectronCapture());
+                yield this.commitEditBeforeExport();
+                const snapshot = this.createExportSnapshot();
                 exportEl = snapshot.element;
-                const dataUrl = yield this.exportSnapshotToDataUrl(snapshot, 'png', 1);
-                const fileName = this.mindmap.path.replace(/\.md$/, '.html');
-                const title = ((_a = this.file) === null || _a === void 0 ? void 0 : _a.basename) || 'MindMark Export';
-                const html = [
-                    '<!DOCTYPE html>',
-                    '<html lang="en">',
-                    '<head>',
-                    '  <meta charset="UTF-8">',
-                    `  <title>${title}</title>`,
-                    '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
-                    '  <style>',
-                    '    body { margin: 0; padding: 24px; background: #f5f5f5; font-family: sans-serif; }',
-                    '    main { display: flex; justify-content: center; }',
-                    '    img { max-width: 100%; height: auto; display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }',
-                    '  </style>',
-                    '</head>',
-                    '<body>',
-                    '  <main>',
-                    `    <img src="${dataUrl}" alt="${title}">`,
-                    '  </main>',
-                    '</body>',
-                    '</html>',
-                ].join('\n');
-                yield this.app.vault.adapter.write(fileName, html);
-                new obsidian.Notice(`Mindmap exported as HTML: ${fileName}`);
+                yield this.enqueueExport(() => __awaiter(this, void 0, void 0, function* () {
+                    this.assertExportActive(snapshot);
+                    this.activateExportSnapshot(snapshot);
+                    this.assertExportSize(snapshot, 1);
+                    yield this.waitForExportResources(snapshot);
+                    this.assertExportActive(snapshot);
+                    const dataUrl = yield this.withExportRenderTimeout(snapshot, this.exportSnapshotToDataUrl(snapshot, 'png', 1));
+                    this.assertExportActive(snapshot);
+                    const title = snapshot.sourceTitle;
+                    const escapedTitle = this.escapeHtml(title);
+                    const html = [
+                        '<!DOCTYPE html>',
+                        '<html lang="en">',
+                        '<head>',
+                        '  <meta charset="UTF-8">',
+                        `  <title>${escapedTitle}</title>`,
+                        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">',
+                        '  <style>',
+                        '    body { margin: 0; padding: 24px; background: #f5f5f5; font-family: sans-serif; }',
+                        '    main { display: flex; justify-content: center; }',
+                        '    img { max-width: 100%; height: auto; display: block; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }',
+                        '  </style>',
+                        '</head>',
+                        '<body>',
+                        '  <main>',
+                        `    <img src="${dataUrl}" alt="${escapedTitle}">`,
+                        '  </main>',
+                        '</body>',
+                        '</html>',
+                    ].join('\n');
+                    const fileName = yield this.createUniqueExportFile(snapshot.sourcePath, '.html', snapshot.sourceTitle, html);
+                    new obsidian.Notice(tf('Mindmap exported as {0}: {1}', 'HTML', fileName));
+                }));
             }
             catch (err) {
+                if (err instanceof ExportCancelledError) {
+                    return;
+                }
                 console.error('Failed to export mindmap as HTML:', err);
-                new obsidian.Notice(`Failed to export mindmap as HTML: ${err}`);
+                new obsidian.Notice(tf('Failed to export mindmap as {0}: {1}', 'HTML', String(err)));
             }
             finally {
-                exportEl === null || exportEl === void 0 ? void 0 : exportEl.remove();
+                this.removeExportSnapshot(exportEl);
             }
         });
     }
@@ -38615,6 +40636,38 @@ class MindMapView extends obsidian.TextFileView {
         }
         return this.exportImage('jpeg', i_scale);
     }
+    // Structured export: the whole map with its saved collapse state, ignoring
+    // focus mode and search's temporary expansion.
+    exportToXmind() {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            const mindmap = this.mindmap;
+            if (!mindmap) {
+                return;
+            }
+            try {
+                yield this.commitEditBeforeExport();
+                const toMapNode = (n) => {
+                    var _a;
+                    return ({
+                        text: n.data.text || '',
+                        collapsed: !n.isExpand || !!((_a = mindmap.searchTemporarilyExpandedIds) === null || _a === void 0 ? void 0 : _a.has(n.getId())),
+                        children: n.children.map(toMapNode),
+                    });
+                };
+                const title = ((_a = this.file) === null || _a === void 0 ? void 0 : _a.basename) || 'Mapdown Export';
+                const sheet = mapToXmindSheet(toMapNode(mindmap.root), title, this.plugin.settings.layoutDirect);
+                const archive = yield buildXmindArchive(sheet, this.plugin.manifest.version);
+                const buffer = archive.buffer.slice(archive.byteOffset, archive.byteOffset + archive.byteLength);
+                const fileName = yield this.createUniqueExportFile((_b = this.file) === null || _b === void 0 ? void 0 : _b.path, '.xmind', title, buffer);
+                new obsidian.Notice(tf('Mindmap exported as {0}: {1}', 'XMIND', fileName));
+            }
+            catch (err) {
+                console.error('Failed to export mindmap as XMIND:', err);
+                new obsidian.Notice(tf('Failed to export mindmap as {0}: {1}', 'XMIND', String(err)));
+            }
+        });
+    }
     exportImage(format, scale) {
         return __awaiter(this, void 0, void 0, function* () {
             if (!this.mindmap) {
@@ -38623,23 +40676,64 @@ class MindMapView extends obsidian.TextFileView {
             let exportEl = null;
             const extension = format === 'png' ? '.png' : '.jpeg';
             try {
-                const snapshot = this.createExportSnapshot(this.canUseElectronCapture());
+                const exportScale = Math.max(1, scale);
+                yield this.commitEditBeforeExport();
+                const snapshot = this.createExportSnapshot();
                 exportEl = snapshot.element;
-                const binary = yield this.exportSnapshotToBinary(snapshot, format, Math.max(1, scale));
-                const fileName = this.mindmap.path.replace(/\.md$/, extension);
-                yield this.app.vault.adapter.writeBinary(fileName, binary);
-                new obsidian.Notice(`Mindmap exported as ${format.toUpperCase()}: ${fileName}`);
+                yield this.enqueueExport(() => __awaiter(this, void 0, void 0, function* () {
+                    this.assertExportActive(snapshot);
+                    this.activateExportSnapshot(snapshot);
+                    this.assertExportSize(snapshot, exportScale);
+                    yield this.waitForExportResources(snapshot);
+                    this.assertExportActive(snapshot);
+                    const binary = yield this.withExportRenderTimeout(snapshot, this.exportSnapshotToBinary(snapshot, format, exportScale));
+                    this.assertExportActive(snapshot);
+                    const fileName = yield this.createUniqueExportFile(snapshot.sourcePath, extension, snapshot.sourceTitle, binary);
+                    new obsidian.Notice(tf('Mindmap exported as {0}: {1}', format.toUpperCase(), fileName));
+                }));
             }
             catch (err) {
+                if (err instanceof ExportCancelledError) {
+                    return;
+                }
                 console.error(`Failed to export mindmap as ${format.toUpperCase()}:`, err);
-                new obsidian.Notice(`Failed to export mindmap as ${format.toUpperCase()}: ${err}`);
+                new obsidian.Notice(tf('Failed to export mindmap as {0}: {1}', format.toUpperCase(), String(err)));
             }
             finally {
-                exportEl === null || exportEl === void 0 ? void 0 : exportEl.remove();
+                this.removeExportSnapshot(exportEl);
             }
         });
     }
-    createExportSnapshot(visibleForCapture) {
+    // Export what the user sees after the edit: commit it, then wait for the
+    // node to re-render and the layout frame to run.
+    commitEditBeforeExport() {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            const mindmap = this.mindmap;
+            if (!((_a = mindmap === null || mindmap === void 0 ? void 0 : mindmap.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit)) {
+                return;
+            }
+            const rendered = new Promise((resolve) => {
+                const done = () => {
+                    mindmap.off('initNode', done);
+                    resolve();
+                };
+                mindmap.on('initNode', done);
+                window.setTimeout(done, 500);
+            });
+            mindmap.commitActiveEdit();
+            yield rendered;
+            yield new Promise((resolve) => {
+                const ownerWindow = this.contentEl.ownerDocument.defaultView || window;
+                ownerWindow.requestAnimationFrame(() => ownerWindow.requestAnimationFrame(() => resolve()));
+            });
+        });
+    }
+    createExportSnapshot() {
+        var _a, _b;
+        if (this.isClosed) {
+            throw new ExportCancelledError('Export cancelled because the mindmap view was closed');
+        }
         if (!this.mindmap) {
             throw new Error('Mindmap is not available');
         }
@@ -38656,12 +40750,11 @@ class MindMapView extends obsidian.TextFileView {
         const box = this.mindmap.getBoundingRect(nodes);
         const width = Math.max(1, Math.ceil(box.width + padding * 2));
         const height = Math.max(1, Math.ceil(box.height + padding * 2));
-        const sourceWidth = this.mindmap.contentEL.offsetWidth;
-        const sourceHeight = this.mindmap.contentEL.offsetHeight;
-        const wrapper = document.createElement('div');
-        wrapper.className = 'mindmark-export-snapshot';
-        wrapper.style.position = visibleForCapture ? 'absolute' : 'fixed';
-        wrapper.style.left = visibleForCapture ? '0' : '-100000px';
+        const ownerDocument = this.mindmap.containerEL.ownerDocument;
+        const wrapper = ownerDocument.createElement('div');
+        wrapper.className = 'mapdown-export-snapshot';
+        wrapper.style.position = 'fixed';
+        wrapper.style.left = '-100000px';
         wrapper.style.top = '0';
         wrapper.style.width = `${width}px`;
         wrapper.style.height = `${height}px`;
@@ -38671,45 +40764,101 @@ class MindMapView extends obsidian.TextFileView {
         wrapper.style.zIndex = '2147483647';
         const contentClone = this.mindmap.contentEL.cloneNode(true);
         contentClone.style.position = 'absolute';
-        contentClone.style.left = `${padding - box.x}px`;
-        contentClone.style.top = `${padding - box.y}px`;
-        contentClone.style.width = `${sourceWidth}px`;
-        contentClone.style.height = `${sourceHeight}px`;
+        contentClone.style.left = '0';
+        contentClone.style.top = '0';
+        contentClone.style.width = `${width}px`;
+        contentClone.style.height = `${height}px`;
         contentClone.style.transform = 'none';
         contentClone.style.transformOrigin = '0 0';
+        const sourceNodes = new Map();
+        nodes.forEach((node) => {
+            var _a;
+            const id = (_a = node.containEl) === null || _a === void 0 ? void 0 : _a.getAttribute('data-id');
+            if (id) {
+                sourceNodes.set(id, node.containEl);
+            }
+        });
+        contentClone.querySelectorAll('.mm-node').forEach((element) => {
+            const node = element;
+            const left = Number.parseFloat(node.style.left);
+            const top = Number.parseFloat(node.style.top);
+            if (Number.isFinite(left)) {
+                node.style.left = `${left - box.x + padding}px`;
+            }
+            if (Number.isFinite(top)) {
+                node.style.top = `${top - box.y + padding}px`;
+            }
+            const sourceNode = sourceNodes.get(node.getAttribute('data-id') || '');
+            const sourceContent = sourceNode === null || sourceNode === void 0 ? void 0 : sourceNode.querySelector('.mm-node-content');
+            const clonedContent = node.querySelector('.mm-node-content');
+            if (sourceContent && clonedContent && this.isSingleLineNodeContent(sourceContent)) {
+                // SVG rasterization cannot always reuse a locally installed UI font. Preserve
+                // the live one-line layout when its fallback font is slightly wider.
+                clonedContent.style.setProperty('white-space', 'nowrap', 'important');
+                clonedContent.style.setProperty('overflow-wrap', 'normal', 'important');
+                clonedContent.style.setProperty('word-break', 'normal', 'important');
+            }
+        });
+        const svg = contentClone.querySelector('svg');
+        if (svg) {
+            svg.setAttribute('width', String(width));
+            svg.setAttribute('height', String(height));
+            svg.setAttribute('viewBox', `${box.x - padding} ${box.y - padding} ${width} ${height}`);
+        }
         contentClone.querySelectorAll('.mm-node-dimmed').forEach((element) => {
             element.style.display = 'none';
         });
+        contentClone.querySelectorAll([
+            '.mm-node-menu',
+            '.mm-node-layout-indicate',
+            '.mm-control-panel',
+            '.mapdown-search-panel',
+        ].join(',')).forEach((element) => element.remove());
+        contentClone.querySelectorAll([
+            '.mm-node-select',
+            '.mm-edit-node',
+            '.mm-node-search-match',
+            '.mm-node-search-current',
+        ].join(',')).forEach((element) => {
+            element.classList.remove('mm-node-select', 'mm-edit-node', 'mm-node-search-match', 'mm-node-search-current');
+        });
         wrapper.appendChild(contentClone);
-        document.body.appendChild(wrapper);
-        return { element: wrapper, width, height };
+        this.exportSnapshots.add(wrapper);
+        return {
+            element: wrapper,
+            width,
+            height,
+            sourcePath: this.mindmap.path || ((_a = this.file) === null || _a === void 0 ? void 0 : _a.path),
+            sourceTitle: ((_b = this.file) === null || _b === void 0 ? void 0 : _b.basename) || 'Mapdown Export',
+            generation: this.exportGeneration,
+        };
     }
-    canUseElectronCapture() {
-        var _a;
-        if (!obsidian.Platform.isDesktopApp) {
+    isSingleLineNodeContent(content) {
+        const ownerWindow = content.ownerDocument.defaultView;
+        if (!ownerWindow) {
             return false;
         }
-        try {
-            const electron = require('electron');
-            return Boolean((_a = electron === null || electron === void 0 ? void 0 : electron.remote) === null || _a === void 0 ? void 0 : _a.getCurrentWindow);
-        }
-        catch (err) {
+        const style = ownerWindow.getComputedStyle(content);
+        const lineHeight = Number.parseFloat(style.lineHeight);
+        if (!Number.isFinite(lineHeight)) {
             return false;
         }
+        const verticalChrome = [
+            style.paddingTop,
+            style.paddingBottom,
+            style.borderTopWidth,
+            style.borderBottomWidth,
+        ].reduce((total, value) => total + (Number.parseFloat(value) || 0), 0);
+        return content.offsetHeight <= lineHeight + verticalChrome + 1;
     }
     exportSnapshotToDataUrl(snapshot, format, scale) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.canUseElectronCapture()) {
-                return this.captureSnapshotWithElectron(snapshot, format, scale).then((image) => {
-                    return format === 'jpeg'
-                        ? `data:image/jpeg;base64,${image.toJPEG(100).toString('base64')}`
-                        : image.toDataURL();
-                });
-            }
             const options = {
                 width: snapshot.width,
                 height: snapshot.height,
                 scale,
+                disableEmbedFonts: true,
+                styleCaching: 'relaxed',
                 bgcolor: format === 'jpeg'
                     ? this.getExportBackgroundColor()
                     : undefined,
@@ -38721,45 +40870,139 @@ class MindMapView extends obsidian.TextFileView {
     }
     exportSnapshotToBinary(snapshot, format, scale) {
         return __awaiter(this, void 0, void 0, function* () {
-            if (this.canUseElectronCapture()) {
-                const image = yield this.captureSnapshotWithElectron(snapshot, format, scale);
-                const buffer = format === 'jpeg'
-                    ? image.toJPEG(100)
-                    : image.toPNG();
-                return buffer.buffer.slice(buffer.byteOffset, buffer.byteOffset + buffer.byteLength);
-            }
             const dataUrl = yield this.exportSnapshotToDataUrl(snapshot, format, scale);
             return this.dataURLtoBlob(dataUrl).arrayBuffer();
         });
     }
-    captureSnapshotWithElectron(snapshot, format, scale) {
+    assertExportSize(snapshot, scale) {
+        const width = Math.ceil(snapshot.width * scale);
+        const height = Math.ceil(snapshot.height * scale);
+        const pixels = width * height;
+        if (width > MAX_EXPORT_SIDE || height > MAX_EXPORT_SIDE || pixels > MAX_EXPORT_PIXELS) {
+            const megapixels = (pixels / 1000000).toFixed(1);
+            throw new Error(`Export size ${width} x ${height} (${megapixels} MP) is too large. ` +
+                'Collapse branches or choose a lower resolution.');
+        }
+    }
+    waitForExportResources(snapshot) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            const electron = require('electron');
-            const currentWindow = electron.remote.getCurrentWindow();
-            yield this.waitForAnimationFrames(2);
-            const rect = snapshot.element.getBoundingClientRect();
-            const image = yield currentWindow.webContents.capturePage({
-                x: Math.max(0, Math.floor(rect.left)),
-                y: Math.max(0, Math.floor(rect.top)),
-                width: Math.max(1, Math.ceil(rect.width)),
-                height: Math.max(1, Math.ceil(rect.height)),
+            const ownerDocument = snapshot.element.ownerDocument;
+            const fontSet = ownerDocument.fonts;
+            const fontsReady = ((_a = fontSet === null || fontSet === void 0 ? void 0 : fontSet.ready) === null || _a === void 0 ? void 0 : _a.then(() => undefined)) || Promise.resolve();
+            const imageReady = Array.from(snapshot.element.querySelectorAll('img')).map((image) => {
+                const imageName = image.currentSrc || image.src || image.alt || 'unnamed image';
+                if (image.complete) {
+                    return image.naturalWidth > 0
+                        ? Promise.resolve()
+                        : Promise.reject(new Error(`Unable to load image for export: ${imageName}`));
+                }
+                return new Promise((resolve, reject) => {
+                    image.addEventListener('load', () => resolve(), { once: true });
+                    image.addEventListener('error', () => {
+                        reject(new Error(`Unable to load image for export: ${imageName}`));
+                    }, { once: true });
+                });
             });
-            if (scale <= 1) {
-                return image;
+            const resourcesReady = Promise.all([fontsReady, ...imageReady]).then(() => undefined);
+            const ownerWindow = ownerDocument.defaultView;
+            if (ownerWindow) {
+                let timeoutId;
+                const timeout = new Promise((_, reject) => {
+                    timeoutId = ownerWindow.setTimeout(() => {
+                        reject(new Error('Export resources did not finish loading within 5 seconds'));
+                    }, EXPORT_RESOURCE_TIMEOUT_MS);
+                });
+                try {
+                    yield Promise.race([resourcesReady, timeout]);
+                }
+                finally {
+                    if (timeoutId !== undefined) {
+                        ownerWindow.clearTimeout(timeoutId);
+                    }
+                }
             }
-            return image.resize({
-                width: Math.max(1, Math.ceil(rect.width * scale)),
-                height: Math.max(1, Math.ceil(rect.height * scale)),
-                quality: 'best',
-            });
+            else {
+                yield resourcesReady;
+            }
+            yield this.waitForAnimationFrames(ownerDocument, 2);
         });
     }
-    waitForAnimationFrames(count) {
+    waitForAnimationFrames(ownerDocument, count) {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
+            const requestFrame = (_a = ownerDocument.defaultView) === null || _a === void 0 ? void 0 : _a.requestAnimationFrame.bind(ownerDocument.defaultView);
             for (let i = 0; i < count; i++) {
-                yield new Promise((resolve) => requestAnimationFrame(() => resolve()));
+                yield new Promise((resolve) => {
+                    if (requestFrame) {
+                        requestFrame(() => resolve());
+                    }
+                    else {
+                        resolve();
+                    }
+                });
             }
         });
+    }
+    withExportRenderTimeout(snapshot, render) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const ownerWindow = snapshot.element.ownerDocument.defaultView;
+            if (!ownerWindow) {
+                return render;
+            }
+            let timeoutId;
+            const timeout = new Promise((_, reject) => {
+                timeoutId = ownerWindow.setTimeout(() => {
+                    reject(new Error('Export rendering did not finish within 20 seconds'));
+                }, EXPORT_RENDER_TIMEOUT_MS);
+            });
+            try {
+                return yield Promise.race([render, timeout]);
+            }
+            finally {
+                if (timeoutId !== undefined) {
+                    ownerWindow.clearTimeout(timeoutId);
+                }
+            }
+        });
+    }
+    assertExportActive(snapshot) {
+        if (this.isClosed || snapshot.generation !== this.exportGeneration) {
+            throw new ExportCancelledError('Export cancelled because the mindmap view was closed');
+        }
+    }
+    activateExportSnapshot(snapshot) {
+        if (!snapshot.element.isConnected) {
+            snapshot.element.ownerDocument.body.appendChild(snapshot.element);
+        }
+    }
+    enqueueExport(task) {
+        const key = this.app.vault;
+        let queue = exportQueues.get(key);
+        if (!queue) {
+            queue = { tail: Promise.resolve(), count: 0 };
+            exportQueues.set(key, queue);
+        }
+        if (queue.count >= MAX_QUEUED_EXPORTS) {
+            throw new Error('Too many Mapdown exports are already queued');
+        }
+        queue.count++;
+        const result = queue.tail.then(task);
+        const completed = result.finally(() => {
+            queue.count--;
+            if (queue.count === 0) {
+                exportQueues.delete(key);
+            }
+        });
+        queue.tail = completed.then(() => undefined, () => undefined);
+        return completed;
+    }
+    removeExportSnapshot(element) {
+        if (!element) {
+            return;
+        }
+        this.exportSnapshots.delete(element);
+        element.remove();
     }
     getExportBackgroundColor() {
         if (!this.mindmap) {
@@ -38773,6 +41016,61 @@ class MindMapView extends obsidian.TextFileView {
             .getPropertyValue('--background-primary')
             .trim() || '#ffffff';
     }
+    getAvailableExportFilePath(sourcePath, extension, sourceTitle) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const fallbackName = this.sanitizeFilename(sourceTitle) || 'Mapdown Export';
+            const basePath = sourcePath
+                ? sourcePath.replace(/\.md$/i, '')
+                : fallbackName;
+            let candidate = `${basePath}${extension}`;
+            let suffix = 1;
+            while (yield this.app.vault.adapter.exists(candidate)) {
+                candidate = `${basePath} ${suffix}${extension}`;
+                suffix++;
+            }
+            return candidate;
+        });
+    }
+    createUniqueExportFile(sourcePath, extension, sourceTitle, data) {
+        return __awaiter(this, void 0, void 0, function* () {
+            for (let attempt = 0; attempt < 1000; attempt++) {
+                const path = yield this.getAvailableExportFilePath(sourcePath, extension, sourceTitle);
+                try {
+                    if (typeof data === 'string') {
+                        yield this.app.vault.create(path, data);
+                    }
+                    else {
+                        yield this.app.vault.createBinary(path, data);
+                    }
+                    return path;
+                }
+                catch (err) {
+                    if (!(yield this.app.vault.adapter.exists(path))) {
+                        throw err;
+                    }
+                }
+            }
+            throw new Error('Unable to allocate a unique export filename');
+        });
+    }
+    escapeHtml(value) {
+        return value.replace(/[&<>"']/g, (char) => {
+            switch (char) {
+                case '&':
+                    return '&amp;';
+                case '<':
+                    return '&lt;';
+                case '>':
+                    return '&gt;';
+                case '"':
+                    return '&quot;';
+                case "'":
+                    return '&#39;';
+                default:
+                    return char;
+            }
+        });
+    }
     dataURLtoBlob(dataUrl) {
         var arr = dataUrl.split(','), mime = arr[0].match(/:(.*?);/)[1], bstr = atob(arr[1]), n = bstr.length, u8arr = new Uint8Array(n);
         while (n--) {
@@ -38781,29 +41079,365 @@ class MindMapView extends obsidian.TextFileView {
         return new Blob([u8arr], { type: mime });
     }
     mindMapChange() {
-        if (this.serializeMindMap()) {
-            //  var matchArray: string[] = []
-            // var collapsedIds: string[] = []
-            // const idRegexMultiline = /.+ \^([a-z0-9\-]+)$/gim
-            // while ((matchArray = idRegexMultiline.exec(md)) != null) {
-            //   collapsedIds = [...collapsedIds, ...matchArray.slice(1, 2)];
-            // }
-            // this.fileCache.frontmatter.collapsedIds='';
-            // if (collapsedIds.length > 0) {
-            //   this.fileCache.frontmatter.collapsedIds = collapsedIds;
-            // }
-            //var frontMatter = this.getFrontMatter();
-            // console.log(this.mindmap.path);
-            // this.app.vault.adapter.write(this.mindmap.path, this.data);
+        this.localRevision++;
+        try {
+            this.serializeMindMap();
+        }
+        catch (err) {
+            this.lastSaveError = this.toError(err);
+            console.error('Mapdown refused to overwrite unsafe state metadata:', err);
+            new obsidian.Notice(t('Save fail: unsupported mindmark-state metadata'));
+            return;
+        }
+        const snapshot = this.captureSaveSnapshot();
+        if (snapshot) {
+            void this.scheduleRecoveryDraft(snapshot).catch((err) => {
+                console.error('Failed to persist Mapdown recovery draft:', err);
+            });
+        }
+        if (this.pendingSave) {
+            this.saveRequestedWhilePending = true;
+            return;
+        }
+        this.startQueuedSave();
+    }
+    startQueuedSave() {
+        const saveTask = this.persistQueuedMindMapChange();
+        this.pendingSave = saveTask;
+        void saveTask.catch((err) => {
+            console.error('Failed to save Mapdown changes:', err);
+        });
+    }
+    persistQueuedMindMapChange() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let saved = false;
             try {
-                this.requestSave();
-                //new Notice(`${t("Save success")}`);
+                do {
+                    this.saveRequestedWhilePending = false;
+                    yield this.persistMindMapChange();
+                } while (this.saveRequestedWhilePending);
+                this.lastSaveError = null;
+                saved = true;
             }
             catch (err) {
-                console.error(err);
+                this.lastSaveError = this.toError(err);
                 new obsidian.Notice(`${t("Save fail")}`);
+                throw this.lastSaveError;
             }
+            finally {
+                this.pendingSave = null;
+                if (saved && this.externalConflictData !== null) {
+                    void this.applyExternalChangeAfterSave().catch((err) => {
+                        console.error('Failed to apply an external Mapdown change after saving:', err);
+                    });
+                }
+            }
+        });
+    }
+    // An external edit recorded while a save was running is applied once the save
+    // settles, using the disk as the source of truth.
+    applyExternalChangeAfterSave() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const file = this.file;
+            const session = this.fileSessionGeneration;
+            if (!file || this.externalConflictData === null) {
+                return;
+            }
+            const diskData = yield this.app.vault.read(file);
+            if (this.file !== file ||
+                this.fileSessionGeneration !== session ||
+                this.externalConflictData === null ||
+                this.pendingSave) {
+                return;
+            }
+            if (diskData === this.savedBaseData) {
+                this.externalConflictData = null;
+                return;
+            }
+            this.externalConflictData = diskData;
+            this.applyPendingExternalChange();
+        });
+    }
+    persistMindMapChange() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const snapshot = this.captureSaveSnapshot();
+            if (!snapshot || snapshot.revision <= Math.max(this.savedRevision, this.recoveredRevision)) {
+                return;
+            }
+            let draftError = null;
+            try {
+                yield this.scheduleRecoveryDraft(snapshot);
+            }
+            catch (err) {
+                draftError = this.toError(err);
+                console.error('Failed to persist Mapdown recovery draft:', draftError);
+            }
+            try {
+                yield this.ensureStateMigrationBackup(snapshot);
+                if (this.externalConflictData !== null) {
+                    yield this.preserveConflictVersions(snapshot, this.externalConflictData, this.externalConflictGeneration);
+                    return;
+                }
+                this.savingSnapshot = snapshot.data;
+                yield this.app.vault.process(snapshot.file, (diskData) => {
+                    if (diskData !== snapshot.baseData && diskData !== snapshot.data && diskData !== snapshot.previewData) {
+                        throw new DiskConflictError(diskData);
+                    }
+                    return snapshot.data;
+                });
+                if (!this.isSaveSnapshotCurrent(snapshot)) {
+                    return;
+                }
+                this.savedBaseData = snapshot.data;
+                this.editorPreviewData = null;
+                this.rememberOwnWrite(snapshot.data);
+                this.savedRevision = Math.max(this.savedRevision, snapshot.revision);
+                if (snapshot.needsStateMigration) {
+                    this.stateNeedsMigration = false;
+                }
+                try {
+                    yield this.clearRecoveryDraftIfCurrent(snapshot);
+                }
+                catch (err) {
+                    console.error('Failed to clear a saved Mapdown recovery draft:', err);
+                }
+                try {
+                    yield this.syncFilenameWithRootTitle(snapshot);
+                }
+                catch (err) {
+                    console.error('Failed to rename mindmap:', err);
+                    new obsidian.Notice(t('Save fail: unable to rename the file'));
+                }
+            }
+            catch (err) {
+                if (err instanceof DiskConflictError) {
+                    const generation = this.recordExternalConflict(err.externalData);
+                    yield this.preserveConflictVersions(snapshot, err.externalData, generation);
+                    return;
+                }
+                if (draftError) {
+                    throw new Error(`Mapdown could not save the note or its recovery draft: ${this.toError(err).message}; ` +
+                        `recovery draft: ${draftError.message}`);
+                }
+                throw err;
+            }
+            finally {
+                if (this.savingSnapshot === snapshot.data) {
+                    this.savingSnapshot = null;
+                }
+            }
+        });
+    }
+    captureSaveSnapshot() {
+        if (!this.file || !this.serializeMindMap()) {
+            return null;
         }
+        return {
+            file: this.file,
+            path: this.file.path,
+            session: this.fileSessionGeneration,
+            revision: this.localRevision,
+            data: this.data,
+            baseData: this.savedBaseData,
+            previewData: this.editorPreviewData,
+            rootTitleIntent: this.pendingRootTitle,
+            needsStateMigration: this.stateNeedsMigration,
+        };
+    }
+    ensureStateMigrationBackup(snapshot) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!snapshot.needsStateMigration || this.migrationBackupSession === snapshot.session) {
+                return;
+            }
+            const backupPath = this.getAvailableRecoveryPath('backup');
+            yield this.app.vault.create(backupPath, snapshot.baseData);
+            if (this.isSaveSnapshotCurrent(snapshot)) {
+                this.migrationBackupSession = snapshot.session;
+                new obsidian.Notice(tf('Mapdown preserved the pre-migration note in {0}', backupPath));
+            }
+        });
+    }
+    preserveConflictVersions(snapshot, externalData, externalGeneration) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const recoveryPath = this.getAvailableRecoveryPath();
+            yield this.app.vault.create(recoveryPath, snapshot.data);
+            if (!this.isSaveSnapshotCurrent(snapshot)) {
+                return;
+            }
+            this.recoveredRevision = Math.max(this.recoveredRevision, snapshot.revision);
+            new obsidian.Notice(tf('Mapdown detected an external edit. Local changes were preserved in {0}', recoveryPath));
+            const hasNewerLocalRevision = this.localRevision > snapshot.revision;
+            const hasNewerExternalRevision = this.externalConflictGeneration !== externalGeneration;
+            if (hasNewerLocalRevision || hasNewerExternalRevision) {
+                this.saveRequestedWhilePending = true;
+                return;
+            }
+            this.externalConflictData = null;
+            this.savedBaseData = externalData;
+            try {
+                yield this.clearRecoveryDraftIfCurrent(snapshot);
+            }
+            catch (err) {
+                console.error('Failed to clear a recovered Mapdown draft:', err);
+            }
+            this.applyExternalData(externalData);
+        });
+    }
+    applyPendingExternalChange() {
+        var _a, _b;
+        if (this.externalConflictData === null ||
+            this.pendingSave ||
+            this.hasUnprotectedChanges() ||
+            ((_b = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.editNode) === null || _b === void 0 ? void 0 : _b.data.isEdit)) {
+            return;
+        }
+        const externalData = this.externalConflictData;
+        this.externalConflictData = null;
+        this.applyExternalData(externalData);
+    }
+    // Change events for our own writes can arrive after a newer save has started.
+    // Without this they look like external edits and trigger a false conflict.
+    rememberOwnWrite(data) {
+        this.recentOwnWrites.push(data);
+        if (this.recentOwnWrites.length > 8) {
+            this.recentOwnWrites.shift();
+        }
+    }
+    isOwnWrite(data) {
+        return this.recentOwnWrites.includes(data);
+    }
+    recordExternalConflict(data) {
+        this.externalConflictData = data;
+        this.externalConflictGeneration++;
+        return this.externalConflictGeneration;
+    }
+    isSaveSnapshotCurrent(snapshot) {
+        var _a;
+        return (this.fileSessionGeneration === snapshot.session &&
+            this.file === snapshot.file &&
+            ((_a = this.file) === null || _a === void 0 ? void 0 : _a.path) === snapshot.path);
+    }
+    hasUnprotectedChanges() {
+        return this.localRevision > Math.max(this.savedRevision, this.recoveredRevision);
+    }
+    scheduleRecoveryDraft(snapshot) {
+        if (this.queuedDraftSession === snapshot.session &&
+            this.queuedDraftRevision === snapshot.revision) {
+            return this.draftWriteChain;
+        }
+        const draft = {
+            version: 1,
+            sourcePath: snapshot.path,
+            revision: snapshot.revision,
+            data: snapshot.data,
+            updatedAt: new Date().toISOString(),
+        };
+        const adapter = this.app.vault.adapter;
+        const directory = this.getRecoveryDraftDirectory();
+        const path = this.getRecoveryDraftPath(snapshot.path);
+        this.queuedDraftSession = snapshot.session;
+        this.queuedDraftRevision = snapshot.revision;
+        this.draftWriteChain = this.draftWriteChain
+            .catch(() => undefined)
+            .then(() => __awaiter(this, void 0, void 0, function* () {
+            if (!(yield adapter.exists(directory))) {
+                yield adapter.mkdir(directory);
+            }
+            yield adapter.write(path, JSON.stringify(draft));
+        }));
+        return this.draftWriteChain;
+    }
+    clearRecoveryDraftIfCurrent(snapshot) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.isSaveSnapshotCurrent(snapshot) || this.localRevision > snapshot.revision) {
+                return;
+            }
+            yield this.draftWriteChain.catch(() => undefined);
+            const adapter = this.app.vault.adapter;
+            const path = this.getRecoveryDraftPath(snapshot.path);
+            if (yield adapter.exists(path)) {
+                yield adapter.remove(path);
+            }
+        });
+    }
+    getRecoveryDraftDirectory() {
+        return this.plugin.getRecoveryDraftDirectory();
+    }
+    getRecoveryDraftPath(sourcePath) {
+        let hash = 2166136261;
+        for (let i = 0; i < sourcePath.length; i++) {
+            hash ^= sourcePath.charCodeAt(i);
+            hash = Math.imul(hash, 16777619);
+        }
+        return `${this.getRecoveryDraftDirectory()}/${(hash >>> 0).toString(16)}.json`;
+    }
+    toError(error) {
+        if (error instanceof Error) {
+            return error;
+        }
+        if (error && typeof error === 'object' && 'message' in error) {
+            return new Error(String(error.message));
+        }
+        return new Error(String(error));
+    }
+    applyExternalData(data) {
+        this.isApplyingExternalData = true;
+        try {
+            this.setViewData(data);
+        }
+        finally {
+            this.isApplyingExternalData = false;
+        }
+    }
+    getAvailableRecoveryPath(label = 'conflict') {
+        var _a, _b, _c;
+        const parentPath = (_b = (_a = this.file) === null || _a === void 0 ? void 0 : _a.parent) === null || _b === void 0 ? void 0 : _b.path;
+        const folderPrefix = parentPath && parentPath !== '/' ? `${parentPath}/` : '';
+        const basename = this.sanitizeFilename(((_c = this.file) === null || _c === void 0 ? void 0 : _c.basename) || 'Mapdown') || 'Mapdown';
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        return this.getAvailableRenamePath(folderPrefix, `${basename} Mapdown ${label} ${timestamp}`);
+    }
+    markRootTitleChange(title) {
+        this.pendingRootTitle = title;
+    }
+    syncFilenameWithRootTitle(snapshot) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!this.file ||
+                !snapshot.rootTitleIntent ||
+                this.localRevision !== snapshot.revision ||
+                this.pendingRootTitle !== snapshot.rootTitleIntent) {
+                return;
+            }
+            const rootTitle = this.sanitizeFilename(snapshot.rootTitleIntent);
+            if (!rootTitle || rootTitle === this.file.basename) {
+                this.pendingRootTitle = null;
+                return;
+            }
+            const parentPath = (_a = this.file.parent) === null || _a === void 0 ? void 0 : _a.path;
+            const folderPrefix = parentPath && parentPath !== '/' ? `${parentPath}/` : '';
+            const newPath = this.getAvailableRenamePath(folderPrefix, rootTitle);
+            yield this.app.fileManager.renameFile(this.file, newPath);
+            // onRename has already synced the paths; the view may have closed meanwhile.
+            this.pendingRootTitle = null;
+        });
+    }
+    getAvailableRenamePath(folderPrefix, basename) {
+        let index = 0;
+        let path = `${folderPrefix}${basename}.md`;
+        while (this.app.vault.getAbstractFileByPath(path) && path !== this.file.path) {
+            index++;
+            path = `${folderPrefix}${basename} ${index}.md`;
+        }
+        return path;
+    }
+    sanitizeFilename(text) {
+        return (text || '')
+            .replace(/<br\s*\/?>/gi, ' ')
+            .replace(/[*"\\/<>:|?#\[\]]/g, '')
+            .replace(/\s+/g, ' ')
+            .trim()
+            .slice(0, 80);
     }
     serializeMindMap() {
         if (!this.mindmap) {
@@ -38813,41 +41447,334 @@ class MindMapView extends obsidian.TextFileView {
         this.mindmap.setting.headLevel = Number.isFinite(configuredHeadLevel)
             ? Math.max(0, Math.min(6, Math.trunc(configuredHeadLevel)))
             : 1;
+        const currentState = this.getMindMarkState(this.yamlString);
+        if (!currentState.writable) {
+            throw new Error('Mapdown cannot safely update the existing mindmark-state metadata');
+        }
+        this.yamlString = this.updateMindMarkState(this.yamlString, this.mindmap.getCollapsedBlockIds());
         this.data = this.yamlString + this.mindmap.getMarkdown();
+        this.bodyLineOffset = this.getBodyLineOffset(this.data);
         return true;
     }
     formatAndSaveMarkdown() {
+        var _a;
         return __awaiter(this, void 0, void 0, function* () {
-            if (!this.serializeMindMap()) {
-                return;
+            (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.commitActiveEdit();
+            if (!this.pendingSave && this.hasUnprotectedChanges()) {
+                this.startQueuedSave();
             }
-            yield this.save(false);
+            if (this.pendingSave) {
+                yield this.pendingSave;
+            }
+            if (this.hasUnprotectedChanges() || this.lastSaveError) {
+                throw this.lastSaveError || new Error('Mapdown still has unsaved changes');
+            }
         });
     }
-    getFrontMatter() {
-        var frontMatter = '---\n\n';
-        //  var v: any = '';
-        if (this.fileCache.frontmatter) {
-            // for (var k in this.fileCache.frontmatter) {
-            //   if (k != 'position') {
-            //     if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Array]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Object]') {
-            //       v = JSON.stringify(this.fileCache.frontmatter[k]);
-            //     } else if (Object.prototype.toString.call(this.fileCache.frontmatter[k]) == '[object Number]' || Object.prototype.toString.call(this.fileCache.frontmatter[k]) == "[object String]") {
-            //       v = this.fileCache.frontmatter[k];
-            //     }
-            //     if (v) {
-            //       frontMatter += `${k}: ${v}\n`;
-            //     }
-            //   }
-            // }
-            //var position = this.fileCache.frontmatter.position;
-            var position = this.fileCache.frontmatterPosition;
-            var end = position['end'].offset;
-            frontMatter = this.data.substr(0, end);
+    // Edits to a map whose state metadata cannot be written would never be saved,
+    // so keep such files in Markdown mode instead of accepting edits.
+    returnUnwritableStateToMarkdown() {
+        const leaf = this.leaf;
+        const generation = this.fileSessionGeneration;
+        setTimeout(() => {
+            if (leaf.view !== this || this.fileSessionGeneration !== generation) {
+                return;
+            }
+            void this.plugin.setMarkdownView(leaf);
+        }, 0);
+    }
+    getMindMarkState(frontMatter) {
+        try {
+            const yaml = frontMatter
+                .replace(/^\uFEFF?---[ \t]*(?:\r?\n)?/, '')
+                .replace(/\r?\n---[ \t]*(?:\r?\n)*$/, '');
+            const document = obsidian.parseYaml(yaml) || {};
+            const state = document['mindmark-state'];
+            if (state === undefined) {
+                return {
+                    version: 1,
+                    collapsed: new Set(),
+                    writable: true,
+                    needsMigration: true,
+                    raw: {},
+                };
+            }
+            if (!state || typeof state !== 'object' || Array.isArray(state)) {
+                throw new Error('mindmark-state must be a mapping');
+            }
+            const version = Number(state.version);
+            const collapsed = state.collapsed === undefined ? [] : state.collapsed;
+            if (!Number.isInteger(version) || !Array.isArray(collapsed) || collapsed.some((id) => typeof id !== 'string')) {
+                throw new Error('mindmark-state has invalid fields');
+            }
+            if (version !== 1 && version !== 2) {
+                return {
+                    version,
+                    collapsed: new Set(),
+                    writable: false,
+                    needsMigration: false,
+                    raw: Object.assign({}, state),
+                };
+            }
+            return {
+                version,
+                collapsed: new Set(collapsed),
+                writable: true,
+                needsMigration: version < 2,
+                raw: Object.assign({}, state),
+            };
         }
-        frontMatter += '\n\n';
-        //frontMatter += `\n---\n\n`;
-        return frontMatter;
+        catch (err) {
+            console.error('Failed to parse mindmark-state:', err);
+            return {
+                version: 0,
+                collapsed: new Set(),
+                writable: false,
+                needsMigration: false,
+                raw: {},
+            };
+        }
+    }
+    updateMindMarkState(frontMatter, collapsed) {
+        const currentState = this.getMindMarkState(frontMatter);
+        if (!currentState.writable) {
+            throw new Error('Unsupported or invalid mindmark-state metadata');
+        }
+        const stateLine = `mindmark-state: ${JSON.stringify(Object.assign(Object.assign({}, currentState.raw), { version: 2, collapsed }))}`;
+        const newline = frontMatter.includes('\r\n') ? '\r\n' : '\n';
+        const lines = frontMatter.split(/\r?\n/);
+        const start = lines.findIndex((line) => /^mindmark-state\s*:/.test(line));
+        if (start >= 0) {
+            let end = start + 1;
+            while (end < lines.length) {
+                const line = lines[end];
+                if (/^---[ \t]*$/.test(line) || (/^\S/.test(line) && /^[^#][^:]*:/.test(line))) {
+                    break;
+                }
+                end++;
+            }
+            lines.splice(start, end - start, stateLine);
+            return lines.join(newline);
+        }
+        const closingDelimiter = /\r?\n---[ \t]*(?:\r?\n){2}$/;
+        if (closingDelimiter.test(frontMatter)) {
+            return frontMatter.replace(closingDelimiter, `${newline}${stateLine}${newline}---${newline}${newline}`);
+        }
+        return basicFrontmatter.replace(/\n---[ \t]*\n\n$/, `\n${stateLine}\n---\n\n`);
+    }
+    getFrontMatter(data = this.data) {
+        const source = data || '';
+        const match = FRONT_MATTER_REGEX.exec(source);
+        if (match) {
+            return this.normalizeFrontMatter(match[0]);
+        }
+        const recoveredFrontMatter = this.recoverFrontMatter(source);
+        if (recoveredFrontMatter) {
+            return recoveredFrontMatter;
+        }
+        return basicFrontmatter;
+    }
+    normalizeFrontMatter(frontMatter) {
+        return frontMatter.replace(/\s*$/, '\n\n');
+    }
+    // File line where the trimmed Markdown body starts; node source ranges are
+    // relative to it, both after parsing and after serializing.
+    getBodyLineOffset(data) {
+        const source = data || '';
+        const body = this.stripFrontMatter(source);
+        const firstContent = body.search(/\S/);
+        const bodyStart = source.length - body.length + (firstContent < 0 ? body.length : firstContent);
+        return (source.slice(0, bodyStart).match(/\n/g) || []).length;
+    }
+    // Whether node line numbers describe this text (what an editor shows).
+    isSourceMapCurrent(text) {
+        return text.replace(/\r\n/g, '\n') === this.data.replace(/\r\n/g, '\n');
+    }
+    // Map -> text sync: move the most recently used Markdown view of this file to
+    // the selected node's line. Only user selections in the active map count.
+    onMapSelectionChanged() {
+        var _a;
+        if (!this.plugin.settings.syncSelection ||
+            this.isInitializingMindmap ||
+            this.syncingFromEditor ||
+            ((_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.suppressFocus) ||
+            this.app.workspace.getActiveViewOfType(MindMapView) !== this) {
+            return;
+        }
+        // Coalesce clear-then-select sequences into one sync of the final node.
+        this.scheduleSelectionSync(60, Date.now() + 3000);
+    }
+    scheduleSelectionSync(delay, deadline) {
+        const ownerWindow = this.containerEl.ownerDocument.defaultView || window;
+        if (this.selectionSyncTimer != null) {
+            ownerWindow.clearTimeout(this.selectionSyncTimer);
+        }
+        this.selectionSyncTimer = ownerWindow.setTimeout(() => {
+            this.selectionSyncTimer = null;
+            this.syncSelectionToMarkdown(deadline);
+        }, delay);
+    }
+    syncSelectionToMarkdown(deadline) {
+        var _a;
+        const node = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.selectNode;
+        const target = this.findLinkedMarkdownView();
+        if (!node || !target || this.isClosed) {
+            return;
+        }
+        // The user moved on to the editor before this delayed sync ran; never
+        // pull their cursor away.
+        if (!this.plugin.settings.syncSelection ||
+            this.app.workspace.getActiveViewOfType(MindMapView) !== this ||
+            (target.getMode() !== 'preview' && target.editor.hasFocus())) {
+            return;
+        }
+        const text = target.getMode() === 'preview' ? target.data : target.editor.getValue();
+        if (!this.isSourceMapCurrent(text)) {
+            // The editor has not caught up with a map edit yet; try again shortly.
+            if (Date.now() < deadline) {
+                this.scheduleSelectionSync(150, deadline);
+            }
+            return;
+        }
+        revealLineInMarkdown(target, this.getFileLineOfNode(node));
+    }
+    // Text -> map sync: select the node at a Markdown cursor line without taking
+    // focus from the editor. Hidden nodes resolve to their nearest visible
+    // ancestor; nodes outside the focus-mode subtree are left alone.
+    selectNodeFromEditor(line, text) {
+        var _a;
+        const mindmap = this.mindmap;
+        if (!this.plugin.settings.syncSelection ||
+            !mindmap ||
+            this.isInitializingMindmap ||
+            ((_a = mindmap.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit) ||
+            !this.isSourceMapCurrent(text)) {
+            return;
+        }
+        let node = this.getNodeAtFileLine(line);
+        if (!node) {
+            return;
+        }
+        while (!node.isShow() && node.parent) {
+            node = node.parent;
+        }
+        if (mindmap.focusedNode && !mindmap.isNodeWithinFocus(node)) {
+            return;
+        }
+        if (mindmap.selectNode !== node) {
+            const suppressFocus = mindmap.suppressFocus;
+            this.syncingFromEditor = true;
+            mindmap.suppressFocus = true;
+            try {
+                mindmap.clearSelectNode();
+                node.select();
+            }
+            finally {
+                mindmap.suppressFocus = suppressFocus;
+                this.syncingFromEditor = false;
+            }
+        }
+        mindmap.revealNode(node);
+    }
+    // A rebuild caused by typing in a linked editor loses the selection; restore
+    // it from that editor's cursor once the new map has been laid out.
+    onMindMapReady() {
+        if (!this.reselectFromEditorOnReady) {
+            return;
+        }
+        this.reselectFromEditorOnReady = false;
+        const view = this.findLinkedMarkdownView();
+        if (view && view.getMode() !== 'preview' && view.editor.hasFocus()) {
+            this.selectNodeFromEditor(view.editor.getCursor().line, view.editor.getValue());
+        }
+    }
+    findLinkedMarkdownView() {
+        let best = null;
+        let bestTime = -1;
+        this.app.workspace.iterateAllLeaves((leaf) => {
+            if (leaf.view instanceof obsidian.MarkdownView && leaf.view.file === this.file) {
+                const activeTime = leaf.activeTime || 0;
+                if (activeTime > bestTime) {
+                    best = leaf.view;
+                    bestTime = activeTime;
+                }
+            }
+        });
+        return best;
+    }
+    getNodeAtFileLine(line) {
+        if (!this.mindmap || line < this.bodyLineOffset) {
+            return null;
+        }
+        return this.mindmap.getNodeAtBodyLine(line - this.bodyLineOffset);
+    }
+    getFileLineOfNode(node) {
+        var _a, _b;
+        return this.bodyLineOffset + ((_b = (_a = node.data.sourceRange) === null || _a === void 0 ? void 0 : _a.start) !== null && _b !== void 0 ? _b : 0);
+    }
+    stripFrontMatter(data) {
+        const source = data || '';
+        const match = FRONT_MATTER_REGEX.exec(source);
+        if (match) {
+            return source.slice(match[0].length);
+        }
+        if (source.replace(/^\uFEFF/, '').startsWith('---')) {
+            const bodyStart = this.findMindMapBodyStart(source);
+            if (bodyStart >= 0) {
+                return source.slice(bodyStart);
+            }
+        }
+        return source;
+    }
+    recoverFrontMatter(data) {
+        if (!data.replace(/^\uFEFF/, '').startsWith('---')) {
+            return null;
+        }
+        const bodyStart = this.findMindMapBodyStart(data);
+        if (bodyStart < 0) {
+            return null;
+        }
+        const rawFrontMatter = data
+            .slice(0, bodyStart)
+            .replace(/^\uFEFF?---[ \t]*(?:\r?\n)?/, '')
+            .replace(/\s*$/, '');
+        const normalizedLines = rawFrontMatter
+            .split(/\r?\n/)
+            .map((line) => this.normalizeYamlLine(line))
+            .filter((line) => line !== null);
+        const content = normalizedLines.join('\n').trim();
+        if (!content) {
+            return basicFrontmatter;
+        }
+        return `---\n${content}\n---\n\n`;
+    }
+    normalizeYamlLine(line) {
+        const trimmed = line.trim();
+        if (!trimmed || /^---[ \t]*$/.test(trimmed)) {
+            return null;
+        }
+        if (!line.match(/^\s/) &&
+            !trimmed.includes(':') &&
+            !trimmed.startsWith('#') &&
+            !trimmed.startsWith('-')) {
+            return `${trimmed}:`;
+        }
+        return line.replace(/\s+$/, '');
+    }
+    findMindMapBodyStart(data) {
+        const headingMatch = /(^|\r?\n)#{1,6}\s+/.exec(data);
+        if (headingMatch) {
+            return headingMatch.index + headingMatch[1].length;
+        }
+        const listAfterBlankMatch = /(?:\r?\n){2}(\s*[-*+]\s+|\s*\d+\.\s+)/.exec(data);
+        if (listAfterBlankMatch) {
+            return listAfterBlankMatch.index + listAfterBlankMatch[0].length - listAfterBlankMatch[1].length;
+        }
+        const listMatch = /(^|\r?\n)(\s*[-*+]\s+|\s*\d+\.\s+)/.exec(data);
+        if (listMatch) {
+            return listMatch.index + listMatch[1].length;
+        }
+        return -1;
     }
     constructor(leaf, plugin) {
         super(leaf);
@@ -38857,6 +41784,40 @@ class MindMapView extends obsidian.TextFileView {
         this.timeOut = null;
         this.firstInit = true;
         this.isInitializingMindmap = false;
+        this.pendingSave = null;
+        this.saveRequestedWhilePending = false;
+        this.localRevision = 0;
+        this.savedRevision = 0;
+        this.recoveredRevision = 0;
+        // Not named lastSavedData: Obsidian's TextFileView overwrites that field on external modify.
+        this.savedBaseData = '';
+        this.recentOwnWrites = [];
+        this.editorPreviewData = null;
+        this.bodyLineOffset = 0;
+        // Set while applying a selection that came from a Markdown editor (text -> map).
+        this.syncingFromEditor = false;
+        this.selectionSyncTimer = null;
+        this.reselectFromEditorOnReady = false;
+        this.externalConflictData = null;
+        this.externalConflictGeneration = 0;
+        this.fileSessionGeneration = 0;
+        this.boundFilePath = null;
+        this.lastSaveError = null;
+        this.draftWriteChain = Promise.resolve();
+        this.queuedDraftSession = -1;
+        this.queuedDraftRevision = -1;
+        this.pendingRootTitle = null;
+        this.stateNeedsMigration = false;
+        this.hasUnwritableState = false;
+        this.migrationBackupSession = -1;
+        this.metadataReadGeneration = 0;
+        this.isApplyingExternalData = false;
+        this.savingSnapshot = null;
+        this.lastViewportWidth = 0;
+        this.lastViewportHeight = 0;
+        this.exportGeneration = 0;
+        this.exportSnapshots = new Set();
+        this.isClosed = false;
         this.yamlString = '';
         this.plugin = plugin;
         this.setColors();
@@ -38866,12 +41827,104 @@ class MindMapView extends obsidian.TextFileView {
             }
         };
     }
-    onClose() {
+    onLoadFile(file) {
+        const _super = Object.create(null, {
+            onLoadFile: { get: () => super.onLoadFile }
+        });
         return __awaiter(this, void 0, void 0, function* () {
+            yield _super.onLoadFile.call(this, file);
+            yield this.recoverPersistedDraft(file);
+        });
+    }
+    // Renames and moves from anywhere (file explorer, sync, other plugins) must
+    // update the paths used for export and link resolution.
+    onRename(file) {
+        const _super = Object.create(null, {
+            onRename: { get: () => super.onRename }
+        });
+        return __awaiter(this, void 0, void 0, function* () {
+            yield _super.onRename.call(this, file);
+            if (file !== this.file) {
+                return;
+            }
+            this.boundFilePath = file.path;
+            if (this.mindmap) {
+                this.mindmap.path = file.path;
+            }
+        });
+    }
+    onUnloadFile(file) {
+        const _super = Object.create(null, {
+            onUnloadFile: { get: () => super.onUnloadFile }
+        });
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            if (this.file === file &&
+                (this.pendingSave || this.hasUnprotectedChanges() || ((_b = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.editNode) === null || _b === void 0 ? void 0 : _b.data.isEdit))) {
+                yield this.formatAndSaveMarkdown();
+            }
+            yield _super.onUnloadFile.call(this, file);
+        });
+    }
+    recoverPersistedDraft(file) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const adapter = this.app.vault.adapter;
+            const draftPath = this.getRecoveryDraftPath(file.path);
+            if (!(yield adapter.exists(draftPath))) {
+                return;
+            }
+            try {
+                const draft = JSON.parse(yield adapter.read(draftPath));
+                if (draft.version !== 1 ||
+                    draft.sourcePath !== file.path ||
+                    typeof draft.data !== 'string') {
+                    throw new Error('invalid recovery draft data');
+                }
+                const diskData = yield this.app.vault.read(file);
+                if (draft.data === diskData) {
+                    yield adapter.remove(draftPath);
+                    return;
+                }
+                if (this.file !== file || this.hasUnprotectedChanges()) {
+                    return;
+                }
+                const recoveryPath = this.getAvailableRecoveryPath('recovered');
+                yield this.app.vault.create(recoveryPath, draft.data);
+                yield adapter.remove(draftPath);
+                new obsidian.Notice(tf('Mapdown restored unsaved changes to {0}', recoveryPath));
+            }
+            catch (err) {
+                console.error('Failed to recover a persisted Mapdown draft:', err);
+                new obsidian.Notice(t('Mapdown found an unsaved recovery draft but could not restore it'));
+            }
+        });
+    }
+    onClose() {
+        var _a, _b;
+        return __awaiter(this, void 0, void 0, function* () {
+            this.isClosed = true;
+            if (this.selectionSyncTimer != null) {
+                (this.containerEl.ownerDocument.defaultView || window).clearTimeout(this.selectionSyncTimer);
+                this.selectionSyncTimer = null;
+            }
+            this.exportGeneration++;
+            this.exportSnapshots.forEach((element) => element.remove());
+            this.exportSnapshots.clear();
             // Remove draggables from render, as the DOM has already detached
             //this.plugin.removeView(this);
             if (this.mindmap) {
-                this.mindmap.clear();
+                if (this.pendingSave ||
+                    this.hasUnprotectedChanges() ||
+                    ((_a = this.mindmap.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit)) {
+                    try {
+                        yield this.formatAndSaveMarkdown();
+                    }
+                    catch (err) {
+                        console.error('Mapdown view closed with recoverable unsaved changes:', err);
+                        return;
+                    }
+                }
+                (_b = this.mindmap) === null || _b === void 0 ? void 0 : _b.clear();
                 this.contentEl.innerHTML = '';
                 this.mindmap = null;
             }
@@ -38882,14 +41935,63 @@ class MindMapView extends obsidian.TextFileView {
     getViewData() {
         return this.data;
     }
-    setViewData(data) {
+    setViewData(data, clear = false) {
+        var _a, _b;
+        if (this.savingSnapshot !== null && data === this.savingSnapshot) {
+            return;
+        }
+        if (!clear && this.isOwnWrite(data)) {
+            return;
+        }
+        if (!clear && this.mindmap && data === this.data && data === this.editorPreviewData) {
+            // The editor saved the text the map already shows.
+            this.savedBaseData = data;
+            this.editorPreviewData = null;
+            return;
+        }
+        if (!clear &&
+            !this.isApplyingExternalData &&
+            this.mindmap &&
+            (this.pendingSave || this.hasUnprotectedChanges() || ((_a = this.mindmap.editNode) === null || _a === void 0 ? void 0 : _a.data.isEdit))) {
+            this.recordExternalConflict(data);
+            return;
+        }
+        const filePath = ((_b = this.file) === null || _b === void 0 ? void 0 : _b.path) || null;
+        if (clear || (this.boundFilePath !== null && this.boundFilePath !== filePath)) {
+            this.fileSessionGeneration++;
+            this.recentOwnWrites = [];
+        }
+        this.boundFilePath = filePath;
+        // A rebuild triggered from elsewhere (another editor, sync) keeps focus where it is.
+        const focusIsElsewhere = !clear && !!this.mindmap &&
+            !this.containerEl.contains(this.containerEl.ownerDocument.activeElement);
         if (this.mindmap) {
             this.mindmap.clear();
             this.contentEl.innerHTML = '';
         }
         this.data = data;
+        this.savedBaseData = data;
+        this.editorPreviewData = null;
+        this.bodyLineOffset = this.getBodyLineOffset(data);
+        this.localRevision = 0;
+        this.savedRevision = 0;
+        this.recoveredRevision = 0;
+        this.lastSaveError = null;
+        this.externalConflictData = null;
+        this.pendingRootTitle = null;
+        this.yamlString = this.getFrontMatter(this.data);
         var mdText = this.getMdText(this.data);
-        var mindData = this.mdToData(mdText);
+        const mindMarkState = this.getMindMarkState(this.yamlString);
+        this.stateNeedsMigration = mindMarkState.needsMigration && mdText.length > 0;
+        this.hasUnwritableState = !mindMarkState.writable;
+        if (this.hasUnwritableState) {
+            new obsidian.Notice(t('Unsupported mindmark-state metadata, opened as Markdown'));
+            // A file load is still inside leaf.setViewState; the plugin redirects after it settles.
+            if (!clear) {
+                this.returnUnwritableStateToMarkdown();
+            }
+        }
+        var mindData = this.mdToData(mdText, mindMarkState);
         mindData.isRoot = true;
         // const frontmatterContentRegExResult = /^---$(.+?)^---$.+?/mis.exec(data)
         // if (frontmatterContentRegExResult != null && frontmatterContentRegExResult[1]) {
@@ -38903,6 +42005,8 @@ class MindMapView extends obsidian.TextFileView {
         // }
         this.isInitializingMindmap = true;
         this.mindmap = new MindMap(mindData, this.contentEl, this.plugin.settings, this);
+        this.mindmap.suppressFocus = focusIsElsewhere;
+        this.reselectFromEditorOnReady = focusIsElsewhere;
         this.mindmap.colors = this.colors;
         if (this.firstInit) {
             const mindmap = this.mindmap;
@@ -38918,6 +42022,7 @@ class MindMapView extends obsidian.TextFileView {
                         mindmap.appEl.classList.add('mm-ready');
                         this.isInitializingMindmap = false;
                         mindmap.off('initialLayoutComplete', markReady);
+                        this.onMindMapReady();
                     }
                 };
                 mindmap.on('initialLayoutComplete', markReady);
@@ -38949,6 +42054,7 @@ class MindMapView extends obsidian.TextFileView {
                     mindmap.appEl.classList.add('mm-ready');
                     this.isInitializingMindmap = false;
                     mindmap.off('initialLayoutComplete', markReady);
+                    this.onMindMapReady();
                 }
             };
             mindmap.on('initialLayoutComplete', markReady);
@@ -38957,7 +42063,7 @@ class MindMapView extends obsidian.TextFileView {
     }
     onload() {
         super.onload();
-        this.registerEvent(this.app.workspace.on("quick-preview", this.onQuickPreview, this));
+        this.registerEvent(this.app.workspace.on("quick-preview", this.onEditorPreview, this));
         this.registerEvent(this.app.workspace.on('active-leaf-change', (leaf) => {
             if (leaf === this.leaf) {
                 setTimeout(() => this.updateMindMap(), 100);
@@ -38965,11 +42071,10 @@ class MindMapView extends obsidian.TextFileView {
         }));
         // 增加切换回 Markdown 的快捷按钮
         this.addAction("document", t("Open as markdown"), () => __awaiter(this, void 0, void 0, function* () {
-            this.plugin.mindmapFileModes[this.id || this.file.path] = "markdown";
             yield this.plugin.setMarkdownView(this.leaf);
         }));
         // 增加向右分屏并以 Markdown 展示的快捷按钮 (Toggle 模式)
-        this.addAction("sidebar-right", "Toggle split right (Markdown)", () => __awaiter(this, void 0, void 0, function* () {
+        this.addAction("sidebar-right", t("Toggle split right (Markdown)"), () => __awaiter(this, void 0, void 0, function* () {
             // 查找当前工作区中是否已经有显示该文件的 markdown 视图
             const leaves = this.app.workspace.getLeavesOfType("markdown");
             const existingLeaf = leaves.find(l => {
@@ -38985,26 +42090,108 @@ class MindMapView extends obsidian.TextFileView {
                 // 否则，创建一个新的右侧分屏叶子
                 const newLeaf = this.app.workspace.getLeaf("split", "vertical");
                 // 标记这个新叶子需要以 Markdown 模式打开，避免被插件再次拦截为导图
-                this.plugin.mindmapFileModes[newLeaf.id || this.file.path] = "markdown";
+                this.plugin.setFileMode(newLeaf, this.file.path, "markdown");
                 // 在新叶子中打开当前文件
                 newLeaf.openFile(this.file, { active: true });
             }
         }));
     }
-    onQuickPreview(file, data) {
-        if (file === this.file && data !== this.data) {
-            this.setViewData(data);
-            this.fileCache = this.app.metadataCache.getFileCache(file);
+    // Unsaved text from a Markdown editor of the same file. Obsidian merges our
+    // writes into that editor and saves the result, so it is never a conflict:
+    // refresh the map only when idle, and keep the disk content as the baseline.
+    onEditorPreview(file, data) {
+        var _a, _b;
+        if (file !== this.file || data === this.data || this.isOwnWrite(data)) {
+            return;
         }
+        if (this.pendingSave || this.hasUnprotectedChanges() || ((_b = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.editNode) === null || _b === void 0 ? void 0 : _b.data.isEdit)) {
+            return;
+        }
+        if (!this.patchFromEditor(data)) {
+            const baseData = this.savedBaseData;
+            this.setViewData(data);
+            this.savedBaseData = baseData;
+        }
+        this.editorPreviewData = data;
+        this.fileCache = this.app.metadataCache.getFileCache(file);
     }
-    updateMindMap() {
+    // Apply editor text to the live map in place instead of rebuilding it.
+    // Returns false when a rebuild is needed (state metadata changed, map not
+    // ready, or too much of the map changed).
+    patchFromEditor(data) {
+        var _a;
+        const mindmap = this.mindmap;
+        if (!(mindmap === null || mindmap === void 0 ? void 0 : mindmap.root) ||
+            this.firstInit ||
+            this.isInitializingMindmap ||
+            this.hasUnwritableState ||
+            this.boundFilePath !== (((_a = this.file) === null || _a === void 0 ? void 0 : _a.path) || null) ||
+            this.getFrontMatter(data) !== this.getFrontMatter(this.data)) {
+            return false;
+        }
+        const mdText = this.getMdText(data);
+        const mindMarkState = this.getMindMarkState(this.getFrontMatter(data));
+        if (!mdText || !mindMarkState.writable) {
+            return false;
+        }
+        const mindData = this.mdToData(mdText, mindMarkState);
+        mindData.isRoot = true;
+        const focusIsElsewhere = !this.containerEl.contains(this.containerEl.ownerDocument.activeElement);
+        try {
+            if (!mindmap.patchFromData(mindData)) {
+                return false;
+            }
+        }
+        catch (e) {
+            console.error('Mapdown: in-place update failed, rebuilding', e);
+            return false;
+        }
+        // Same view state a rebuild would leave (unsaved map changes were ruled out).
+        this.data = data;
+        this.bodyLineOffset = this.getBodyLineOffset(data);
+        this.localRevision = 0;
+        this.savedRevision = 0;
+        this.recoveredRevision = 0;
+        this.lastSaveError = null;
+        this.externalConflictData = null;
+        this.pendingRootTitle = null;
+        this.reselectFromEditorOnReady = focusIsElsewhere;
+        // After the layout frame the patch requested, so revealing uses new positions.
+        const ownerWindow = this.containerEl.ownerDocument.defaultView || window;
+        ownerWindow.requestAnimationFrame(() => {
+            if (this.mindmap === mindmap) {
+                this.onMindMapReady();
+            }
+        });
+        return true;
+    }
+    onQuickPreview(file, data) {
+        var _a, _b;
+        if (file !== this.file || data === this.data || data === this.savedBaseData || this.isOwnWrite(data)) {
+            return;
+        }
+        if (this.pendingSave || this.hasUnprotectedChanges() || ((_b = (_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.editNode) === null || _b === void 0 ? void 0 : _b.data.isEdit)) {
+            this.recordExternalConflict(data);
+            return;
+        }
+        this.setViewData(data);
+        this.fileCache = this.app.metadataCache.getFileCache(file);
+    }
+    updateMindMap(options = {}) {
         var _a;
         if (this.isInitializingMindmap) {
             return;
         }
         if (((_a = this.mindmap) === null || _a === void 0 ? void 0 : _a.root) && this.contentEl && this.contentEl.clientWidth > 0) {
-            this.mindmap.refresh();
-            if (obsidian.Platform.isDesktopApp) {
+            const width = this.contentEl.clientWidth;
+            const height = this.contentEl.clientHeight;
+            const sizeChanged = width !== this.lastViewportWidth || height !== this.lastViewportHeight;
+            if (options.force || sizeChanged) {
+                this.mindmap.refresh();
+                this.lastViewportWidth = width;
+                this.lastViewportHeight = height;
+            }
+            if (options.center && obsidian.Platform.isDesktopApp) {
                 this.mindmap.center();
             }
         }
@@ -39015,50 +42202,198 @@ class MindMapView extends obsidian.TextFileView {
     }
     onFileMetadataChange(file) {
         return __awaiter(this, void 0, void 0, function* () {
+            if (file !== this.file) {
+                return;
+            }
+            const generation = ++this.metadataReadGeneration;
             var path = file.path;
             let md = yield this.app.vault.adapter.read(path);
+            if (generation !== this.metadataReadGeneration || file !== this.file || path !== file.path) {
+                return;
+            }
             this.onQuickPreview(file, md);
         });
     }
     getMdText(str) {
-        var md = str.trim().replace(FRONT_MATTER_REGEX, '');
-        return md.trim();
+        return this.stripFrontMatter(str).trim();
     }
-    mdToData(str) {
+    mdToData(str, mindMarkState = { version: 1, collapsed: new Set() }) {
         var _a;
+        const sourceLines = str.split(/\r?\n/);
+        function getCodeBlockSource(mapData) {
+            var _a;
+            if (!/^(?:`{3,}|~{3,})/.test(String(mapData.v || '').trimStart())) {
+                return null;
+            }
+            const range = (_a = mapData.p) === null || _a === void 0 ? void 0 : _a.lines;
+            if (!Array.isArray(range) || range.length < 2) {
+                return null;
+            }
+            const lines = sourceLines.slice(range[0], range[1]);
+            for (let i = 0; i < lines.length; i++) {
+                const opening = lines[i].match(/^\s*(?:-\s+)?(`{3,}|~{3,})/);
+                if (!opening) {
+                    continue;
+                }
+                const fenceCharacter = opening[1][0];
+                const fenceLength = opening[1].length;
+                const fenceColumn = lines[i].indexOf(opening[1]);
+                for (let j = i + 1; j < lines.length; j++) {
+                    const closing = lines[j].trim().match(/^(`+|~+)$/);
+                    if (closing &&
+                        closing[1][0] === fenceCharacter &&
+                        closing[1].length >= fenceLength) {
+                        const marker = (lines[j + 1] || '').trim().match(/^\^([a-z0-9-]+)$/i);
+                        const codeLines = lines.slice(i, j + 1).map((line, index) => {
+                            if (index === 0) {
+                                return line.slice(fenceColumn);
+                            }
+                            return line.length >= fenceColumn ? line.slice(fenceColumn) : line;
+                        });
+                        return {
+                            id: marker ? marker[1] : null,
+                            text: codeLines.join('\n'),
+                        };
+                    }
+                }
+            }
+            return null;
+        }
         function transformData(mapData) {
+            var _a, _b, _c;
             var flag = true;
             if (mapData.t == 'blockquote') {
                 mapData = mapData.c[0];
                 flag = false;
                 mapData.v = '> ' + mapData.v;
             }
+            // A table (also one indented under a list item) becomes one node
+            // holding its Markdown source.
+            const tableHead = mapData.t === 'table' ? mapData : (mapData.c || []).find((c) => c.t === 'thead');
+            if (tableHead && Array.isArray((_a = tableHead.p) === null || _a === void 0 ? void 0 : _a.lines)) {
+                return tableNode(mapData, tableHead.p.lines[0]);
+            }
+            if (mapData.t === 'list_item') {
+                mapData.v = String(mapData.v || '').replace(/^\\>/, '>');
+                if (((_b = mapData.p) === null || _b === void 0 ? void 0 : _b.index) !== undefined) {
+                    mapData.v = mapData.v.replace(/^\d+[.)]\s+/, '');
+                }
+            }
             const regexResult = /^.+ \^([a-z0-9\-]+)$/im.exec(mapData.v);
-            const id = regexResult != null ? regexResult[1] : null;
+            const codeBlock = getCodeBlockSource(mapData);
+            const id = regexResult != null ? regexResult[1] : (codeBlock === null || codeBlock === void 0 ? void 0 : codeBlock.id) || null;
             // console.log(id);
-            var rawText = id ? mapData.v.replace(` ^${id}`, '') : mapData.v;
+            var rawText = regexResult
+                ? mapData.v.replace(` ^${id}`, '')
+                : (codeBlock === null || codeBlock === void 0 ? void 0 : codeBlock.text) || mapData.v;
             var map = {
                 id: id || uuid(),
                 text: rawText.replace(/<br>/g, '\n'),
                 children: [],
-                expanded: id ? false : true
+                expanded: mindMarkState.version >= 2 ? !mindMarkState.collapsed.has(id) : !id,
             };
+            if (mapData.t === 'heading') {
+                headingNodes.add(map);
+            }
+            if (id) {
+                map.blockId = id;
+            }
+            const lines = (_c = mapData.p) === null || _c === void 0 ? void 0 : _c.lines;
+            if (Array.isArray(lines) && lines.length === 2) {
+                map.sourceRange = { start: lines[0], end: lines[1] };
+            }
             if (flag && mapData.c && mapData.c.length) {
-                mapData.c.forEach((data) => {
+                listChildren(mapData).forEach((data) => {
                     map.children.push(transformData(data));
                 });
             }
             return map;
         }
+        // Task lists come wrapped in an empty list node; their items belong to
+        // the parent directly.
+        function listChildren(mapData) {
+            return (mapData.c || []).reduce((all, c) => ((c.t === 'bullet_list' || c.t === 'ordered_list') && !c.v
+                ? all.concat(listChildren(c))
+                : all.concat([c])), []);
+        }
+        function tableNode(mapData, headLine) {
+            var _a, _b;
+            let end = headLine;
+            while (end < sourceLines.length && /^\s*\|/.test(sourceLines[end])) {
+                end++;
+            }
+            const rows = sourceLines.slice(headLine, end);
+            const indent = Math.min(...rows.map((row) => row.match(/^\s*/)[0].length));
+            const marker = String(mapData.v || '').trim().match(/^\^([a-z0-9-]+)$/i);
+            const id = marker ? marker[1] : null;
+            const start = ((_a = sourceLines[headLine - 1]) === null || _a === void 0 ? void 0 : _a.trim()) === '-' ? headLine - 1 : headLine;
+            const lines = (_b = mapData.p) === null || _b === void 0 ? void 0 : _b.lines;
+            const node = {
+                id: id || uuid(),
+                text: rows.map((row) => row.slice(indent).trimEnd()).join('\n'),
+                children: [],
+                expanded: mindMarkState.version >= 2 ? !mindMarkState.collapsed.has(id) : !id,
+                sourceRange: { start, end: Math.max(end, Array.isArray(lines) ? lines[1] : end) },
+            };
+            if (id) {
+                node.blockId = id;
+            }
+            return node;
+        }
+        // Paragraphs, embeds and other text outside headings and lists are not
+        // in the parsed tree; each block becomes a child of the heading above it.
+        function addLooseText(root) {
+            var _a;
+            const covered = new Set();
+            const headings = [];
+            const walk = (node, isHeading) => {
+                const range = node.sourceRange;
+                if (range) {
+                    for (let i = range.start; i < Math.max(range.end, range.start + 1); i++) {
+                        covered.add(i);
+                    }
+                    if (isHeading) {
+                        headings.push({ node, line: range.start });
+                    }
+                }
+                node.children.forEach((c) => walk(c, headingNodes.has(c)));
+            };
+            walk(root, true);
+            headings.sort((a, b) => a.line - b.line);
+            const isSkipped = (line) => !line.trim() || /^\s*([-*_])(\s*\1){2,}\s*$/.test(line);
+            for (let i = 0; i < sourceLines.length; i++) {
+                if (covered.has(i) || isSkipped(sourceLines[i])) {
+                    continue;
+                }
+                let end = i;
+                while (end < sourceLines.length && !covered.has(end) && !isSkipped(sourceLines[end])) {
+                    end++;
+                }
+                const owner = ((_a = headings.filter((h) => h.line < i).pop()) === null || _a === void 0 ? void 0 : _a.node) || root;
+                const node = {
+                    id: uuid(),
+                    text: sourceLines.slice(i, end).map((line) => line.trim()).join('\n').replace(/<br>/g, '\n'),
+                    children: [],
+                    expanded: true,
+                    sourceRange: { start: i, end },
+                };
+                const at = owner.children.findIndex((c) => { var _a, _b; return ((_b = (_a = c.sourceRange) === null || _a === void 0 ? void 0 : _a.start) !== null && _b !== void 0 ? _b : -1) > i; });
+                owner.children.splice(at < 0 ? owner.children.length : at, 0, node);
+                i = end - 1;
+            }
+        }
+        const headingNodes = new Set();
         if (str) {
             const { root } = transformer.transform(str);
             const data = transformData(root);
+            addLooseText(data);
             return data;
         }
         else {
             return {
                 id: uuid(),
-                text: ((_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.basename) || `${t('Untitled mindmap')}`
+                text: ((_a = this.file) === null || _a === void 0 ? void 0 : _a.basename) || `${t('Untitled mindmap')}`,
+                expanded: true,
             };
         }
     }
@@ -39071,7 +42406,6 @@ class MindMapView extends obsidian.TextFileView {
                 .setTitle(`${t("Open as markdown")}`)
                 .setIcon("document")
                 .onClick(() => __awaiter(this, void 0, void 0, function* () {
-                this.plugin.mindmapFileModes[this.id || this.file.path] = "markdown";
                 yield this.plugin.setMarkdownView(this.leaf);
             }));
         });
@@ -39091,6 +42425,23 @@ class MindMapView extends obsidian.TextFileView {
         const parentView = Object.getPrototypeOf(MindMapView.prototype);
         (_a = parentView.onPaneMenu) === null || _a === void 0 ? void 0 : _a.call(this, menu, 'more-options');
     }
+}
+// A plain note written as a mind map note: its properties are kept and its
+// body is converted the way opening it in the map view would.
+function plainNoteAsMindMap(source, basename, headLevel) {
+    const view = Object.create(MindMapView.prototype);
+    view.file = { basename };
+    const data = view.mdToData(view.getMdText(source), { version: 2, collapsed: new Set() });
+    const match = FRONT_MATTER_REGEX.exec(source);
+    const properties = match
+        ? match[0].split(/\r?\n/).slice(1).filter((line) => (line.trim() && !/^---[ \t]*$/.test(line) && !/^(mindmap-plugin|mindmark-state)\s*:/.test(line)))
+        : [];
+    const frontMatter = ['---', ...properties, 'mindmap-plugin: basic', 'mindmark-state: {"version":2,"collapsed":[]}', '---', '', ''].join('\n');
+    return frontMatter + writeOutline(data, headLevel, {
+        children: (n) => n.children || [],
+        text: (n) => n.text || '',
+        blockId: () => '',
+    });
 }
 
 class MindMapSettingsTab extends obsidian.PluginSettingTab {
@@ -39122,6 +42473,9 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
             mindmapLeaves.forEach((leaf) => {
                 var v = leaf.view;
+                if (!v.mindmap) {
+                    return;
+                }
                 v.mindmap.setting.canvasSize = _v;
                 v.mindmap.setAppSetting();
                 var box = v.mindmap.root.getBox();
@@ -39142,6 +42496,9 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
             mindmapLeaves.forEach((leaf) => {
                 var v = leaf.view;
+                if (!v.mindmap) {
+                    return;
+                }
                 v.mindmap.setting.background = this.plugin.settings.background;
                 v.mindmap.setAppSetting();
             });
@@ -39164,6 +42521,9 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
             mindmapLeaves.forEach((leaf) => {
                 var v = leaf.view;
+                if (!v.mindmap) {
+                    return;
+                }
                 v.mindmap.setting.headLevel = this.plugin.settings.headLevel;
             });
         }));
@@ -39176,11 +42536,19 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
                 .setValue(((_a = this.plugin.settings.fontSize) === null || _a === void 0 ? void 0 : _a.toString()) || '16')
                 .setPlaceholder(t('Font size placeholder'))
                 .onChange((value) => {
-                this.plugin.settings.fontSize = Number.parseInt(value);
+                const fontSize = Number.parseInt(value);
+                // Ignore partial or invalid input instead of saving NaN.
+                if (!Number.isFinite(fontSize) || fontSize < 8 || fontSize > 72) {
+                    return;
+                }
+                this.plugin.settings.fontSize = fontSize;
                 this.plugin.saveData(this.plugin.settings);
                 const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                 mindmapLeaves.forEach((leaf) => {
                     var v = leaf.view;
+                    if (!v.mindmap) {
+                        return;
+                    }
                     v.mindmap.setting.fontSize = this.plugin.settings.fontSize;
                     v.mindmap.setAppSetting();
                     v.mindmap.traverseBF((n) => {
@@ -39192,20 +42560,73 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             });
         });
         new obsidian.Setting(containerEl)
+            .setName(t('Node glow size'))
+            .setDesc(t('Node glow size desc'))
+            .addSlider((slider) => {
+            var _a;
+            return slider
+                .setLimits(0, 24, 1)
+                .setValue((_a = this.plugin.settings.nodeGlowSize) !== null && _a !== void 0 ? _a : 10)
+                .setDynamicTooltip()
+                .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+                this.plugin.settings.nodeGlowSize = value;
+                yield this.plugin.saveSettings();
+                const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+                mindmapLeaves.forEach((leaf) => {
+                    const view = leaf.view;
+                    if (!view.mindmap) {
+                        return;
+                    }
+                    view.mindmap.setting.nodeGlowSize = value;
+                    view.mindmap.setAppSetting();
+                });
+            }));
+        });
+        new obsidian.Setting(containerEl)
+            .setName(t('Node max width'))
+            .setDesc(t('Node max width desc'))
+            .addSlider((slider) => slider
+            .setLimits(240, 1200, 20)
+            .setValue(this.plugin.settings.nodeMaxWidth || 800)
+            .setDynamicTooltip()
+            .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+            this.plugin.settings.nodeMaxWidth = value;
+            yield this.plugin.saveSettings();
+            const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
+            mindmapLeaves.forEach((leaf) => {
+                const view = leaf.view;
+                if (!view.mindmap) {
+                    return;
+                }
+                view.mindmap.setting.nodeMaxWidth = value;
+                view.mindmap.setAppSetting();
+                view.mindmap.traverseBF((n) => {
+                    n.boundingRect = null;
+                    n.refreshBox();
+                });
+                view.mindmap.refresh();
+            });
+        })));
+        new obsidian.Setting(containerEl)
             .setName(t('Mind map layout direct'))
             .setDesc(t('Mind map layout direct desc'))
             .addDropdown(dropDown => dropDown
-            .addOption('mind map', t('Centered'))
+            .addOption('mindmap', t('Centered'))
             .addOption('right', t('Right'))
             .addOption('left', t('Left'))
             .addOption('clockwise', t('Clockwise'))
-            .setValue(this.plugin.settings.layoutDirect.toString() || 'mind map')
+            .setValue(this.plugin.settings.layoutDirect && this.plugin.settings.layoutDirect !== 'mind map'
+            ? this.plugin.settings.layoutDirect
+            : 'mindmap')
             .onChange((value) => {
             this.plugin.settings.layoutDirect = value;
             this.plugin.saveData(this.plugin.settings);
             const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
             mindmapLeaves.forEach((leaf) => {
                 var v = leaf.view;
+                if (!v.mindmap) {
+                    return;
+                }
                 v.mindmap.setting.layoutDirect = this.plugin.settings.layoutDirect;
                 v.mindmap.refresh();
             });
@@ -39248,6 +42669,9 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
                 const mindmapLeaves = this.app.workspace.getLeavesOfType(mindmapViewType);
                 mindmapLeaves.forEach((leaf) => {
                     var v = leaf.view;
+                    if (!v.mindmap) {
+                        return;
+                    }
                     v.mindmap.setting.strokeArray = this.plugin.settings.strokeArray;
                     if (v.mindmap.mmLayout) {
                         v.mindmap.mmLayout.colors = v.mindmap.setting.strokeArray;
@@ -39269,6 +42693,15 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             this.plugin.saveData(this.plugin.settings);
         }));
         new obsidian.Setting(containerEl)
+            .setName(t('Sync selection with Markdown'))
+            .setDesc(t('Sync selection with Markdown desc'))
+            .addToggle((toggle) => toggle
+            .setValue(this.plugin.settings.syncSelection)
+            .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+            this.plugin.settings.syncSelection = value;
+            yield this.plugin.saveSettings();
+        })));
+        new obsidian.Setting(containerEl)
             .setName(t('Focus overlay opacity'))
             .setDesc(t('Focus overlay opacity desc'))
             .addSlider((slider) => slider
@@ -39280,6 +42713,9 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             yield this.plugin.saveSettings();
             this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
                 const view = leaf.view;
+                if (!view.mindmap) {
+                    return;
+                }
                 view.mindmap.setting.focusOverlayOpacity =
                     this.plugin.settings.focusOverlayOpacity;
                 if (view.mindmap.focusedNode) {
@@ -39300,6 +42736,30 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
             }
         })));
         new obsidian.Setting(containerEl)
+            .setName(t('Focus glow size'))
+            .setDesc(t('Focus glow size desc'))
+            .addSlider((slider) => {
+            var _a;
+            return slider
+                .setLimits(0, 400, 10)
+                .setValue((_a = this.plugin.settings.focusGlowSize) !== null && _a !== void 0 ? _a : 150)
+                .setDynamicTooltip()
+                .onChange((value) => __awaiter(this, void 0, void 0, function* () {
+                this.plugin.settings.focusGlowSize = value;
+                yield this.plugin.saveSettings();
+                this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
+                    const view = leaf.view;
+                    if (!view.mindmap) {
+                        return;
+                    }
+                    view.mindmap.setting.focusGlowSize = value;
+                    if (view.mindmap.focusedNode) {
+                        view.mindmap.refresh();
+                    }
+                });
+            }));
+        });
+        new obsidian.Setting(containerEl)
             .setName(t('Internal link open mode'))
             .setDesc(t('Internal link open mode desc'))
             .addDropdown((dropdown) => dropdown
@@ -39314,20 +42774,154 @@ class MindMapSettingsTab extends obsidian.PluginSettingTab {
     }
 }
 
+const SKIPPED_LABELS = {
+    summary: 'XMind summaries',
+    boundary: 'XMind boundaries',
+    relationship: 'XMind relationships',
+    callout: 'XMind callouts',
+    image: 'XMind images',
+};
+function importSummary(doc) {
+    const skipped = Object.keys(SKIPPED_LABELS)
+        .filter((k) => doc.skipped[k] > 0)
+        .map((k) => `${t(SKIPPED_LABELS[k])} ${doc.skipped[k]}`);
+    const imported = tf('Imported {0} topics', String(doc.topicCount));
+    return skipped.length
+        ? imported + tf('XMind not imported: {0}', skipped.join(t('List separator')))
+        : imported;
+}
+function importXmindFile(plugin, data, baseName, folder) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let doc;
+        try {
+            doc = yield readXmind(data);
+        }
+        catch (err) {
+            console.error('Failed to read XMind file:', err);
+            const unrecognized = err instanceof XmindImportError && err.code === 'unrecognized';
+            new obsidian.Notice(t(unrecognized ? 'Unrecognized XMind file' : 'Parse xmind error'));
+            return [];
+        }
+        // Build every note before creating any, so a failure leaves nothing behind.
+        const names = sheetNoteNames(baseName.replace(/\.xmind$/i, ''), doc.sheets);
+        const contents = doc.sheets.map((sheet) => sheetToNote(sheet, plugin.settings.headLevel));
+        const vault = plugin.app.vault;
+        const created = [];
+        try {
+            for (let i = 0; i < contents.length; i++) {
+                const base = folder.isRoot() ? names[i] : `${folder.path}/${names[i]}`;
+                const path = yield availableNotePath(plugin, obsidian.normalizePath(base));
+                created.push(yield vault.create(path, contents[i]));
+            }
+        }
+        catch (err) {
+            console.error('Failed to create the imported note:', err);
+            for (const file of created) {
+                yield vault.delete(file).catch(() => undefined);
+            }
+            new obsidian.Notice(t('Import failed: unable to create the note'));
+            return [];
+        }
+        for (const file of created) {
+            yield plugin.openMindMapFile(file);
+        }
+        new obsidian.Notice(importSummary(doc));
+        return created;
+    });
+}
+function availableNotePath(plugin, base) {
+    return __awaiter(this, void 0, void 0, function* () {
+        let candidate = `${base}.md`;
+        for (let suffix = 1; yield plugin.app.vault.adapter.exists(candidate); suffix++) {
+            candidate = `${base} ${suffix}.md`;
+        }
+        return candidate;
+    });
+}
+// The command entry: a system file picker.
+function pickXmindFile(plugin, folder) {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.xmind';
+    input.addEventListener('change', () => __awaiter(this, void 0, void 0, function* () {
+        var _a;
+        const file = (_a = input.files) === null || _a === void 0 ? void 0 : _a[0];
+        if (file) {
+            yield importXmindFile(plugin, yield file.arrayBuffer(), file.name, folder);
+        }
+    }));
+    input.click();
+}
+
+// Asks how to open a note that is not a mind map yet: converting in place
+function askConvertMode(app, noteName) {
+    return new Promise((resolve) => {
+        let choice = null;
+        const modal = new obsidian.Modal(app);
+        modal.titleEl.setText(t('Open as a mind map?'));
+        modal.contentEl.createEl('p', { text: tf('Convert note explanation', noteName) });
+        new obsidian.Setting(modal.contentEl)
+            .addButton((b) => b.setButtonText(t('Cancel')).onClick(() => modal.close()))
+            .addButton((b) => b.setButtonText(t('Save as a new mind map')).onClick(() => {
+            choice = 'copy';
+            modal.close();
+        }))
+            .addButton((b) => b.setButtonText(t('Convert this note')).setCta().onClick(() => {
+            choice = 'in-place';
+            modal.close();
+        }));
+        modal.onClose = () => resolve(choice);
+        modal.open();
+    });
+}
+
 class MindMapPlugin extends obsidian.Plugin {
     constructor() {
         super(...arguments);
+        // View mode per file within a leaf, so a Markdown choice does not leak to other files.
         this.mindmapFileModes = {};
         this._loaded = false;
         this.timeOut = null;
         this.markdownMindMapActions = new WeakMap();
+        // Text -> map sync: after the cursor settles in a Markdown editor, select the
+        // node on that line in every mind map view of the same file.
+        this.pendingCursorEditor = null;
+        this.cursorSyncTimer = null;
+    }
+    getFileModeKey(leaf, path) {
+        return `${(leaf === null || leaf === void 0 ? void 0 : leaf.id) || ''}::${path || ''}`;
+    }
+    getFileMode(leaf, path) {
+        return this.mindmapFileModes[this.getFileModeKey(leaf, path)];
+    }
+    setFileMode(leaf, path, mode) {
+        this.mindmapFileModes[this.getFileModeKey(leaf, path)] = mode;
+    }
+    moveFileModes(oldPath, newPath) {
+        const suffix = `::${oldPath}`;
+        for (const key of Object.keys(this.mindmapFileModes)) {
+            if (key.endsWith(suffix)) {
+                const leafPart = key.slice(0, key.length - suffix.length);
+                this.mindmapFileModes[`${leafPart}::${newPath}`] = this.mindmapFileModes[key];
+                delete this.mindmapFileModes[key];
+            }
+        }
+    }
+    clearLeafFileModes(leaf) {
+        const prefix = `${(leaf === null || leaf === void 0 ? void 0 : leaf.id) || ''}::`;
+        for (const key of Object.keys(this.mindmapFileModes)) {
+            if (key.startsWith(prefix)) {
+                delete this.mindmapFileModes[key];
+            }
+        }
     }
     onload() {
         return __awaiter(this, void 0, void 0, function* () {
             yield this.loadSettings();
+            yield this.migrateRecoveryDrafts();
             yield this.ensurePagePreviewEnabled();
             const createMindmapRibbonIcon = this.addRibbonIcon(mindmapIcon, t('Create new mindmap'), () => this.newMindMap());
-            createMindmapRibbonIcon.addClass('mindmark-ribbon-create');
+            createMindmapRibbonIcon.addClass('mapdown-ribbon-create');
             this.addCommand({
                 id: 'Create New MindMap',
                 name: `${t('Create new mindmap')}`,
@@ -39347,10 +42941,15 @@ class MindMapPlugin extends obsidian.Plugin {
                 }
             });
             this.addCommand({
+                id: 'import-xmind',
+                name: t('Import from XMind…'),
+                callback: () => pickXmindFile(this, this.getNewFileFolder()),
+            });
+            this.addCommand({
                 id: 'Toggle to markdown or mindmap',
                 name: `${t('Toggle markdown/mindmap')}`,
                 mobileOnly: false,
-                callback: () => {
+                callback: () => __awaiter(this, void 0, void 0, function* () {
                     var _a, _b;
                     const leaf = this.app.workspace.activeLeaf;
                     const viewType = (_b = (_a = leaf === null || leaf === void 0 ? void 0 : leaf.view) === null || _a === void 0 ? void 0 : _a.getViewType) === null || _b === void 0 ? void 0 : _b.call(_a);
@@ -39358,40 +42957,72 @@ class MindMapPlugin extends obsidian.Plugin {
                         return;
                     }
                     if (viewType === mindmapViewType) {
-                        const file = this.app.workspace.getActiveFile();
-                        this.mindmapFileModes[leaf.id || (file === null || file === void 0 ? void 0 : file.path)] = 'markdown';
-                        this.setMarkdownView(leaf);
+                        yield this.setMarkdownView(leaf);
                     }
                     else if (viewType === 'markdown') {
-                        const file = this.app.workspace.getActiveFile();
-                        this.mindmapFileModes[leaf.id || (file === null || file === void 0 ? void 0 : file.path)] = mindmapViewType;
-                        this.setMindMapView(leaf);
+                        yield this.openNoteAsMindMap(leaf);
                     }
-                }
+                })
+            });
+            this.addCommand({
+                id: 'toggle-selection-sync',
+                name: t('Toggle selection sync with Markdown'),
+                callback: () => __awaiter(this, void 0, void 0, function* () {
+                    this.settings.syncSelection = !this.settings.syncSelection;
+                    yield this.saveSettings();
+                    new obsidian.Notice(t(this.settings.syncSelection ? 'Selection sync turned on' : 'Selection sync turned off'));
+                })
             });
             this.addCommand({
                 id: 'Set to mindmap view',
                 name: `${t('Set to mindmap mode')}`,
                 mobileOnly: false,
-                callback: () => {
+                callback: () => __awaiter(this, void 0, void 0, function* () {
                     const markdownView = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView);
                     if (markdownView != null) {
-                        this.mindmapFileModes[markdownView.leaf.id || markdownView.file.path] = mindmapViewType;
-                        this.setMindMapView(markdownView.leaf);
+                        yield this.openNoteAsMindMap(markdownView.leaf);
                     }
+                })
+            });
+            this.addCommand({
+                id: 'convert-to-new-mindmap',
+                name: t('Save as a new mind map'),
+                checkCallback: (checking) => {
+                    var _a;
+                    const file = (_a = this.app.workspace.getActiveViewOfType(obsidian.MarkdownView)) === null || _a === void 0 ? void 0 : _a.file;
+                    if (!file || this.isMindMapNote(file)) {
+                        return false;
+                    }
+                    if (!checking) {
+                        this.convertToNewMindMap(file);
+                    }
+                    return true;
+                }
+            });
+            this.addCommand({
+                id: 'Search mindmap nodes',
+                name: `${t('Search nodes')}`,
+                checkCallback: (checking) => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (!(mindmapView === null || mindmapView === void 0 ? void 0 : mindmapView.mindmap)) {
+                        return false;
+                    }
+                    if (!checking) {
+                        mindmapView.mindmap.openSearch();
+                    }
+                    return true;
                 }
             });
             this.addCommand({
                 id: 'Set to markdown view',
                 name: `${t('Set to markdown mode')}`,
                 mobileOnly: false,
-                callback: () => {
+                callback: () => __awaiter(this, void 0, void 0, function* () {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView != null) {
-                        this.mindmapFileModes[mindmapView.leaf.id || mindmapView.file.path] = 'markdown';
-                        this.setMarkdownView(mindmapView.leaf);
+                        yield this.setMarkdownView(mindmapView.leaf);
                     }
-                }
+                })
             });
             // Alt + Shift + C
             this.addCommand({
@@ -39404,8 +43035,11 @@ class MindMapPlugin extends obsidian.Plugin {
                         var node = mindmap.selectNode;
                         if (node && !node.data.isEdit) {
                             if (!checking) {
-                                var text = mindmap.copyNode(node);
-                                navigator.clipboard.writeText(text);
+                                var text = mindmap.copyNode(mindmap.clipboardNodes());
+                                navigator.clipboard.writeText(text).catch((err) => {
+                                    console.error('Failed to copy mindmap node:', err);
+                                    new obsidian.Notice(t('Copy node') + ': failed');
+                                });
                             }
                             return true;
                         }
@@ -39424,13 +43058,16 @@ class MindMapPlugin extends obsidian.Plugin {
                         var node = mindmap.selectNode;
                         if (node && !node.data.isEdit) {
                             if (!checking) {
-                                navigator.clipboard.writeText('');
-                                var text = mindmap.copyNode(node);
-                                navigator.clipboard.writeText(text);
-                                if (!node.data.isRoot) {
-                                    node.mindmap.execute("deleteNodeAndChild", { node });
-                                    mindmap._menuDom.style.display = 'none';
-                                }
+                                var nodes = mindmap.clipboardNodes();
+                                var text = mindmap.copyNode(nodes);
+                                navigator.clipboard.writeText(text).then(() => {
+                                    if (mindmapView.mindmap === mindmap && mindmap.deleteNodes(nodes)) {
+                                        mindmap._menuDom.style.display = 'none';
+                                    }
+                                }).catch((err) => {
+                                    console.error('Failed to cut mindmap node:', err);
+                                    new obsidian.Notice(t('Cut node') + ': failed');
+                                });
                             }
                             return true;
                         }
@@ -39447,9 +43084,15 @@ class MindMapPlugin extends obsidian.Plugin {
                     if (mindmapView) {
                         var mindmap = mindmapView.mindmap;
                         navigator.clipboard.readText().then(text => {
-                            mindmap.pasteNode(text);
+                            if (mindmapView.mindmap === mindmap && mindmap.selectNode) {
+                                mindmap.collapseSelectionTo(mindmap.selectNode);
+                                mindmap.pasteNode(text);
+                            }
                             // Copy once more so that the node can be copied once more
-                            navigator.clipboard.writeText(text);
+                            return navigator.clipboard.writeText(text);
+                        }).catch((err) => {
+                            console.error('Failed to paste mindmap node:', err);
+                            new obsidian.Notice(t('Paste node') + ': failed');
                         });
                     }
                 }
@@ -39488,9 +43131,19 @@ class MindMapPlugin extends obsidian.Plugin {
                         var mindmap = mindmapView.mindmap;
                         var node = mindmap.selectNode;
                         if (node) {
-                            // var text = (node.data.oldText as string);
-                            var text = (node.data.oldText);
-                            node.setText(text);
+                            if (node.data.isEdit) {
+                                node.cancelEdit();
+                                return;
+                            }
+                            // _oldText holds the text from before the last edit session.
+                            var text = node._oldText;
+                            if (typeof text !== 'string' || text === node.data.text)
+                                return;
+                            mindmap.execute('changeNodeText', {
+                                node,
+                                text,
+                                oldText: node.data.text
+                            });
                         }
                     }
                 }
@@ -39599,9 +43252,9 @@ class MindMapPlugin extends obsidian.Plugin {
                     if (mindmapView) {
                         var mindmap = mindmapView.mindmap;
                         var node = mindmap.selectNode;
-                        if (node && !node.data.isRoot && !node.data.isEdit) {
+                        if (node && !node.data.isEdit && mindmap.actionNodes(true).some((n) => !n.data.isRoot)) {
                             if (!checking) {
-                                node.mindmap.execute("deleteNodeAndChild", { node });
+                                mindmap.deleteSelection();
                                 mindmap._menuDom.style.display = 'none';
                             }
                             return true;
@@ -39651,7 +43304,7 @@ class MindMapPlugin extends obsidian.Plugin {
                                 node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
-                                mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+                                mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
                             }
                             mindmap.refresh();
                             mindmap.scale(mindmap.mindScale);
@@ -39680,38 +43333,40 @@ class MindMapPlugin extends obsidian.Plugin {
                                 node.setSelectedText_italic();
                             }
                             else { // Set in italics the whole node
-                                var text = node.data.text;
-                                if ((((text.substring(0, 1) == "*") ||
-                                    (text.substring(0, 1) == "_")) &&
-                                    (text.substring(0, 2) != "**") &&
-                                    (text.substring(0, 2) != "__")) ||
-                                    (text.substring(0, 3) == "***") ||
-                                    (text.substring(0, 3) == "_**") ||
-                                    (text.substring(0, 3) == "__*") ||
-                                    (text.substring(0, 3) == "___") ||
-                                    (text.substring(0, 3) == "**_") ||
-                                    (text.substring(0, 3) == "*__")) { // Already italic
-                                    if (text.slice(0, 3).includes("_")) {
-                                        // Replace only the first "_" in the first 3 chars (that make the italic)
-                                        text = text.slice(0, 3).replace('_', '') + text.slice(3);
-                                        // Replace only the first "_" in the LAST 3 chars (that make the italic)
-                                        text = text.slice(0, -3) + text.slice(-3).replace('_', '');
+                                mindmap.formatSelection((node) => {
+                                    var text = node.data.text;
+                                    if ((((text.substring(0, 1) == "*") ||
+                                        (text.substring(0, 1) == "_")) &&
+                                        (text.substring(0, 2) != "**") &&
+                                        (text.substring(0, 2) != "__")) ||
+                                        (text.substring(0, 3) == "***") ||
+                                        (text.substring(0, 3) == "_**") ||
+                                        (text.substring(0, 3) == "__*") ||
+                                        (text.substring(0, 3) == "___") ||
+                                        (text.substring(0, 3) == "**_") ||
+                                        (text.substring(0, 3) == "*__")) { // Already italic
+                                        if (text.slice(0, 3).includes("_")) {
+                                            // Replace only the first "_" in the first 3 chars (that make the italic)
+                                            text = text.slice(0, 3).replace('_', '') + text.slice(3);
+                                            // Replace only the first "_" in the LAST 3 chars (that make the italic)
+                                            text = text.slice(0, -3) + text.slice(-3).replace('_', '');
+                                        }
+                                        else { // A "*" is making the italic
+                                            text = text.slice(0, 3).replace('*', '') + text.slice(3);
+                                            text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                                        }
                                     }
-                                    else { // A "*" is making the italic
-                                        text = text.slice(0, 3).replace('*', '') + text.slice(3);
-                                        text = text.slice(0, -3) + text.slice(-3).replace('*', '');
+                                    else { // Not in italic
+                                        text = "_" + text + "_";
+                                        // Used to use "*" to allow bold/italic change in whatever order
+                                        // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
                                     }
-                                }
-                                else { // Not in italic
-                                    text = "_" + text + "_";
-                                    // Used to use "*" to allow bold/italic change in whatever order
-                                    // However "***" is not displayed as bold + italic, so use _ for italic and * for bold
-                                }
-                                // Set node text
-                                node.mindmap.execute('changeNodeText', {
-                                    node: node,
-                                    text: text,
-                                    oldText: node.data.text
+                                    // Set node text
+                                    node.mindmap.execute('changeNodeText', {
+                                        node: node,
+                                        text: text,
+                                        oldText: node.data.text
+                                    });
                                 });
                                 // node.data.oldText = node.data.text;
                                 // node.setText(text);
@@ -39747,7 +43402,7 @@ class MindMapPlugin extends obsidian.Plugin {
                                 node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
-                                mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+                                mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
                             }
                         }
                     }
@@ -39772,7 +43427,7 @@ class MindMapPlugin extends obsidian.Plugin {
                                 node.setSelectedText(l_prefix_1, l_prefix_2, l_check_prefix, l_set_as_suffix, true);
                             }
                             else { // Set in bold the whole node
-                                mindmap._formatNode(node, l_prefix_1, l_prefix_2);
+                                mindmap.formatSelection((n) => mindmap._formatNode(n, l_prefix_1, l_prefix_2));
                             }
                         }
                         //else: no node selected: nothing to do
@@ -39860,7 +43515,6 @@ class MindMapPlugin extends obsidian.Plugin {
                             node.select();
                             node.mindmap.editNode = null;
                             node.cancelEdit();
-                            mindmap.undo();
                             //this.selectNode.unSelect();
                         }
                     }
@@ -39973,9 +43627,8 @@ class MindMapPlugin extends obsidian.Plugin {
                     const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
                     if (mindmapView) {
                         var mindmap = mindmapView.mindmap;
-                        var node = mindmap.selectNode;
-                        if (node) {
-                            mindmap._toggleExpandNode(node);
+                        if (mindmap.selectNode) {
+                            mindmap.toggleExpandSelection();
                         }
                     }
                 }
@@ -40307,6 +43960,17 @@ class MindMapPlugin extends obsidian.Plugin {
                 }
             });
             this.addCommand({
+                id: 'export-xmind',
+                name: t('Export to XMind'),
+                checkCallback: (checking) => {
+                    const mindmapView = this.app.workspace.getActiveViewOfType(MindMapView);
+                    if (!checking && mindmapView) {
+                        mindmapView.exportToXmind();
+                    }
+                    return !!mindmapView;
+                }
+            });
+            this.addCommand({
                 id: 'Export to JPEG (LQ)',
                 name: `${t('Export to JPEG (LQ)')}`,
                 callback: () => {
@@ -40367,6 +44031,10 @@ class MindMapPlugin extends obsidian.Plugin {
                 }
             });
             this.registerView(mindmapViewType, (leaf) => new MindMapView(leaf, this));
+            this.registerEditorExtension([
+                editorSyncExtension,
+                createCursorListener((cm) => this.onEditorCursor(cm)),
+            ]);
             this.registerEvents();
             this.registerMonkeyAround();
             this.app.workspace.onLayoutReady(() => {
@@ -40391,6 +44059,10 @@ class MindMapPlugin extends obsidian.Plugin {
     }
     onunload() {
         var _a, _b;
+        if (this.cursorSyncTimer !== null) {
+            window.clearTimeout(this.cursorSyncTimer);
+            this.cursorSyncTimer = null;
+        }
         this.app.workspace.detachLeavesOfType(mindmapViewType);
         (_b = (_a = this.app.workspace).unregisterHoverLinkSource) === null || _b === void 0 ? void 0 : _b.call(_a, mindmapHoverSource);
         this.app.workspace.getLeavesOfType("markdown").forEach((leaf) => {
@@ -40407,16 +44079,124 @@ class MindMapPlugin extends obsidian.Plugin {
             try {
                 // @ts-ignore
                 const mindmap = yield this.app.fileManager.createNewMarkdownFile(targetFolder, `${t('Untitled mindmap')}`);
-                yield this.app.vault.modify(mindmap, basicFrontmatter);
-                setTimeout(() => __awaiter(this, void 0, void 0, function* () {
-                    yield this.app.workspace.getLeaf().setViewState({
-                        type: mindmapViewType,
-                        state: { file: mindmap.path },
-                    });
-                }), 100);
+                yield this.app.fileManager.processFrontMatter(mindmap, (frontmatter) => {
+                    frontmatter[frontMatterKey] = 'basic';
+                });
+                yield this.openMindMapFile(mindmap);
             }
             catch (e) {
                 console.error("Error creating mindmap board:", e);
+            }
+        });
+    }
+    // Opens a mind map note in a new tab, in map mode.
+    openMindMapFile(file) {
+        return __awaiter(this, void 0, void 0, function* () {
+            yield this.waitForMindmapMetadata(file);
+            const leaf = this.app.workspace.getLeaf(true);
+            this.setFileMode(leaf, file.path, mindmapViewType);
+            yield leaf.setViewState({
+                type: mindmapViewType,
+                state: { file: file.path },
+                popstate: true,
+            }, { focus: true });
+        });
+    }
+    isMindMapNote(file) {
+        var _a, _b;
+        return Boolean((_b = (_a = this.app.metadataCache.getFileCache(file)) === null || _a === void 0 ? void 0 : _a.frontmatter) === null || _b === void 0 ? void 0 : _b[frontMatterKey]);
+    }
+    // A plain note asks first: converting in place rewrites it on the first
+    // edit (with a backup), a copy leaves it as it is.
+    openNoteAsMindMap(leaf) {
+        return __awaiter(this, void 0, void 0, function* () {
+            const file = leaf.view.file;
+            if (file && !this.isMindMapNote(file)) {
+                const choice = yield askConvertMode(this.app, file.basename);
+                if (choice === 'copy') {
+                    yield this.convertToNewMindMap(file);
+                }
+                if (choice !== 'in-place') {
+                    return;
+                }
+            }
+            this.setFileMode(leaf, file === null || file === void 0 ? void 0 : file.path, mindmapViewType);
+            yield this.setMindMapView(leaf);
+        });
+    }
+    convertToNewMindMap(file) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const content = plainNoteAsMindMap(yield this.app.vault.read(file), file.basename, this.settings.headLevel);
+                const name = tf('{0} (mind map)', file.basename);
+                const base = file.parent && !file.parent.isRoot() ? `${file.parent.path}/${name}` : name;
+                const created = yield this.app.vault.create(yield availableNotePath(this, obsidian.normalizePath(base)), content);
+                yield this.openMindMapFile(created);
+                return created;
+            }
+            catch (err) {
+                console.error('Failed to convert the note to a mind map:', err);
+                new obsidian.Notice(t('Import failed: unable to create the note'));
+                return null;
+            }
+        });
+    }
+    importXmind(data, name, folder) {
+        return importXmindFile(this, data, name, folder || this.getNewFileFolder());
+    }
+    getNewFileFolder() {
+        var _a;
+        return this.app.fileManager.getNewFileParent(((_a = this.app.workspace.getActiveFile()) === null || _a === void 0 ? void 0 : _a.path) || "");
+    }
+    waitForMindmapMetadata(file) {
+        var _a;
+        return __awaiter(this, void 0, void 0, function* () {
+            for (let i = 0; i < 20; i++) {
+                const cache = this.app.metadataCache.getFileCache(file);
+                if ((_a = cache === null || cache === void 0 ? void 0 : cache.frontmatter) === null || _a === void 0 ? void 0 : _a[frontMatterKey]) {
+                    return;
+                }
+                yield new Promise((resolve) => setTimeout(resolve, 50));
+            }
+        });
+    }
+    onEditorCursor(cm) {
+        if (!this.settings.syncSelection) {
+            return;
+        }
+        this.pendingCursorEditor = cm;
+        const ownerWindow = cm.dom.ownerDocument.defaultView || window;
+        if (this.cursorSyncTimer !== null) {
+            ownerWindow.clearTimeout(this.cursorSyncTimer);
+        }
+        this.cursorSyncTimer = ownerWindow.setTimeout(() => {
+            this.cursorSyncTimer = null;
+            const editor = this.pendingCursorEditor;
+            this.pendingCursorEditor = null;
+            if (editor) {
+                this.syncEditorCursorToMaps(editor);
+            }
+        }, 80);
+    }
+    syncEditorCursorToMaps(cm) {
+        let markdownView = null;
+        this.app.workspace.iterateAllLeaves((leaf) => {
+            var _a;
+            if (leaf.view instanceof obsidian.MarkdownView && ((_a = leaf.view.editor) === null || _a === void 0 ? void 0 : _a.cm) === cm) {
+                markdownView = leaf.view;
+            }
+        });
+        const file = markdownView === null || markdownView === void 0 ? void 0 : markdownView.file;
+        if (!file) {
+            return;
+        }
+        const state = cm.state;
+        const line = state.doc.lineAt(state.selection.main.head).number - 1;
+        const text = state.doc.toString();
+        this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
+            const view = leaf.view;
+            if (view.file === file) {
+                view.selectNodeFromEditor(line, text);
             }
         });
     }
@@ -40429,10 +44209,71 @@ class MindMapPlugin extends obsidian.Plugin {
                 background: 'transparent',
                 layout: 'mindmap',
                 layoutDirect: 'mindmap',
+                focusOnMove: false,
                 focusOverlayOpacity: 0.4,
+                focusGlowSize: 150,
+                nodeGlowSize: 10,
+                nodeMaxWidth: 800,
                 enableLinkPreview: true,
-                linkOpenMode: 'window'
-            }, yield this.loadData());
+                linkOpenMode: 'window',
+                syncSelection: true,
+            }, (yield this.loadData()) || (yield this.loadLegacySettings()));
+        });
+    }
+    // The plugin was called MindMark (id `mindmark`) before 0.3.0.
+    legacyPluginDir() {
+        return `${this.app.vault.configDir}/plugins/mindmark`;
+    }
+    // A first start under the new id takes over the old plugin's settings.
+    loadLegacySettings() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const path = `${this.legacyPluginDir()}/data.json`;
+            try {
+                if (!(yield this.app.vault.adapter.exists(path))) {
+                    return null;
+                }
+                const data = JSON.parse(yield this.app.vault.adapter.read(path));
+                yield this.saveData(data);
+                new obsidian.Notice(t('Settings migrated from MindMark'));
+                return data;
+            }
+            catch (err) {
+                console.error('Mapdown could not migrate the MindMark settings:', err);
+                return null;
+            }
+        });
+    }
+    getRecoveryDraftDirectory() {
+        return obsidian.normalizePath(`${this.manifest.dir || `${this.app.vault.configDir}/plugins/${this.manifest.id}`}/recovery`);
+    }
+    // Unsaved drafts left by MindMark move to this plugin's folder; the old
+    // plugin folder itself is left for the user to remove.
+    migrateRecoveryDrafts() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const adapter = this.app.vault.adapter;
+            const legacy = `${this.legacyPluginDir()}/recovery`;
+            const target = this.getRecoveryDraftDirectory();
+            try {
+                if (legacy === target || !(yield adapter.exists(legacy))) {
+                    return;
+                }
+                const { files } = yield adapter.list(legacy);
+                if (!files.length) {
+                    return;
+                }
+                if (!(yield adapter.exists(target))) {
+                    yield adapter.mkdir(target);
+                }
+                for (const file of files) {
+                    const destination = `${target}/${file.split('/').pop()}`;
+                    if (!(yield adapter.exists(destination))) {
+                        yield adapter.rename(file, destination);
+                    }
+                }
+            }
+            catch (err) {
+                console.error('Mapdown could not move the MindMark recovery drafts:', err);
+            }
         });
     }
     saveSettings() {
@@ -40443,14 +44284,23 @@ class MindMapPlugin extends obsidian.Plugin {
     setMarkdownView(leaf) {
         return __awaiter(this, void 0, void 0, function* () {
             if (leaf.view instanceof MindMapView) {
-                yield leaf.view.formatAndSaveMarkdown();
+                try {
+                    yield leaf.view.formatAndSaveMarkdown();
+                }
+                catch (err) {
+                    console.error('Mapdown kept the mindmap view open because saving failed:', err);
+                    return false;
+                }
             }
+            const file = leaf.view.file;
+            this.setFileMode(leaf, file === null || file === void 0 ? void 0 : file.path, 'markdown');
             yield leaf.setViewState({
                 type: "markdown",
                 state: leaf.view.getState(),
                 popstate: true,
             }, { focus: true });
             this.updateMarkdownMindMapActions();
+            return true;
         });
     }
     setMindMapView(leaf) {
@@ -40480,10 +44330,10 @@ class MindMapPlugin extends obsidian.Plugin {
                     if (!view.file) {
                         return;
                     }
-                    this.mindmapFileModes[leaf.id || view.file.path] = mindmapViewType;
+                    this.setFileMode(leaf, view.file.path, mindmapViewType);
                     yield this.setMindMapView(leaf);
                 }));
-                action.addClass("mindmark-return-action");
+                action.addClass("mapdown-return-action");
                 (_b = view.modeButtonEl) === null || _b === void 0 ? void 0 : _b.after(action);
                 this.markdownMindMapActions.set(view, action);
             }
@@ -40491,6 +44341,9 @@ class MindMapPlugin extends obsidian.Plugin {
     }
     registerEvents() {
         var _a, _b;
+        this.registerEvent(this.app.vault.on("rename", (file, oldPath) => {
+            this.moveFileModes(oldPath, file.path);
+        }));
         this.registerEvent(this.app.workspace.on("layout-change", () => {
             this.updateMarkdownMindMapActions();
         }));
@@ -40507,9 +44360,18 @@ class MindMapPlugin extends obsidian.Plugin {
                         .onClick(() => this.newMindMap(file));
                 });
             }
+            if (file instanceof obsidian.TFile && file.extension.toLowerCase() === 'xmind') {
+                menu.addItem((item) => {
+                    item
+                        .setTitle(t('Import as mindmap'))
+                        .setIcon('download')
+                        .onClick(() => __awaiter(this, void 0, void 0, function* () {
+                        this.importXmind(yield this.app.vault.readBinary(file), file.basename, file.parent || this.app.vault.getRoot());
+                    }));
+                });
+            }
             //add markdown view menu  open as mind map view
-            const leafId = (leaf === null || leaf === void 0 ? void 0 : leaf.id) || file.path;
-            if (leaf && this.mindmapFileModes[leafId] == 'markdown') {
+            if (leaf && this.getFileMode(leaf, file.path) == 'markdown') {
                 const cache = this.app.metadataCache.getFileCache(file);
                 if ((cache === null || cache === void 0 ? void 0 : cache.frontmatter) && cache.frontmatter[frontMatterKey]) {
                     menu.addItem((item) => {
@@ -40517,7 +44379,7 @@ class MindMapPlugin extends obsidian.Plugin {
                             .setTitle(`${t('Open as mindmap board')}`)
                             .setIcon("document")
                             .onClick(() => {
-                            this.mindmapFileModes[leafId] = mindmapViewType;
+                            this.setFileMode(leaf, file.path, mindmapViewType);
                             this.setMindMapView(leaf);
                         });
                     }).addSeparator();
@@ -40528,14 +44390,22 @@ class MindMapPlugin extends obsidian.Plugin {
             this.updateMarkdownMindMapActions();
             this.app.workspace.getLeavesOfType(mindmapViewType).forEach((leaf) => {
                 const view = leaf.view;
-                if (view && typeof view.onFileMetadataChange === 'function') {
+                if ((view === null || view === void 0 ? void 0 : view.file) === file && typeof view.onFileMetadataChange === 'function') {
                     view.onFileMetadataChange(file);
                 }
             });
         }));
         (_b = (_a = this.app.workspace).registerHoverLinkSource) === null || _b === void 0 ? void 0 : _b.call(_a, mindmapHoverSource, {
-            display: 'MindMark',
+            display: 'Mapdown',
             defaultMod: false,
+        });
+    }
+    afterViewStateSettled(leaf, result) {
+        return Promise.resolve(result).then((value) => {
+            if (leaf.view instanceof MindMapView && leaf.view.hasUnwritableState) {
+                leaf.view.returnUnwritableStateToMarkdown();
+            }
+            return value;
         });
     }
     registerMonkeyAround() {
@@ -40545,11 +44415,7 @@ class MindMapPlugin extends obsidian.Plugin {
             // while the file is open. When the file closes, we no longer need to keep track of it.
             detach(next) {
                 return function () {
-                    var _a;
-                    const state = (_a = this.view) === null || _a === void 0 ? void 0 : _a.getState();
-                    if ((state === null || state === void 0 ? void 0 : state.file) && self.mindmapFileModes[this.id || state.file]) {
-                        delete self.mindmapFileModes[this.id || state.file];
-                    }
+                    self.clearLeafFileModes(this);
                     return next.apply(this);
                 };
             },
@@ -40564,18 +44430,18 @@ class MindMapPlugin extends obsidian.Plugin {
                         state.type === "markdown" &&
                         filePath &&
                         // And the current mode of the file is not set to markdown
-                        self.mindmapFileModes[this.id || filePath] !== "markdown") {
+                        self.getFileMode(this, filePath) !== "markdown") {
                         // Then check for the kanban frontMatterKey
                         const cache = self.app.metadataCache.getCache(filePath);
                         //   new Notice(cache.frontmatter[frontMatterKey]);
                         if ((cache === null || cache === void 0 ? void 0 : cache.frontmatter) && cache.frontmatter[frontMatterKey]) {
                             // If we have it, force the view type to kanban
                             const newState = Object.assign(Object.assign({}, state), { type: mindmapViewType });
-                            self.mindmapFileModes[filePath] = mindmapViewType;
-                            return next.apply(this, [newState, ...rest]);
+                            self.setFileMode(this, filePath, mindmapViewType);
+                            return self.afterViewStateSettled(this, next.apply(this, [newState, ...rest]));
                         }
                     }
-                    return next.apply(this, [state, ...rest]);
+                    return self.afterViewStateSettled(this, next.apply(this, [state, ...rest]));
                 };
             },
         }));

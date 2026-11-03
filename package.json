@@ -1,11 +1,15 @@
 {
-  "name": "mindmark",
-  "version": "0.2.6",
-  "description": "A seamless markdown-based mindmap plugin for Obsidian.",
+  "name": "mapdown",
+  "version": "0.3.0",
+  "description": "Edit any Markdown note as a mind map, with the text and the map kept in sync.",
   "main": "main.js",
   "scripts": {
     "dev": "rollup --config rollup.config.js -w",
-    "build": "rollup --config rollup.config.js --environment BUILD:production"
+    "build": "rollup --config rollup.config.js --environment BUILD:production",
+    "typecheck": "tsc --noEmit --inlineSources false --skipLibCheck",
+    "test": "node tests/regression.js",
+    "e2e": "node tests/e2e.js",
+    "check": "npm run typecheck && npm test && npm run build"
   },
   "keywords": [
     "obsidian",
@@ -17,12 +21,12 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/leftlive/mindmark.git"
+    "url": "git+https://github.com/leftlive/mapdown.git"
   },
   "bugs": {
-    "url": "https://github.com/leftlive/mindmark/issues"
+    "url": "https://github.com/leftlive/mapdown/issues"
   },
-  "homepage": "https://github.com/leftlive/mindmark#readme",
+  "homepage": "https://github.com/leftlive/mapdown#readme",
   "devDependencies": {
     "@rollup/plugin-commonjs": "^18.0.0",
     "@rollup/plugin-node-resolve": "^11.2.1",
