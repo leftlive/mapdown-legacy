@@ -1,3 +1,5 @@
+> **This repository is archived. Mapdown 0.3.x has been superseded by Mapdown 1.0, now developed at [leftlive/mapdown](https://github.com/leftlive/mapdown).**
+
 [中文说明](Readme-zh.md)
 
 # Mapdown
