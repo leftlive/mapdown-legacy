@@ -1,3 +1,5 @@
+> **本仓库已归档。Mapdown 0.3.x 已由 Mapdown 1.0 取代，新版本在 [leftlive/mapdown](https://github.com/leftlive/mapdown)。**
+
 [English](README.md)
 
 # Mapdown 文图
